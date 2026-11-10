@@ -1,0 +1,98 @@
+backend:
+  name: github
+  repo: fsdearruda/jokenpo-landing-page
+  branch: main
+  auth_endpoint: oauth
+  base_url: https://dashboard.jokenpo.cards
+  site_domain: dashboard.jokenpo.cards
+
+local_backend: true
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: site
+    label: Configurações da landing page
+    description: Conteúdo operacional exibido na página principal.
+    files:
+      - name: site
+        label: Informações gerais
+        file: src/data/site.json
+        format: json
+        fields:
+          - label: Nome
+            name: name
+            widget: string
+          - label: Nome curto
+            name: shortName
+            widget: string
+          - label: Título da página
+            name: title
+            widget: string
+          - label: Meta description
+            name: description
+            widget: text
+          - label: Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Primeira linha, name: titleLine1, widget: string }
+              - { label: Segunda linha, name: titleLine2, widget: string }
+              - { label: Terceira linha, name: titleLine3, widget: string }
+              - { label: Descrição, name: description, widget: text }
+          - label: Contatos
+            name: contact
+            widget: object
+            fields:
+              - { label: Instagram, name: instagram, widget: string }
+              - { label: Comunidade WhatsApp, name: communityWhatsapp, widget: string }
+              - { label: WhatsApp direto, name: whatsapp, widget: string }
+              - { label: E-mail, name: email, widget: string }
+          - label: Localização
+            name: location
+            widget: object
+            fields:
+              - { label: Local, name: venue, widget: string }
+              - { label: Endereço, name: street, widget: string }
+              - { label: Bairro e cidade, name: neighborhood, widget: string }
+              - { label: CEP, name: postalCode, widget: string }
+              - { label: Link do Maps, name: mapsUrl, widget: string }
+              - { label: URL do mapa incorporado, name: embedUrl, widget: string }
+          - label: Horários
+            name: hours
+            widget: list
+            fields:
+              - { label: Dia exibido, name: day, widget: string }
+              - label: Dias para SEO
+                name: schemaDays
+                widget: list
+                field: { label: Dia, name: day, widget: string }
+              - { label: Horário exibido, name: open, widget: string }
+              - { label: Abertura, name: opens, widget: string, required: false }
+              - { label: Fechamento, name: closes, widget: string, required: false }
+              - { label: Fechado, name: closed, widget: boolean, required: false, default: false }
+          - label: Categorias de jogos
+            name: boardgameCategories
+            widget: list
+            fields:
+              - { label: Nome, name: name, widget: string }
+              - { label: Descrição, name: description, widget: string }
+              - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+              - { label: Ícone, name: icon, widget: string }
+          - label: Agenda semanal
+            name: agenda
+            widget: list
+            fields:
+              - { label: Dia, name: day, widget: string }
+              - { label: Evento, name: name, widget: string }
+              - { label: Detalhes, name: detail, widget: string }
+              - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+          - label: Cards de serviços
+            name: extras
+            widget: list
+            fields:
+              - { label: Número, name: number, widget: string }
+              - { label: Título, name: title, widget: string }
+              - { label: Descrição, name: description, widget: text }
+              - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }

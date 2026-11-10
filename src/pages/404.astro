@@ -1,0 +1,51 @@
+---
+import siteData from '../data/site.json';
+---
+
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="robots" content="noindex, follow" />
+		<title>Página não encontrada — {siteData.name}</title>
+	</head>
+	<body>
+		<main>
+			<p class="eyebrow">ERRO 404</p>
+			<h1>ESSA PÁGINA<br /><span>SAIU DA MESA.</span></h1>
+			<p>O endereço que você acessou não existe ou foi movido.</p>
+			<a href="/">Voltar para a Jokenpo <span>↗</span></a>
+		</main>
+	</body>
+</html>
+
+<style>
+	:root {
+		--ink: #0e0e10;
+		--white: #fff;
+		--yellow: #ffd400;
+		--cyan: #00c8ff;
+		--pink: #ff3ea5;
+	}
+
+	* { box-sizing: border-box; }
+	body {
+		display: grid;
+		min-height: 100vh;
+		margin: 0;
+		padding: 24px;
+		place-items: center;
+		background: radial-gradient(circle at 70% 30%, #2a1e5c, var(--ink) 55%);
+		color: var(--white);
+		font-family: 'Poppins', sans-serif;
+	}
+	main { max-width: 720px; }
+	.eyebrow { color: var(--cyan); font-size: 13px; font-weight: 700; letter-spacing: 3px; }
+	h1 { margin: 20px 0; font-family: 'Archivo Black', sans-serif; font-size: clamp(48px, 9vw, 100px); line-height: .9; }
+	h1 span { color: var(--pink); }
+	main > p:not(.eyebrow) { color: #cfcdd4; font-size: 18px; line-height: 1.6; }
+	a { display: inline-flex; gap: 20px; margin-top: 20px; padding: 15px 20px; background: var(--yellow); color: var(--ink); font-weight: 700; text-decoration: none; }
+	a span { font-size: 20px; line-height: .7; }
+	a:hover { box-shadow: 6px 6px 0 var(--pink); transform: translate(-2px, -2px); }
+</style>

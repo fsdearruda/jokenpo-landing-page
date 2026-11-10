@@ -1,0 +1,19 @@
+{
+  "name": "Jokenpo",
+  "short_name": "Jokenpo",
+  "description": "Card games, jogos de tabuleiro e torneios na Zona Norte de Natal.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "display": "standalone",
+  "theme_color": "#0e0e10",
+  "background_color": "#0e0e10",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/Vetor/coelho.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "Jokenpo",
+  "shortName": "Jokenpo",
+  "title": "Jokenpo — Card games, boardgames e torneios em Natal",
+  "description": "Jokenpo: card games, jogos de tabuleiro, espaço para jogar e torneios na Zona Norte de Natal. Vem jogar com a gente!",
+  "hero": {
+    "eyebrow": "CARD GAMES · BOARDGAMES · TORNEIOS",
+    "titleLine1": "VEM",
+    "titleLine2": "JOGAR",
+    "titleLine3": "COM A GENTE",
+    "description": "Um espaço aconchegante para a comunidade geek de Natal: Magic, Pokémon, Yu-Gi-Oh!, One Piece, jogos de tabuleiro e torneios toda semana."
+  },
+  "contact": {
+    "instagram": "https://instagram.com/jokenpoficial",
+    "communityWhatsapp": "https://chat.whatsapp.com/H54CHkicHSOAjOj5bvdNwH",
+    "whatsapp": "+5584987655623",
+    "email": "contato@jokenpo.cards"
+  },
+  "location": {
+    "venue": "Shopping New Way Center, loja 24",
+    "street": "Av. Dr. João Medeiros Filho, 5421",
+    "neighborhood": "Pajuçara · Natal/RN",
+    "postalCode": "59122-518",
+    "mapsUrl": "https://maps.app.goo.gl/nM1G9WJ6T7ZbAi3t9",
+    "embedUrl": "https://www.google.com/maps?q=Jokenpo+Shopping+New+Way+Center+Natal&output=embed"
+  },
+  "hours": [
+    { "day": "SEG — SÁB", "schemaDays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], "open": "14h às 22h", "opens": "14:00", "closes": "22:00" },
+    { "day": "DOM", "schemaDays": ["Sunday"], "open": "Fechado", "closed": true }
+  ],
+  "boardgameCategories": [
+    { "name": "Leves", "description": "R$ 10 no Passe da Tarde", "color": "cyan", "icon": "✦" },
+    { "name": "Médios", "description": "R$ 13 no Passe da Tarde", "color": "yellow", "icon": "◆" },
+    { "name": "Grandes", "description": "R$ 15 no Passe da Tarde", "color": "pink", "icon": "●" }
+  ],
+  "agenda": [
+    { "day": "SEG", "name": "Semanal Pokémon", "detail": "18h30 · R$ 20 · 12 vagas", "color": "yellow" },
+    { "day": "TER", "name": "Commander Day", "detail": "Magic: The Gathering · 18h30", "color": "cyan" },
+    { "day": "QUA", "name": "Semanal Yu-Gi-Oh!", "detail": "18h30 · R$ 20 · 12 vagas", "color": "pink" },
+    { "day": "QUI", "name": "Dia do Boardgame", "detail": "R$ 20 por pessoa · all day", "color": "yellow" },
+    { "day": "SEX", "name": "Semanal One Piece TCG", "detail": "18h30 · R$ 20 · 12 vagas", "color": "cyan" },
+    { "day": "SÁB", "name": "Free play", "detail": "TCG + tabuleiro · o dia todo", "color": "pink" }
+  ],
+  "extras": [
+    { "number": "01", "title": "Pegue e jogue", "description": "SEG · TER · QUA · SEX<br />18h30 às 22h · por jogo/hora", "color": "cyan" },
+    { "number": "02", "title": "Reserva de mesa", "description": "Para RPG, aniversário e grupos. Períodos de 3 horas.", "color": "yellow" },
+    { "number": "03", "title": "Fidelidade", "description": "1 ponto a cada R$ 1. Resgate a partir de 100 pontos.", "color": "pink" }
+  ]
+}
