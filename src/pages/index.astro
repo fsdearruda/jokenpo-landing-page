@@ -172,8 +172,6 @@ const structuredData = {
 				</section>
 
 				<section class="about-section" id="sobre" aria-labelledby="about-title">
-					<div class="about-shape" aria-hidden="true"></div>
-					<img class="about-logo" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="" width="430" height="74" aria-hidden="true" />
 					<div class="about-copy">
 						<p class="eyebrow">CARD GAMES</p>
 						<h2 id="about-title">TCG, MESA<br /><span>E COMUNIDADE</span></h2>
@@ -379,10 +377,6 @@ const structuredData = {
 	.agenda-card p { margin: 0; max-width: 220px; font-size: 12px; font-weight: 600; line-height: 1.4; }
 	:global(.agenda-arrow) { position: absolute; right: 22px; bottom: 17px; width: 15px; height: 15px; }
 	.about-section { position: relative; display: flex; min-height: 610px; align-items: center; justify-content: space-between; overflow: hidden; padding: 100px max(42px, calc((100% - 1176px) / 2)); background: var(--pink); color: var(--ink); }
-	.about-shape { position: absolute; right: 5%; width: 470px; height: 470px; border: 3px solid var(--ink); border-radius: 50%; opacity: .25; }
-	.about-logo { position: absolute; right: 4%; top: 70px; width: min(45vw, 430px); height: auto; opacity: .16; }
-	.about-shape::before, .about-shape::after { position: absolute; top: 50%; left: 50%; width: 70%; height: 3px; background: var(--ink); content: ''; transform: translate(-50%, -50%) rotate(45deg); }
-	.about-shape::after { transform: translate(-50%, -50%) rotate(-45deg); }
 	.about-copy { position: relative; z-index: 1; max-width: 520px; }
 	.about-copy .eyebrow { color: var(--ink); }
 	.about-copy h2 { margin-bottom: 27px; }
@@ -448,7 +442,6 @@ const structuredData = {
 		.featured-section .section-heading { display: flex; }
 		.agenda-section .section-heading { display: block; }
 		.about-section { display: block; min-height: 690px; padding: 88px 24px; }
-		.about-shape { right: -170px; bottom: -80px; width: 430px; height: 430px; }
 		.about-note { margin: 65px 0 0 auto; }
 		.visit-section { display: block; min-height: auto; }
 		.visit-details { gap: 28px; }
