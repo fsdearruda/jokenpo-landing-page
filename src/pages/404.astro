@@ -1,5 +1,6 @@
 ---
 import siteData from '../data/site.json';
+import ArrowIcon from '../components/ArrowIcon.astro';
 ---
 
 <!doctype html>
@@ -15,7 +16,7 @@ import siteData from '../data/site.json';
 			<p class="eyebrow">ERRO 404</p>
 			<h1>ESSA PÁGINA<br /><span>SAIU DA MESA.</span></h1>
 			<p>O endereço que você acessou não existe ou foi movido.</p>
-			<a href="/">Voltar para a Jokenpo <span>↗</span></a>
+			<a href="/">Voltar para a Jokenpo <ArrowIcon /></a>
 		</main>
 	</body>
 </html>
@@ -46,6 +47,6 @@ import siteData from '../data/site.json';
 	h1 span { color: var(--pink); }
 	main > p:not(.eyebrow) { color: #cfcdd4; font-size: 18px; line-height: 1.6; }
 	a { display: inline-flex; gap: 20px; margin-top: 20px; padding: 15px 20px; background: var(--yellow); color: var(--ink); font-weight: 700; text-decoration: none; }
-	a span { font-size: 20px; line-height: .7; }
+	a .arrow-icon { width: 20px; height: 20px; }
 	a:hover { box-shadow: 6px 6px 0 var(--pink); transform: translate(-2px, -2px); }
 </style>
