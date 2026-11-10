@@ -79,14 +79,14 @@ const structuredData = {
 			<div class="noise" aria-hidden="true"></div>
 			<header class="site-header">
 				<a class="brand" href="/" aria-label="Jokenpô início">
-					<img class="brand-logo" src="/Vetor/jokenpo-coelho-branco.svg" alt="Jokenpô" width="150" height="33" />
+					<img class="brand-logo brand-logo-header" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="Jokenpô" width="150" height="33" />
 				</a>
 				<nav class="main-nav" aria-label="Navegação principal">
 					<a href="#agenda">Agenda</a>
 					<a href="#jogar">Jogue aqui</a>
 					<a href="#visite">Visite</a>
 				</nav>
-				<a class="header-cta" href="#visite">Cola lá <ArrowIcon /></a>
+				<a class="header-cta" href="#visite">Cola lá <ArrowIcon size={14} /></a>
 			</header>
 
 			<main>
@@ -97,13 +97,13 @@ const structuredData = {
 						<h1 id="hero-title">{siteData.hero.titleLine1}<br /><span>{siteData.hero.titleLine2}</span><br />{siteData.hero.titleLine3}</h1>
 						<p class="hero-text">{siteData.hero.description}</p>
 						<div class="hero-actions">
-							<a class="button button-yellow" href="#agenda">Ver agenda <ArrowIcon direction="right" /></a>
-							<a class="button button-outline" href="#visite">Como chegar <ArrowIcon /></a>
+							<a class="button button-yellow" href="#agenda">Ver agenda <ArrowIcon direction="right" size={16} /></a>
+							<a class="button button-outline" href="#visite">Como chegar <ArrowIcon size={16} /></a>
 						</div>
 					</div>
 					<div class="hero-stage" aria-label="Composição ilustrada com cartas e dados">
-						<div class="burst burst-one">✦</div>
-						<div class="burst burst-two">✦</div>
+						<div class="burst burst-one"><img src="/Vetor/brilho-rosa.svg" alt="" width="47" height="47" /></div>
+						<div class="burst burst-two"><img src="/Vetor/brilho-preto.svg" alt="" width="32" height="32" /></div>
 						<div class="card-back card-back-main">
 							<div class="card-inner">
 								<div class="card-symbol">✦</div>
@@ -115,16 +115,19 @@ const structuredData = {
 							<div class="mini-card-suit">♠</div>
 							<span>PLAY<br />YOUR<br />WAY</span>
 						</div>
-						<img class="hero-mascot" src="/Vetor/coelho.svg" alt="" width="98" height="110" />
+						<img class="hero-mascot" src="/Vetor/coelho-creme.svg" alt="" width="112" height="126" />
 						<div class="die">20</div>
 						<div class="sticker">BORA<br /><em>JOGAR?</em></div>
 					</div>
 					<div class="hero-note">SEG — SÁB<br />14H — 22H<span>LOJA 24 · NEW WAY CENTER</span></div>
-					<div class="scroll-cue"><span></span> DESÇA PARA JOGAR</div>
+					<div class="scroll-cue"><span></span> DESÇA PARA JOGAR <ArrowIcon direction="down" class="scroll-arrow" size={16} /></div>
 				</section>
 
-				<section class="marquee" aria-label="Mensagem da marca">
-					<div>CARD GAMES · BOARDGAMES · TORNEIOS TODA SEMANA <span>✦</span> CARD GAMES · BOARDGAMES · TORNEIOS TODA SEMANA <span>✦</span></div>
+				<section class="marquee" aria-label="RPG, TCG, board games e torneios">
+					<div class="marquee-track">
+						<img src="/Vetor/faixa-categorias.svg" alt="RPG, TCG, board games e torneios" width="675" height="44" />
+						<img src="/Vetor/faixa-categorias.svg" alt="" width="675" height="44" aria-hidden="true" />
+					</div>
 				</section>
 
 				<section class="section games-section" id="jogar" aria-labelledby="games-title">
@@ -142,7 +145,7 @@ const structuredData = {
 								<span class="category-icon">{category.icon}</span>
 								<h3>{category.name}</h3>
 								<p>{category.description}</p>
-								<ArrowIcon class="category-arrow" />
+								<ArrowIcon class="category-arrow" size={24} />
 							</a>
 						))}
 					</div>
@@ -162,7 +165,7 @@ const structuredData = {
 								<span class="agenda-day">{event.day}</span>
 								<h3>{event.name}</h3>
 								<p>{event.detail}</p>
-								<ArrowIcon class="agenda-arrow" />
+								<ArrowIcon class="agenda-arrow" size={22} />
 							</article>
 						))}
 					</div>
@@ -170,6 +173,7 @@ const structuredData = {
 
 				<section class="about-section" id="sobre" aria-labelledby="about-title">
 					<div class="about-shape" aria-hidden="true"></div>
+					<img class="about-logo" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="" width="430" height="74" aria-hidden="true" />
 					<div class="about-copy">
 						<p class="eyebrow">CARD GAMES</p>
 						<h2 id="about-title">TCG, MESA<br /><span>E COMUNIDADE</span></h2>
@@ -177,7 +181,7 @@ const structuredData = {
 						<div class="tcg-list">
 							<span>MAGIC</span><span>POKÉMON</span><span>YU-GI-OH!</span><span>ONE PIECE</span>
 						</div>
-						<a class="button button-pink" href="#agenda">Ver torneios <ArrowIcon direction="right" /></a>
+						<a class="button button-pink" href="#agenda">Ver torneios <ArrowIcon direction="right" size={16} /></a>
 					</div>
 					<div class="about-note">
 						<span class="quote-mark">“</span>
@@ -216,12 +220,12 @@ const structuredData = {
 						<div class="visit-contact">
 							<p><small>FALE COM A GALERA</small>Entre na comunidade para conversar sobre cada jogo e receber avisos gerais importantes.</p>
 							<div class="visit-contact-links">
-								<a href={siteData.contact.communityWhatsapp} target="_blank" rel="noreferrer">Comunidade no WhatsApp <ArrowIcon /></a>
-								<a href={directWhatsappUrl} target="_blank" rel="noreferrer">Contato direto: {siteData.contact.whatsapp} <ArrowIcon /></a>
-								<a href={`mailto:${siteData.contact.email}`}>{siteData.contact.email} <ArrowIcon /></a>
+								<a href={siteData.contact.communityWhatsapp} target="_blank" rel="noreferrer">Comunidade no WhatsApp <ArrowIcon size={13} /></a>
+								<a href={directWhatsappUrl} target="_blank" rel="noreferrer">Contato direto: {siteData.contact.whatsapp} <ArrowIcon size={13} /></a>
+								<a href={`mailto:${siteData.contact.email}`}>{siteData.contact.email} <ArrowIcon size={13} /></a>
 							</div>
 						</div>
-						<a class="button button-yellow" href={siteData.location.mapsUrl} target="_blank" rel="noreferrer">Abrir no mapa <ArrowIcon /></a>
+						<a class="button button-yellow" href={siteData.location.mapsUrl} target="_blank" rel="noreferrer">Abrir no mapa <ArrowIcon size={16} /></a>
 					</div>
 					<div class="map-preview">
 						<iframe
@@ -239,9 +243,9 @@ const structuredData = {
 				<div class="footer-brand"><img class="brand-logo" src="/Vetor/jokenpo-coelho-branco.svg" alt="Jokenpô" width="125" height="27" /></div>
 				<p>© 2026 Jokenpo · Feito para quem gosta de jogar</p>
 				<div class="footer-links">
-					<a href={siteData.contact.instagram} target="_blank" rel="noreferrer">@jokenpoficial <ArrowIcon /></a>
-					<a href={siteData.contact.communityWhatsapp} target="_blank" rel="noreferrer">WhatsApp <ArrowIcon /></a>
-					<a href={`mailto:${siteData.contact.email}`}>E-mail <ArrowIcon /></a>
+					<a href={siteData.contact.instagram} target="_blank" rel="noreferrer">@jokenpoficial <ArrowIcon size={13} /></a>
+					<a href={siteData.contact.communityWhatsapp} target="_blank" rel="noreferrer">WhatsApp <ArrowIcon size={13} /></a>
+					<a href={`mailto:${siteData.contact.email}`}>E-mail <ArrowIcon size={13} /></a>
 				</div>
 			</footer>
 		</div>
@@ -265,17 +269,18 @@ const structuredData = {
 	html { scroll-behavior: smooth; }
 	body { margin: 0; background: var(--ink); color: var(--white); font-family: 'Poppins', sans-serif; }
 	a { color: inherit; text-decoration: none; }
-	.arrow-icon { display: inline-block; width: 1em; height: 1em; flex: none; vertical-align: middle; }
+	:global(.arrow-icon) { display: inline-block; width: .6em; height: .6em; flex: none; vertical-align: middle; }
 	.site-shell { min-height: 100vh; overflow: hidden; background: var(--ink); }
 	.noise { position: fixed; inset: 0; z-index: 20; pointer-events: none; opacity: .07; mix-blend-mode: screen; }
 	.noise::before { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E"); }
 	.site-header { position: absolute; z-index: 10; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; max-width: 1260px; margin: auto; padding: 28px 42px; }
 	.brand, .footer-brand { display: flex; align-items: center; }
 	.brand-logo { display: block; width: 150px; height: auto; }
+	.brand-logo-header { filter: invert(1); }
 	.main-nav { display: flex; gap: 36px; color: var(--mist); font-size: 13px; font-weight: 700; }
 	.main-nav a:hover, .text-link:hover, .site-footer a:hover { color: var(--yellow); }
 	.header-cta { padding: 11px 18px; border: 2px solid var(--white); border-radius: 30px; font-size: 12px; font-weight: 700; }
-	.header-cta .arrow-icon { margin-left: 8px; color: var(--yellow); }
+	:global(.header-cta .arrow-icon) { width: 11px; height: 11px; margin-left: 8px; color: var(--yellow); }
 	.hero { position: relative; min-height: 760px; padding: 174px max(42px, calc((100% - 1176px) / 2)) 90px; overflow: hidden; background: radial-gradient(circle at 74% 40%, #4a3a99 0, var(--purple) 23%, var(--ink) 57%); }
 	.hero::after { position: absolute; right: -9%; bottom: -34%; width: 60%; height: 80%; border: 2px solid #ffffff17; border-radius: 50%; content: ''; transform: rotate(-24deg); }
 	.hero-bg-word { position: absolute; top: 130px; right: -46px; color: transparent; font-family: 'Archivo Black', sans-serif; font-size: clamp(150px, 22vw, 290px); line-height: .8; opacity: .15; -webkit-text-stroke: 2px var(--white); transform: rotate(-8deg); }
@@ -290,7 +295,7 @@ const structuredData = {
 	.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 	.button { display: inline-flex; align-items: center; gap: 25px; padding: 16px 21px 16px 24px; border-radius: 24px; color: var(--ink); font-size: 13px; font-weight: 700; transition: transform .2s, box-shadow .2s; }
 	.button:hover { box-shadow: 7px 7px 0 var(--ink); transform: translate(-2px, -2px); }
-	.button .arrow-icon { width: 20px; height: 20px; }
+	:global(.button .arrow-icon) { width: 12px; height: 12px; }
 	.button-yellow { background: var(--yellow); }
 	.button-pink { background: var(--pink); }
 	.button-outline { border: 2px solid var(--white); color: var(--white); }
@@ -305,19 +310,24 @@ const structuredData = {
 	.mini-card-suit { margin-bottom: 18px; color: var(--pink); font-size: 38px; line-height: 1; }
 	.mini-card span { font-family: 'Archivo Black', sans-serif; font-size: 17px; line-height: .9; }
 	.die { position: absolute; right: 8px; bottom: 32px; display: grid; width: 80px; height: 80px; place-items: center; border: 5px solid var(--ink); border-radius: 18px; background: var(--yellow); box-shadow: 8px 8px 0 var(--ink); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 28px; transform: rotate(16deg); }
-	.hero-mascot { position: absolute; right: 75px; bottom: 25px; width: 98px; height: auto; filter: invert(1) drop-shadow(4px 5px 0 var(--ink)); transform: rotate(8deg); }
+	.hero-mascot { position: absolute; right: 65px; bottom: 18px; width: 112px; height: auto; filter: drop-shadow(4px 5px 0 var(--ink)); transform: rotate(8deg); }
 	.sticker { position: absolute; bottom: 12px; left: 65px; padding: 18px 22px; background: var(--pink); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 17px; line-height: .9; text-align: center; transform: rotate(-9deg); filter: drop-shadow(4px 0 0 var(--ink)) drop-shadow(-4px 0 0 var(--ink)) drop-shadow(0 4px 0 var(--ink)) drop-shadow(0 -4px 0 var(--ink)); }
 	.sticker em { color: var(--ink); font-style: normal; }
-	.burst { position: absolute; color: var(--yellow); font-size: 47px; }
+	.burst { position: absolute; line-height: 0; }
+	.burst img { display: block; width: 100%; height: auto; }
 	.burst-one { top: 20px; right: 5px; }
-	.burst-two { bottom: 100px; left: -20px; color: var(--cyan); font-size: 32px; }
+	.burst-one img { width: 47px; }
+	.burst-two { bottom: 100px; left: -20px; }
+	.burst-two img { width: 32px; }
 	.hero-note { position: absolute; right: max(42px, calc((100% - 1176px) / 2)); bottom: 52px; z-index: 3; color: var(--yellow); font-family: 'Archivo Black', sans-serif; font-size: 18px; line-height: .9; text-align: right; transform: rotate(-4deg); }
 	.hero-note span { display: block; margin-top: 9px; color: var(--white); font-family: 'Poppins', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 2px; }
-	.scroll-cue { position: absolute; bottom: 52px; left: max(42px, calc((100% - 1176px) / 2)); color: var(--mist); font-size: 9px; font-weight: 700; letter-spacing: 2px; }
-	.scroll-cue span { display: inline-block; width: 28px; height: 1px; margin-right: 10px; vertical-align: middle; background: var(--mist); }
-	.marquee { overflow: hidden; padding: 15px 0; background: var(--yellow); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 17px; white-space: nowrap; transform: rotate(-1.5deg) scale(1.03); }
-	.marquee div { animation: slide 24s linear infinite; }
-	.marquee span { margin: 0 22px; color: var(--pink); }
+	.scroll-cue { position: absolute; bottom: 52px; left: max(42px, calc((100% - 1176px) / 2)); display: flex; align-items: center; gap: 10px; color: var(--mist); font-size: 9px; font-weight: 700; letter-spacing: 2px; }
+	.scroll-cue > span { display: block; width: 28px; height: 1px; flex: none; background: var(--mist); }
+	:global(.scroll-cue .scroll-arrow) { width: 16px; height: 16px; margin-left: 2px; animation: scroll-arrow 1.4s ease-in-out infinite; }
+	@keyframes scroll-arrow { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
+	.marquee { overflow: hidden; background: var(--ink); white-space: nowrap; transform: rotate(-1.5deg) scale(1.03); }
+	.marquee-track { display: flex; width: max-content; animation: slide 24s linear infinite; }
+	.marquee-track img { display: block; width: 675px; height: 44px; flex: none; }
 	@keyframes slide { to { transform: translateX(-50%); } }
 	.section { max-width: 1176px; margin: auto; padding: 130px 42px; }
 	.section-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 50px; }
@@ -337,7 +347,7 @@ const structuredData = {
 	.category-icon { display: block; margin-bottom: 55px; font-size: 43px; }
 	.category-card h3 { margin-bottom: 8px; font-family: 'Archivo Black', sans-serif; font-size: 33px; letter-spacing: -1px; }
 	.category-card p { margin-bottom: 0; max-width: 180px; font-size: 13px; font-weight: 600; line-height: 1.4; }
-	.category-arrow { position: absolute; right: 27px; bottom: 24px; width: 28px; height: 28px; }
+	:global(.category-arrow) { position: absolute; right: 27px; bottom: 24px; width: 16px; height: 16px; }
 	.featured-section { padding-top: 60px; }
 	.text-link { margin-bottom: 7px; color: var(--yellow); font-size: 13px; font-weight: 700; }
 	.text-link span { margin-left: 12px; font-size: 18px; }
@@ -367,9 +377,10 @@ const structuredData = {
 	.agenda-day { display: block; margin-bottom: 23px; font-size: 11px; font-weight: 700; letter-spacing: 3px; }
 	.agenda-card h3 { max-width: 190px; margin-bottom: 8px; font-family: 'Archivo Black', sans-serif; font-size: 22px; line-height: 1; letter-spacing: -1px; }
 	.agenda-card p { margin: 0; max-width: 220px; font-size: 12px; font-weight: 600; line-height: 1.4; }
-	.agenda-arrow { position: absolute; right: 22px; bottom: 17px; width: 25px; height: 25px; }
+	:global(.agenda-arrow) { position: absolute; right: 22px; bottom: 17px; width: 15px; height: 15px; }
 	.about-section { position: relative; display: flex; min-height: 610px; align-items: center; justify-content: space-between; overflow: hidden; padding: 100px max(42px, calc((100% - 1176px) / 2)); background: var(--pink); color: var(--ink); }
 	.about-shape { position: absolute; right: 5%; width: 470px; height: 470px; border: 3px solid var(--ink); border-radius: 50%; opacity: .25; }
+	.about-logo { position: absolute; right: 4%; top: 70px; width: min(45vw, 430px); height: auto; opacity: .16; }
 	.about-shape::before, .about-shape::after { position: absolute; top: 50%; left: 50%; width: 70%; height: 3px; background: var(--ink); content: ''; transform: translate(-50%, -50%) rotate(45deg); }
 	.about-shape::after { transform: translate(-50%, -50%) rotate(-45deg); }
 	.about-copy { position: relative; z-index: 1; max-width: 520px; }
@@ -406,7 +417,7 @@ const structuredData = {
 	.visit-contact-links { display: flex; flex-wrap: wrap; gap: 10px 24px; }
 	.visit-contact-links a { color: var(--yellow); font-weight: 700; }
 	.visit-contact-links a:hover { color: var(--white); }
-	.visit-contact-links .arrow-icon { width: 14px; height: 14px; margin-left: 4px; vertical-align: -2px; }
+	:global(.visit-contact-links .arrow-icon) { width: 10px; height: 10px; margin-left: 4px; vertical-align: -2px; }
 	.map-preview { position: relative; width: min(38vw, 410px); height: 360px; overflow: hidden; border: 3px solid var(--cyan); border-radius: 29px; box-shadow: 12px 12px 0 var(--pink); transform: rotate(3deg); }
 	.map-preview iframe { width: 100%; height: 100%; border: 0; filter: saturate(.8) contrast(1.05); }
 	.map-label { position: absolute; top: 22px; right: 24px; padding: 10px; background: var(--pink); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 13px; line-height: .9; box-shadow: 5px 5px 0 var(--ink); transform: rotate(-8deg); }
