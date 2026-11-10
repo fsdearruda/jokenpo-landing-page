@@ -300,8 +300,9 @@ kicker + uma linha de informação. Nunca mais de uma por peça.
 - Posições: canto superior esquerdo (`left:70–90px; top:52–64px`) ou centralizado no rodapé (`top ~1560px`).
 - Mascote: **coelho** (o "Jô"), em branco com contorno preto de sticker. Usar
   como objeto colado no canto inferior, nunca sobrepondo texto.
-- Assinatura de rodapé: `@jokenpoficial · Shopping New Way Center` —
-  Poppins 700, 24–26px.
+- O rodapé da landing page usa uma apresentação formal com logo, endereço,
+  e-mail, CNPJ e links para WhatsApp e Instagram. O CNPJ só deve ser publicado
+  depois de substituir o placeholder pelo dado oficial.
 
 ---
 
@@ -325,6 +326,6 @@ kicker + uma linha de informação. Nunca mais de uma por peça.
 3. Título cabe em até 3 linhas sem quebra feia.
 4. Máximo três cores de acento.
 5. Grão presente.
-6. Logo e `@jokenpoficial` presentes.
+6. Logo, endereço e links institucionais do rodapé presentes.
 7. Ao criar uma variação nova, **manter as versões anteriores** — nunca
    substituir a peça antiga.

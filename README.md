@@ -1,6 +1,7 @@
 # Jokenpo — Informações da loja
 
-Fonte única de conteúdo para landing page, Google Meu Negócio, bio, cardápio, materiais impressos e qualquer peça futura. **Só contém informação pública.** Dados internos (custos, margens, fornecedores, CNPJ) ficam fora de propósito.
+Fonte única de conteúdo para landing page, Google Meu Negócio, bio, cardápio, materiais impressos e qualquer peça futura. **Só contém informação pública.** Dados internos (custos, margens e fornecedores) ficam fora de propósito. O CNPJ exibido
+no rodapé ainda é um placeholder e deve ser substituído antes do deploy final.
 
 > Última atualização: nov/2026. Itens marcados com ⚠️ podem mudar — conferir antes de publicar.
 
@@ -212,7 +213,7 @@ Todos às **18h30**.
 6. **Reserva e eventos:** mesa, aniversário, aluguel do espaço
 7. **Snacks e bebidas** (e produtos 3D)
 8. **Como chegar:** endereço, mapa, horário, estacionamento do shopping ⚠️
-9. **Rodapé:** Instagram, WhatsApp, @jokenpoficial
+9. **Rodapé:** logo, endereço, e-mail, CNPJ, WhatsApp e Instagram
 
 ---
 
@@ -266,3 +267,21 @@ OAUTH_GITHUB_CLIENT_SECRET=...
 O OAuth fica desativado em builds locais sem essas credenciais. O acesso é controlado pelas permissões da conta no repositório GitHub.
 - [ ] Horário final do happy hour e ofertas
 - [ ] Faixa etária / regras de convivência
+
+## 14. Desenvolvimento local e performance
+
+Comandos principais:
+
+```bash
+pnpm check
+pnpm build
+```
+
+O projeto usa Astro 7 com saída `server` e adapter da Vercel. Para preservar a
+performance:
+
+- Use o componente `<Image />` do Astro para logos e imagens locais sempre que possível.
+- Imagens abaixo da dobra devem usar `loading="lazy"`.
+- Imagens devem declarar dimensões para evitar deslocamento de layout.
+- O mapa incorporado deve permanecer com `loading="lazy"`.
+- Antes de publicar, rode `pnpm check`, `pnpm build` e uma auditoria Lighthouse.

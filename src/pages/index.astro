@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import siteData from '../data/site.json';
 import ArrowIcon from '../components/ArrowIcon.astro';
 
@@ -8,7 +9,6 @@ const agenda = siteData.agenda;
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
 const canonicalUrl = siteUrl ? `${siteUrl}/` : '/';
 const socialImageUrl = `${siteUrl}/Vetor/jokenpo-coelho-branco.svg`;
-const directWhatsappUrl = `https://wa.me/${siteData.contact.whatsapp.replace(/\D/g, '')}`;
 
 const structuredData = {
 	'@context': 'https://schema.org',
@@ -79,7 +79,7 @@ const structuredData = {
 			<div class="noise" aria-hidden="true"></div>
 			<header class="site-header">
 				<a class="brand" href="/" aria-label="Jokenpô início">
-					<img class="brand-logo brand-logo-header" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="Jokenpô" width="150" height="33" />
+					<Image class="brand-logo brand-logo-header" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="Jokenpô" width={150} height={33} />
 				</a>
 				<nav class="main-nav" aria-label="Navegação principal">
 					<a href="#agenda">Agenda</a>
@@ -120,13 +120,20 @@ const structuredData = {
 						<div class="sticker">BORA<br /><em>JOGAR?</em></div>
 					</div>
 					<div class="hero-note">SEG — SÁB<br />14H — 22H<span>LOJA 24 · NEW WAY CENTER</span></div>
-					<div class="scroll-cue"><span></span> DESÇA PARA JOGAR <ArrowIcon direction="down" class="scroll-arrow" size={16} /></div>
+					<div class="scroll-cue">
+						<div class="scroll-cue-row">
+							<span class="scroll-line"></span>
+							<span class="scroll-label">DESÇA PRA JOGAR</span>
+							<span class="scroll-line"></span>
+						</div>
+						<ArrowIcon direction="down" class="scroll-arrow" size={16} />
+					</div>
 				</section>
 
 				<section class="marquee" aria-label="RPG, TCG, board games e torneios">
 					<div class="marquee-track">
-						<img src="/Vetor/faixa-categorias.svg" alt="RPG, TCG, board games e torneios" width="675" height="44" />
-						<img src="/Vetor/faixa-categorias.svg" alt="" width="675" height="44" aria-hidden="true" />
+						<img src="/Vetor/faixa-categorias.svg" alt="RPG, TCG, board games e torneios" width="675" height="44" loading="lazy" />
+						<img src="/Vetor/faixa-categorias.svg" alt="" width="675" height="44" loading="lazy" aria-hidden="true" />
 					</div>
 				</section>
 
@@ -219,8 +226,6 @@ const structuredData = {
 							<p><small>FALE COM A GALERA</small>Entre na comunidade para conversar sobre cada jogo e receber avisos gerais importantes.</p>
 							<div class="visit-contact-links">
 								<a href={siteData.contact.communityWhatsapp} target="_blank" rel="noreferrer">Comunidade no WhatsApp <ArrowIcon size={13} /></a>
-								<a href={directWhatsappUrl} target="_blank" rel="noreferrer">Contato direto: {siteData.contact.whatsapp} <ArrowIcon size={13} /></a>
-								<a href={`mailto:${siteData.contact.email}`}>{siteData.contact.email} <ArrowIcon size={13} /></a>
 							</div>
 						</div>
 						<a class="button button-yellow" href={siteData.location.mapsUrl} target="_blank" rel="noreferrer">Abrir no mapa <ArrowIcon size={16} /></a>
@@ -238,12 +243,17 @@ const structuredData = {
 			</main>
 
 			<footer class="site-footer">
-				<div class="footer-brand"><img class="brand-logo" src="/Vetor/jokenpo-coelho-branco.svg" alt="Jokenpô" width="125" height="27" /></div>
-				<p>© 2026 Jokenpo · Feito para quem gosta de jogar</p>
+				<div class="footer-brand"><Image class="brand-logo brand-logo-header" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="Jokenpô" width={150} height={33} loading="lazy" /></div>
+				<div class="footer-details">
+					<p><strong>Jokenpo</strong> · Feito para quem gosta de jogar</p>
+					<p>{siteData.location.venue}<br />{siteData.location.street}<br />{siteData.location.neighborhood}</p>
+					<p><a href={`mailto:${siteData.contact.email}`}>{siteData.contact.email}</a><br />CNPJ: XX.XXX.XXX/XXXX-XX</p>
+					<p>© 2026 Jokenpo</p>
+				</div>
 				<div class="footer-links">
-					<a href={siteData.contact.instagram} target="_blank" rel="noreferrer">@jokenpoficial <ArrowIcon size={13} /></a>
-					<a href={siteData.contact.communityWhatsapp} target="_blank" rel="noreferrer">WhatsApp <ArrowIcon size={13} /></a>
-					<a href={`mailto:${siteData.contact.email}`}>E-mail <ArrowIcon size={13} /></a>
+					<a href={siteData.contact.communityWhatsapp} target="_blank" rel="noreferrer">WhatsApp</a>
+					<a href={siteData.contact.instagram} target="_blank" rel="noreferrer">Instagram</a>
+					<a href={`mailto:${siteData.contact.email}`}>E-mail</a>
 				</div>
 			</footer>
 		</div>
@@ -291,9 +301,9 @@ const structuredData = {
 	h1 span, h2 span { color: var(--pink); }
 	.hero-text { margin-bottom: 30px; color: var(--mist); font-size: 17px; font-weight: 600; line-height: 1.65; }
 	.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-	.button { display: inline-flex; align-items: center; gap: 25px; padding: 16px 21px 16px 24px; border-radius: 24px; color: var(--ink); font-size: 13px; font-weight: 700; transition: transform .2s, box-shadow .2s; }
+	.button { position: relative; display: inline-flex; width: 176px; min-height: 52px; align-items: center; justify-content: center; padding: 16px 36px 16px 24px; border-radius: 24px; color: var(--ink); font-size: 13px; font-weight: 700; transition: transform .2s, box-shadow .2s; }
 	.button:hover { box-shadow: 7px 7px 0 var(--ink); transform: translate(-2px, -2px); }
-	:global(.button .arrow-icon) { width: 12px; height: 12px; }
+	:global(.button .arrow-icon) { position: absolute; right: 18px; width: 12px; height: 12px; }
 	.button-yellow { background: var(--yellow); }
 	.button-pink { background: var(--pink); }
 	.button-outline { border: 2px solid var(--white); color: var(--white); }
@@ -317,11 +327,13 @@ const structuredData = {
 	.burst-one img { width: 47px; }
 	.burst-two { bottom: 100px; left: -20px; }
 	.burst-two img { width: 32px; }
-	.hero-note { position: absolute; right: max(42px, calc((100% - 1176px) / 2)); bottom: 52px; z-index: 3; color: var(--yellow); font-family: 'Archivo Black', sans-serif; font-size: 18px; line-height: .9; text-align: right; transform: rotate(-4deg); }
+	.hero-note { position: absolute; right: max(42px, calc((100% - 1176px) / 2)); bottom: 100px; z-index: 3; color: var(--yellow); font-family: 'Archivo Black', sans-serif; font-size: 18px; line-height: .9; text-align: right; transform: rotate(-4deg); }
 	.hero-note span { display: block; margin-top: 9px; color: var(--white); font-family: 'Poppins', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 2px; }
-	.scroll-cue { position: absolute; bottom: 52px; left: max(42px, calc((100% - 1176px) / 2)); display: flex; align-items: center; gap: 10px; color: var(--mist); font-size: 9px; font-weight: 700; letter-spacing: 2px; }
-	.scroll-cue > span { display: block; width: 28px; height: 1px; flex: none; background: var(--mist); }
-	:global(.scroll-cue .scroll-arrow) { width: 16px; height: 16px; margin-left: 2px; animation: scroll-arrow 1.4s ease-in-out infinite; }
+	.scroll-cue { position: absolute; bottom: 52px; left: 50%; display: flex; flex-direction: column; align-items: center; gap: 7px; color: var(--mist); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-align: center; transform: translateX(-50%); white-space: nowrap; }
+	.scroll-cue-row { display: flex; align-items: center; gap: 10px; }
+	.scroll-line { display: block; width: 28px; height: 1px; flex: none; background: var(--mist); }
+	.scroll-label { display: block; line-height: 1.25; }
+	:global(.scroll-cue .scroll-arrow) { width: 16px; height: 16px; animation: scroll-arrow 1.4s ease-in-out infinite; }
 	@keyframes scroll-arrow { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
 	.marquee { overflow: hidden; background: var(--ink); white-space: nowrap; transform: rotate(-1.5deg) scale(1.03); }
 	.marquee-track { display: flex; width: max-content; animation: slide 24s linear infinite; }
@@ -382,8 +394,8 @@ const structuredData = {
 	.about-copy h2 { margin-bottom: 27px; }
 	.about-copy h2 span { color: var(--white); }
 	.about-copy > p:not(.eyebrow) { max-width: 420px; margin-bottom: 30px; font-size: 15px; font-weight: 600; line-height: 1.7; }
-	.tcg-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
-	.tcg-list span { padding: 8px 11px; border: 2px solid var(--ink); border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+	.tcg-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 28px; }
+	.tcg-list span { display: flex; min-height: 36px; align-items: center; justify-content: center; padding: 8px 6px; border: 2px solid var(--ink); border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-align: center; }
 	.about-note { position: relative; z-index: 1; width: 290px; padding: 25px; border: 3px solid var(--ink); background: var(--white); box-shadow: 10px 10px 0 var(--ink); transform: rotate(7deg); }
 	.quote-mark { color: var(--cyan); font-family: Georgia, serif; font-size: 67px; line-height: .5; }
 	.about-note p { margin: 22px 0 34px; font-family: 'Archivo Black', sans-serif; font-size: 21px; line-height: .95; }
@@ -416,10 +428,14 @@ const structuredData = {
 	.map-preview iframe { width: 100%; height: 100%; border: 0; filter: saturate(.8) contrast(1.05); }
 	.map-label { position: absolute; top: 22px; right: 24px; padding: 10px; background: var(--pink); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 13px; line-height: .9; box-shadow: 5px 5px 0 var(--ink); transform: rotate(-8deg); }
 	.map-label strong { color: var(--ink); }
-	.site-footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; max-width: 1176px; margin: auto; padding: 30px 42px 45px; border-top: 1px solid var(--ink-3); color: var(--mist); font-size: 11px; }
+	.site-footer { display: grid; grid-template-columns: 180px 1fr auto; align-items: start; gap: 42px; max-width: 1176px; margin: auto; padding: 30px 42px 45px; border-top: 1px solid var(--ink-3); color: var(--mist); font-size: 11px; }
 	.footer-brand .brand-logo { width: 125px; }
-	.site-footer p { margin: 0; text-align: center; }
-	.footer-links { display: flex; justify-self: end; gap: 18px; }
+	.footer-details { display: grid; gap: 8px; line-height: 1.5; }
+	.footer-details p { margin: 0; }
+	.footer-details strong { color: var(--white); }
+	.footer-details a { color: var(--mist); }
+	.footer-details a:hover { color: var(--yellow); }
+	.footer-links { display: flex; justify-self: end; gap: 18px; padding-top: 2px; }
 	.site-footer a { color: var(--yellow); font-weight: 700; }
 	@media (max-width: 800px) {
 		.site-header { padding: 22px 24px; }
@@ -430,8 +446,8 @@ const structuredData = {
 		.hero-stage { top: 430px; right: 4%; width: 92%; height: 350px; transform: scale(.78); transform-origin: top right; }
 		.hero-bg-word { top: 280px; right: -75px; font-size: 150px; }
 		.hero-stage .card-back, .hero-stage .mini-card, .hero-stage .hero-mascot, .hero-stage .die, .hero-stage .sticker { display: none; }
-		.hero-note { right: 24px; bottom: 38px; }
-		.scroll-cue { bottom: 40px; left: 24px; }
+		.hero-note { right: 24px; bottom: 100px; }
+		.scroll-cue { bottom: 28px; }
 		.section { padding: 85px 24px; }
 		.section-heading { display: block; }
 		.heading-aside { margin-top: 22px; text-align: left; }
@@ -439,6 +455,7 @@ const structuredData = {
 		.agenda-grid, .extras-grid { grid-template-columns: 1fr; }
 		.category-card { min-height: 210px; }
 		.category-icon { margin-bottom: 24px; }
+		.tcg-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 360px; }
 		.featured-section .section-heading { display: flex; }
 		.agenda-section .section-heading { display: block; }
 		.about-section { display: block; min-height: 690px; padding: 88px 24px; }
@@ -448,6 +465,7 @@ const structuredData = {
 		.map-preview { width: 85vw; height: 300px; margin: 70px auto 0; }
 		.site-footer { grid-template-columns: 1fr; gap: 18px; padding: 30px 24px 35px; text-align: center; }
 		.footer-brand, .footer-links { justify-self: center; }
+		.footer-details { justify-items: center; }
 		.desktop-break { display: none; }
 	}
 </style>
