@@ -49,6 +49,7 @@ collections:
               - { label: Comunidade WhatsApp, name: communityWhatsapp, widget: string }
               - { label: WhatsApp direto, name: whatsapp, widget: string }
               - { label: E-mail, name: email, widget: string }
+              - { label: CNPJ, name: cnpj, widget: string, required: false }
           - label: Localização
             name: location
             widget: object

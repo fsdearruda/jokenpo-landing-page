@@ -242,7 +242,7 @@ O conteúdo operacional da landing page fica em `src/data/site.json` e pode ser 
 O dashboard permite atualizar:
 
 - Texto do hero e SEO básico
-- Instagram, WhatsApp e e-mail
+- Instagram, WhatsApp, e-mail e CNPJ
 - Endereço, mapa e links de localização
 - Horários de funcionamento
 - Categorias e preços exibidos dos jogos de tabuleiro

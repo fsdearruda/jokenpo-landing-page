@@ -247,7 +247,7 @@ const structuredData = {
 				<div class="footer-details">
 					<p><strong>Jokenpo</strong> · Feito para quem gosta de jogar</p>
 					<p>{siteData.location.venue}<br />{siteData.location.street}<br />{siteData.location.neighborhood}</p>
-					<p><a href={`mailto:${siteData.contact.email}`}>{siteData.contact.email}</a><br />CNPJ: XX.XXX.XXX/XXXX-XX</p>
+					<p><a href={`mailto:${siteData.contact.email}`}>{siteData.contact.email}</a>{siteData.contact.cnpj && <><br />CNPJ: {siteData.contact.cnpj}</>}</p>
 					<p>© 2026 Jokenpo</p>
 				</div>
 				<div class="footer-links">
