@@ -240,7 +240,7 @@ const counts = {
 </section>
 
 <script>
-	const INITIAL_LIMIT = 6;
+	const INITIAL_ROWS = 2;
 	let isExpanded = false;
 	let currentFilter = 'all';
 
@@ -253,13 +253,24 @@ const counts = {
 	const expandArrowIcon = document.getElementById('expand-arrow-icon');
 	const catalogSection = document.getElementById('acervo');
 
+	function getInitialLimit(): number {
+		if (window.matchMedia('(max-width: 800px)').matches) {
+			return INITIAL_ROWS * 1; // 1 coluna no mobile -> 2 linhas = 2 jogos
+		}
+		if (window.matchMedia('(max-width: 960px)').matches) {
+			return INITIAL_ROWS * 2; // 2 colunas no tablet -> 2 linhas = 4 jogos
+		}
+		return INITIAL_ROWS * 3; // 3 colunas no desktop -> 2 linhas = 6 jogos
+	}
+
 	function updateDisplay(announceText?: string, triggerAnimation = true) {
+		const initialLimit = getInitialLimit();
 		const matching = gameCards.filter((card) => {
 			const cat = card.dataset.category;
 			return currentFilter === 'all' || cat === currentFilter;
 		});
 
-		const needsExpand = matching.length > INITIAL_LIMIT;
+		const needsExpand = matching.length > initialLimit;
 
 		if (expandActions && expandBtn && expandBtnText && expandArrowIcon) {
 			if (needsExpand) {
@@ -288,14 +299,14 @@ const counts = {
 				card.classList.remove('animate-reveal');
 			} else {
 				const matchIndex = matching.indexOf(card);
-				const isVisible = isExpanded || !needsExpand || matchIndex < INITIAL_LIMIT;
+				const isVisible = isExpanded || !needsExpand || matchIndex < initialLimit;
 				const wasHidden = card.classList.contains('hidden');
 
 				card.classList.toggle('hidden', !isVisible);
 
 				if (isVisible) {
 					card.style.setProperty('--stagger-index', visibleCount.toString());
-					if (triggerAnimation && (wasHidden || matchIndex >= INITIAL_LIMIT || triggerAnimation)) {
+					if (triggerAnimation && (wasHidden || matchIndex >= initialLimit || triggerAnimation)) {
 						card.classList.remove('animate-reveal');
 						void card.offsetWidth;
 						card.classList.add('animate-reveal');
@@ -335,9 +346,10 @@ const counts = {
 	if (expandBtn) {
 		expandBtn.addEventListener('click', () => {
 			isExpanded = !isExpanded;
+			const initialLimit = getInitialLimit();
 			const msg = isExpanded
 				? 'Lista expandida: todos os jogos estão visíveis.'
-				: `Lista recolhida: mostrando os primeiros ${INITIAL_LIMIT} jogos.`;
+				: `Lista recolhida: mostrando os primeiros ${initialLimit} jogos.`;
 
 			updateDisplay(msg);
 
@@ -347,8 +359,17 @@ const counts = {
 		});
 	}
 
+	let lastLimit = getInitialLimit();
+	window.addEventListener('resize', () => {
+		const nextLimit = getInitialLimit();
+		if (nextLimit !== lastLimit) {
+			lastLimit = nextLimit;
+			updateDisplay(undefined, false);
+		}
+	});
+
 	// Initialize on page load
-	updateDisplay();
+	updateDisplay(undefined, false);
 </script>
 
 <style>
