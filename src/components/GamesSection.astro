@@ -1,42 +1,746 @@
 ---
+import { Image } from 'astro:assets';
 import siteData from '../data/site.json';
-import ArrowIcon from './ArrowIcon.astro';
 import SectionHeading from './SectionHeading.astro';
 
-const categories = siteData.boardgameCategories;
+import unoImg from '../assets/games/uno.jpg';
+import tacoImg from '../assets/games/taco.png';
+import knockKnockImg from '../assets/games/knock-knock-dungeon.png';
+import nemAPatoImg from '../assets/games/nem-a-pato.png';
+import naoTestamosImg from '../assets/games/nao-testamos-esse-troco.jpg';
+import naoPode2Img from '../assets/games/nao-pode-2.png';
+import bangImg from '../assets/games/bang.png';
+import coupImg from '../assets/games/coup.png';
+import skyTeamImg from '../assets/games/sky-team.jpg';
+import explodingKittensImg from '../assets/games/exploding-kittens.png';
+import catanImg from '../assets/games/catan.png';
+import ticketToRideImg from '../assets/games/ticket-to-ride.jpg';
+import zombicideImg from '../assets/games/zombicide.jpg';
+
+const imageMap: Record<string, ImageMetadata> = {
+	'uno.jpg': unoImg,
+	'taco.png': tacoImg,
+	'knock-knock-dungeon.png': knockKnockImg,
+	'nem-a-pato.png': nemAPatoImg,
+	'nao-testamos-esse-troco.jpg': naoTestamosImg,
+	'nao-pode-2.png': naoPode2Img,
+	'bang.png': bangImg,
+	'coup.png': coupImg,
+	'sky-team.jpg': skyTeamImg,
+	'exploding-kittens.png': explodingKittensImg,
+	'catan.png': catanImg,
+	'ticket-to-ride.jpg': ticketToRideImg,
+	'zombicide.jpg': zombicideImg,
+};
+
+const passes = siteData.boardgamePasses;
+const games = siteData.boardgames;
+
+const counts = {
+	all: games.length,
+	leves: games.filter((g) => g.category === 'leves').length,
+	medios: games.filter((g) => g.category === 'medios').length,
+	grandes: games.filter((g) => g.category === 'grandes').length,
+};
 ---
 
 <section class="section games-section" id="jogar" tabindex="-1" aria-labelledby="games-title">
-	<SectionHeading eyebrow="JOGOS DE TABULEIRO" eyebrowColor="pink" titleId="games-title" title="PASSE" highlight="DA TARDE">Passe da Tarde: SEG · TER · QUA · SEX<br />14h às 18h · por pessoa</SectionHeading>
-	<div class="category-grid">
-		{categories.map((category, index) => (
-			<a class={`category-card ${category.color}`} href="#agenda">
-				<span class="category-number">0{index + 1}</span>
-				<span class="category-icon">{category.icon}</span>
-				<h3>{category.name}</h3>
-				<p>{category.description}</p>
-				<ArrowIcon class="category-arrow" size={24} />
-			</a>
-		))}
+	<SectionHeading
+		eyebrow="JOGOS DE TABULEIRO"
+		eyebrowColor="pink"
+		titleId="games-title"
+		title="TABELA DOS"
+		highlight="BOARDGAMES"
+	>
+		Jogue na loja por período ou por hora. Confira nossos passes, horários e acervo completo abaixo:
+	</SectionHeading>
+
+	<!-- Visual Pricing Board matching the official store reference -->
+	<div class="pricing-board" aria-label="Tabela de preços e passes dos jogos de tabuleiro">
+		<!-- Card Passe da Tarde -->
+		<article class="pricing-card afternoon-card">
+			<div class="card-schedule-header">
+				<span class="schedule-days">{passes.afternoon.days}</span>
+				<span class="schedule-hours">{passes.afternoon.hours}</span>
+			</div>
+			<h3 class="afternoon-title">{passes.afternoon.title}</h3>
+
+			<div class="tiers-list">
+				{passes.afternoon.tiers.map((tier) => (
+					<div class={`tier-row ${tier.color}`}>
+						<div class="tier-info">
+							<span class="tier-name">{tier.name}</span>
+							<span class="tier-desc">{tier.description}</span>
+						</div>
+						<span class="tier-price">{tier.price}</span>
+					</div>
+				))}
+			</div>
+			<p class="afternoon-note">{passes.afternoon.note}</p>
+		</article>
+
+		<!-- Duo cards: Quinta (Dia do Boardgame) & Sábado (Passe de Sábado) -->
+		<div class="pricing-duo">
+			<article class="pricing-card pass-card yellow">
+				<span class="card-tag">{passes.thursday.schedule}</span>
+				<h3 class="pass-title">{passes.thursday.title}</h3>
+				<div class="pass-price-wrap">
+					<span class="pass-price">{passes.thursday.price}</span>
+					<span class="pass-note">{passes.thursday.note}</span>
+				</div>
+			</article>
+
+			<article class="pricing-card pass-card pink">
+				<span class="card-tag">{passes.saturday.schedule}</span>
+				<h3 class="pass-title">{passes.saturday.title}</h3>
+				<div class="pass-price-wrap">
+					<span class="pass-price">{passes.saturday.price}</span>
+					<span class="pass-note">{passes.saturday.note}</span>
+				</div>
+			</article>
+		</div>
+
+		<!-- Card Pegue e Jogue -->
+		<article class="pricing-card hourly-card cyan">
+			<div class="hourly-header">
+				<span class="card-tag">{passes.hourly.schedule}</span>
+			</div>
+			<div class="hourly-body">
+				<div class="hourly-title-group">
+					<h3 class="hourly-title">
+						<span class="icon-box" aria-hidden="true">⚄</span>
+						{passes.hourly.title}
+					</h3>
+					<span class="hourly-note">{passes.hourly.note}</span>
+				</div>
+				<div class="hourly-price-group">
+					<span class="hourly-price">{passes.hourly.price}</span>
+					<span class="hourly-breakdown">R$ / hora (leves · médios · grandes)</span>
+				</div>
+			</div>
+		</article>
+	</div>
+
+	<!-- Games Catalog Showcase -->
+	<div class="catalog-section" id="acervo" aria-labelledby="catalog-title">
+		<div class="catalog-header">
+			<div>
+				<span class="catalog-eyebrow">ACERVO DA LOJA</span>
+				<h3 id="catalog-title" class="catalog-title">JOGOS DISPONÍVEIS</h3>
+			</div>
+
+			<!-- Filter toolbar -->
+			<div class="filter-toolbar" role="toolbar" aria-label="Filtrar jogos por categoria">
+				<button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">
+					Todos <span class="badge-count">({counts.all})</span>
+				</button>
+				<button type="button" class="filter-btn" data-filter="leves" aria-pressed="false">
+					Leves · R$ 10 <span class="badge-count">({counts.leves})</span>
+				</button>
+				<button type="button" class="filter-btn" data-filter="medios" aria-pressed="false">
+					Médios · R$ 13 <span class="badge-count">({counts.medios})</span>
+				</button>
+				<button type="button" class="filter-btn" data-filter="grandes" aria-pressed="false">
+					Grandes · R$ 15 <span class="badge-count">({counts.grandes})</span>
+				</button>
+			</div>
+		</div>
+
+		<!-- Screen reader feedback on filter change -->
+		<p id="filter-status" class="sr-only" aria-live="polite">Mostrando todos os 13 jogos disponíveis.</p>
+
+		<!-- Games Grid -->
+		<div class="games-grid" id="games-grid">
+			{games.map((game) => (
+				<article
+					class="game-card"
+					data-category={game.category}
+					tabindex="0"
+					aria-label={`${game.name}, categoria ${game.categoryName}, passe ${game.price}`}
+				>
+					<div class="game-cover-wrap">
+						<Image
+							src={imageMap[game.image]}
+							alt={`Capa da caixa do jogo ${game.name}`}
+							width={400}
+							height={400}
+							class="game-cover"
+							loading="lazy"
+						/>
+						<span class={`game-badge ${game.category}`}>
+							{game.categoryName} · {game.price}
+						</span>
+					</div>
+
+					<div class="game-details">
+						<h4 class="game-name">{game.name}</h4>
+						<p class="game-publisher">{game.publisher}</p>
+						<div class="game-tags">
+							<span class="game-tag">{game.players}</span>
+							<span class="game-tag highlight">{game.tag}</span>
+						</div>
+					</div>
+				</article>
+			))}
+		</div>
 	</div>
 </section>
 
-<style>
-	.category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-	.category-card { position: relative; min-height: 270px; padding: 27px; border-radius: 29px; color: var(--ink); transition: transform .2s; }
-	.category-card:hover { transform: translateY(-8px) rotate(-1deg); }
-	.category-card.cyan { background: var(--cyan); }
-	.category-card.yellow { background: var(--yellow); }
-	.category-card.pink { background: var(--pink); }
-	.category-number { position: absolute; top: 24px; right: 27px; font-size: 12px; font-weight: 700; }
-	.category-icon { display: block; margin-bottom: 55px; font-size: 43px; }
-	.category-card h3 { margin-bottom: 8px; font-family: 'Archivo Black', sans-serif; font-size: 33px; letter-spacing: -1px; }
-	.category-card p { margin-bottom: 0; max-width: 180px; font-size: 13px; font-weight: 600; line-height: 1.4; }
-	:global(.category-arrow) { position: absolute; right: 27px; bottom: 24px; width: 16px; height: 16px; }
+<script>
+	const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+	const gameCards = document.querySelectorAll<HTMLElement>('.game-card');
+	const filterStatus = document.getElementById('filter-status');
 
+	filterButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const targetFilter = btn.dataset.filter || 'all';
+
+			filterButtons.forEach((b) => {
+				const isCurrent = b === btn;
+				b.classList.toggle('active', isCurrent);
+				b.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
+			});
+
+			let visibleCount = 0;
+			gameCards.forEach((card) => {
+				const cardCat = card.dataset.category;
+				const shouldShow = targetFilter === 'all' || cardCat === targetFilter;
+				card.classList.toggle('hidden', !shouldShow);
+				if (shouldShow) visibleCount++;
+			});
+
+			if (filterStatus) {
+				const label = btn.textContent?.trim().replace(/\s+/g, ' ') || targetFilter;
+				filterStatus.textContent = `Mostrando ${visibleCount} jogos para o filtro ${label}.`;
+			}
+		});
+	});
+</script>
+
+<style>
+	.games-section {
+		display: flex;
+		flex-direction: column;
+		gap: 48px;
+	}
+
+	/* Pricing Board layout */
+	.pricing-board {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+
+	.pricing-card {
+		position: relative;
+		border-radius: 24px;
+		padding: 28px 32px;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.pricing-card:hover {
+		transform: translateY(-4px);
+	}
+
+	/* Afternoon Pass (Dark styled card matching reference) */
+	.afternoon-card {
+		background: #12131a;
+		border: 2px solid rgba(255, 255, 255, 0.12);
+		color: #ffffff;
+	}
+
+	.card-schedule-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 8px;
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.5px;
+	}
+
+	.schedule-days {
+		color: var(--cyan);
+	}
+
+	.schedule-hours {
+		color: var(--yellow);
+	}
+
+	.afternoon-title {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 28px;
+		letter-spacing: -0.5px;
+		margin: 0 0 24px 0;
+		color: #ffffff;
+		text-transform: uppercase;
+	}
+
+	.tiers-list {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.tier-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 14px 20px;
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.04);
+		border-left: 6px solid transparent;
+		transition: background 0.2s ease;
+	}
+
+	.tier-row:hover {
+		background: rgba(255, 255, 255, 0.08);
+	}
+
+	.tier-row.cyan {
+		border-left-color: var(--cyan);
+	}
+	.tier-row.yellow {
+		border-left-color: var(--yellow);
+	}
+	.tier-row.pink {
+		border-left-color: var(--pink);
+	}
+
+	.tier-info {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.tier-name {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 20px;
+		letter-spacing: 0.5px;
+		text-transform: uppercase;
+	}
+
+	.tier-row.cyan .tier-name {
+		color: var(--cyan);
+	}
+	.tier-row.yellow .tier-name {
+		color: var(--yellow);
+	}
+	.tier-row.pink .tier-name {
+		color: var(--pink);
+	}
+
+	.tier-desc {
+		font-size: 13px;
+		color: rgba(255, 255, 255, 0.7);
+		font-weight: 500;
+	}
+
+	.tier-price {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 32px;
+		letter-spacing: -1px;
+		color: #ffffff;
+	}
+
+	.afternoon-note {
+		margin: 16px 4px 0 0;
+		text-align: right;
+		font-size: 12px;
+		font-weight: 600;
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	/* Pricing Duo (Yellow & Pink Cards) */
+	.pricing-duo {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 20px;
+	}
+
+	.pass-card {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		min-height: 200px;
+		color: var(--ink);
+	}
+
+	.pass-card.yellow {
+		background: var(--yellow);
+	}
+
+	.pass-card.pink {
+		background: var(--pink);
+	}
+
+	.card-tag {
+		font-size: 12px;
+		font-weight: 800;
+		letter-spacing: 0.5px;
+		text-transform: uppercase;
+		opacity: 0.85;
+	}
+
+	.pass-title {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 30px;
+		letter-spacing: -1px;
+		line-height: 1.1;
+		margin: 12px 0;
+		text-transform: uppercase;
+	}
+
+	.pass-price-wrap {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.pass-price {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 44px;
+		line-height: 1;
+		letter-spacing: -2px;
+	}
+
+	.pass-note {
+		font-size: 13px;
+		font-weight: 700;
+		opacity: 0.8;
+	}
+
+	/* Hourly Pegue e Jogue Card */
+	.hourly-card.cyan {
+		background: var(--cyan);
+		color: var(--ink);
+	}
+
+	.hourly-body {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		margin-top: 12px;
+		gap: 20px;
+	}
+
+	.hourly-title-group {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.hourly-title {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 32px;
+		margin: 0;
+		letter-spacing: -1px;
+		text-transform: uppercase;
+	}
+
+	.icon-box {
+		font-size: 30px;
+		line-height: 1;
+	}
+
+	.hourly-note {
+		font-size: 14px;
+		font-weight: 700;
+		opacity: 0.85;
+	}
+
+	.hourly-price-group {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 4px;
+	}
+
+	.hourly-price {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 38px;
+		line-height: 1;
+		letter-spacing: -1px;
+	}
+
+	.hourly-breakdown {
+		font-size: 11px;
+		font-weight: 700;
+		opacity: 0.75;
+		text-transform: uppercase;
+	}
+
+	/* Games Catalog Section */
+	.catalog-section {
+		margin-top: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 28px;
+	}
+
+	.catalog-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		flex-wrap: wrap;
+		gap: 20px;
+	}
+
+	.catalog-eyebrow {
+		display: block;
+		font-size: 12px;
+		font-weight: 800;
+		letter-spacing: 2px;
+		color: var(--yellow);
+		text-transform: uppercase;
+		margin-bottom: 4px;
+	}
+
+	.catalog-title {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 32px;
+		letter-spacing: -1px;
+		margin: 0;
+		color: #ffffff;
+	}
+
+	/* Filter Buttons */
+	.filter-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.filter-btn {
+		background: #171923;
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		color: #e0e0e0;
+		padding: 8px 16px;
+		border-radius: 999px;
+		font-family: 'Poppins', sans-serif;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+	}
+
+	.filter-btn:hover {
+		border-color: rgba(255, 255, 255, 0.4);
+		transform: translateY(-2px);
+	}
+
+	.filter-btn:focus-visible {
+		outline: 2px solid var(--yellow);
+		outline-offset: 2px;
+	}
+
+	.filter-btn.active {
+		background: var(--yellow);
+		color: var(--ink);
+		border-color: var(--yellow);
+		font-weight: 700;
+	}
+
+	.badge-count {
+		font-size: 11px;
+		opacity: 0.8;
+	}
+
+	/* Games Grid */
+	.games-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: 24px;
+	}
+
+	.game-card {
+		background: #171923;
+		border: 2px solid rgba(255, 255, 255, 0.08);
+		border-radius: 20px;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.game-card:hover,
+	.game-card:focus-visible {
+		transform: translateY(-6px);
+		border-color: rgba(255, 255, 255, 0.3);
+		box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+	}
+
+	.game-card:focus-visible {
+		outline: 2px solid var(--cyan);
+		outline-offset: 2px;
+	}
+
+	.game-card.hidden {
+		display: none;
+	}
+
+	.game-cover-wrap {
+		position: relative;
+		width: 100%;
+		height: 220px;
+		background: #0f1016;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 20px;
+		overflow: hidden;
+	}
+
+	.game-cover {
+		max-width: 100%;
+		max-height: 100%;
+		width: auto;
+		height: auto;
+		object-fit: contain;
+		filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+		transition: transform 0.25s ease;
+	}
+
+	.game-card:hover .game-cover {
+		transform: scale(1.05);
+	}
+
+	.game-badge {
+		position: absolute;
+		top: 12px;
+		right: 12px;
+		font-size: 11px;
+		font-weight: 800;
+		padding: 4px 10px;
+		border-radius: 999px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: var(--ink);
+	}
+
+	.game-badge.leves {
+		background: var(--cyan);
+	}
+
+	.game-badge.medios {
+		background: var(--yellow);
+	}
+
+	.game-badge.grandes {
+		background: var(--pink);
+	}
+
+	.game-details {
+		padding: 20px;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		gap: 8px;
+	}
+
+	.game-name {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 19px;
+		letter-spacing: -0.5px;
+		margin: 0;
+		color: #ffffff;
+		line-height: 1.2;
+	}
+
+	.game-publisher {
+		font-size: 12px;
+		font-weight: 600;
+		color: rgba(255, 255, 255, 0.55);
+		margin: 0 0 6px 0;
+	}
+
+	.game-tags {
+		margin-top: auto;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	.game-tag {
+		font-size: 11px;
+		font-weight: 600;
+		padding: 4px 8px;
+		border-radius: 6px;
+		background: rgba(255, 255, 255, 0.08);
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	.game-tag.highlight {
+		background: rgba(0, 229, 255, 0.12);
+		color: var(--cyan);
+	}
+
+	/* Screen-reader utility */
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	/* Responsive breakpoints */
 	@media (max-width: 800px) {
-		.category-grid { grid-template-columns: 1fr; }
-		.category-card { min-height: 210px; }
-		.category-icon { margin-bottom: 24px; }
+		.pricing-duo {
+			grid-template-columns: 1fr;
+		}
+
+		.hourly-body {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 12px;
+		}
+
+		.hourly-price-group {
+			align-items: flex-start;
+		}
+
+		.tier-row {
+			padding: 12px 14px;
+		}
+
+		.tier-name {
+			font-size: 17px;
+		}
+
+		.tier-price {
+			font-size: 26px;
+		}
+
+		.pass-title,
+		.afternoon-title,
+		.hourly-title {
+			font-size: 24px;
+		}
+
+		.catalog-header {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.filter-toolbar {
+			width: 100%;
+		}
+
+		.games-grid {
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+			gap: 16px;
+		}
+
+		.game-cover-wrap {
+			height: 180px;
+		}
 	}
 </style>

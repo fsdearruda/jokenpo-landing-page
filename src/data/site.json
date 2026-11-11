@@ -10,7 +10,7 @@
     {
       "number": "01",
       "title": "Pegue e jogue",
-      "description": "SEG · TER · QUA · SEX<br />18h30 às 22h · por jogo/hora",
+      "description": "SEG · TER · QUA · SEX<br />18h30 às 22h · 12 · 15 · 20 por hora",
       "color": "cyan"
     },
     {
@@ -90,24 +90,230 @@
       "closed": true
     }
   ],
+  "boardgamePasses": {
+    "afternoon": {
+      "title": "Passe da Tarde de Jogos",
+      "days": "SEG, TER, QUA E SEX",
+      "hours": "14h às 18h",
+      "note": "por pessoa",
+      "tiers": [
+        {
+          "id": "leves",
+          "name": "Leves",
+          "price": "R$ 10",
+          "description": "Partidas rápidas",
+          "color": "cyan",
+          "icon": "✦"
+        },
+        {
+          "id": "medios",
+          "name": "Médios",
+          "price": "R$ 13",
+          "description": "Blefe, cartas e cooperativos",
+          "color": "yellow",
+          "icon": "◆"
+        },
+        {
+          "id": "grandes",
+          "name": "Grandes",
+          "price": "R$ 15",
+          "description": "Estratégia e partidas longas",
+          "color": "pink",
+          "icon": "●"
+        }
+      ]
+    },
+    "thursday": {
+      "title": "Dia do Boardgame",
+      "schedule": "QUINTA · ALL DAY",
+      "price": "R$ 20",
+      "note": "por pessoa · o dia todo",
+      "color": "yellow"
+    },
+    "saturday": {
+      "title": "Passe de Sábado",
+      "schedule": "SÁBADO · ALL DAY",
+      "price": "R$ 30",
+      "note": "por pessoa · o dia todo",
+      "color": "pink"
+    },
+    "hourly": {
+      "title": "Pegue e Jogue",
+      "schedule": "SEG, TER, QUA E SEX · 18H30 ÀS 22H",
+      "price": "12 · 15 · 20",
+      "note": "aluguel de jogo por hora",
+      "color": "cyan"
+    }
+  },
   "boardgameCategories": [
     {
+      "id": "leves",
       "name": "Leves",
-      "description": "R$ 10 no Passe da Tarde",
+      "price": "R$ 10",
+      "description": "Partidas rápidas",
       "color": "cyan",
       "icon": "✦"
     },
     {
+      "id": "medios",
       "name": "Médios",
-      "description": "R$ 13 no Passe da Tarde",
+      "price": "R$ 13",
+      "description": "Blefe, cartas e cooperativos",
       "color": "yellow",
       "icon": "◆"
     },
     {
+      "id": "grandes",
       "name": "Grandes",
-      "description": "R$ 15 no Passe da Tarde",
+      "price": "R$ 15",
+      "description": "Estratégia e partidas longas",
       "color": "pink",
       "icon": "●"
+    }
+  ],
+  "boardgames": [
+    {
+      "id": "uno",
+      "name": "Uno",
+      "category": "leves",
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "publisher": "Mattel",
+      "tag": "Partidas rápidas",
+      "players": "2–10 jogadores",
+      "image": "uno.jpg"
+    },
+    {
+      "id": "taco",
+      "name": "Taco Gato Cabra Queijo Pizza",
+      "category": "leves",
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "publisher": "PaperGames",
+      "tag": "Agilidade e reflexo",
+      "players": "2–8 jogadores",
+      "image": "taco.png"
+    },
+    {
+      "id": "knock-knock-dungeon",
+      "name": "Knock Knock Dungeon",
+      "category": "leves",
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "publisher": "PaperGames",
+      "tag": "Cooperativo e tempo real",
+      "players": "1–4 jogadores",
+      "image": "knock-knock-dungeon.png"
+    },
+    {
+      "id": "nem-a-pato",
+      "name": "Nem a Pato!",
+      "category": "leves",
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "publisher": "Grok Games",
+      "tag": "Trivia e blefe",
+      "players": "2–10 jogadores",
+      "image": "nem-a-pato.png"
+    },
+    {
+      "id": "nao-testamos-esse-troco",
+      "name": "Não Testamos Esse Troço",
+      "category": "leves",
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "publisher": "Buró Brasil",
+      "tag": "Caos e risadas",
+      "players": "2–17 jogadores",
+      "image": "nao-testamos-esse-troco.jpg"
+    },
+    {
+      "id": "nao-pode-2",
+      "name": "Não Pode 2",
+      "category": "leves",
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "publisher": "Party Games",
+      "tag": "Palavras proibidas",
+      "players": "2–12 jogadores",
+      "image": "nao-pode-2.png"
+    },
+    {
+      "id": "bang",
+      "name": "Bang!",
+      "category": "medios",
+      "categoryName": "Médios",
+      "price": "R$ 13",
+      "publisher": "Galápagos / dV Giochi",
+      "tag": "Faroeste e papéis secretos",
+      "players": "4–7 jogadores",
+      "image": "bang.png"
+    },
+    {
+      "id": "coup",
+      "name": "Coup",
+      "category": "medios",
+      "categoryName": "Médios",
+      "price": "R$ 13",
+      "publisher": "Grok Games",
+      "tag": "Blefe e dedução",
+      "players": "2–6 jogadores",
+      "image": "coup.png"
+    },
+    {
+      "id": "sky-team",
+      "name": "Sky Team",
+      "category": "medios",
+      "categoryName": "Médios",
+      "price": "R$ 13",
+      "publisher": "Galápagos / Le Scorpion Masqué",
+      "tag": "Cooperativo tenso para 2",
+      "players": "2 jogadores",
+      "image": "sky-team.jpg"
+    },
+    {
+      "id": "exploding-kittens",
+      "name": "Exploding Kittens",
+      "category": "medios",
+      "categoryName": "Médios",
+      "price": "R$ 13",
+      "publisher": "Galápagos / Exploding Kittens",
+      "tag": "Roleta-russa felina",
+      "players": "2–5 jogadores",
+      "image": "exploding-kittens.png"
+    },
+    {
+      "id": "catan",
+      "name": "Catan",
+      "category": "grandes",
+      "categoryName": "Grandes",
+      "price": "R$ 15",
+      "publisher": "Devir Brasil",
+      "tag": "Estratégia e negociação",
+      "players": "3–4 jogadores",
+      "image": "catan.png"
+    },
+    {
+      "id": "ticket-to-ride",
+      "name": "Ticket to Ride",
+      "category": "grandes",
+      "categoryName": "Grandes",
+      "price": "R$ 15",
+      "publisher": "Galápagos / Days of Wonder",
+      "tag": "Construção de rotas",
+      "players": "2–5 jogadores",
+      "image": "ticket-to-ride.jpg"
+    },
+    {
+      "id": "zombicide",
+      "name": "Zombicide",
+      "category": "grandes",
+      "categoryName": "Grandes",
+      "price": "R$ 15",
+      "publisher": "Galápagos / CMON",
+      "tag": "Sobrevivência cooperativa",
+      "players": "1–6 jogadores",
+      "image": "zombicide.jpg"
     }
   ],
   "location": {
