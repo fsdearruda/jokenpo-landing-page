@@ -3,6 +3,8 @@ import { Image } from 'astro:assets';
 import siteData from '../data/site.json';
 import ArrowIcon from '../components/ArrowIcon.astro';
 
+export const prerender = true;
+
 const categories = siteData.boardgameCategories;
 const agenda = siteData.agenda;
 
