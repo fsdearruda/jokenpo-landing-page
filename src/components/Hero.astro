@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import siteData from '../data/site.json';
 import ArrowIcon from './ArrowIcon.astro';
 
@@ -17,8 +18,8 @@ const { hero } = siteData;
 		</div>
 	</div>
 	<div class="hero-stage" aria-hidden="true">
-		<div class="burst burst-one"><img src="/Vetor/brilho-rosa.svg" alt="" width="47" height="47" /></div>
-		<div class="burst burst-two"><img src="/Vetor/brilho-preto.svg" alt="" width="32" height="32" /></div>
+		<div class="burst burst-one"><Image src="/Vetor/brilho-rosa.svg" alt="" width={47} height={47} loading="eager" /></div>
+		<div class="burst burst-two"><Image src="/Vetor/brilho-preto.svg" alt="" width={32} height={32} loading="eager" /></div>
 		<div class="card-back card-back-main">
 			<div class="card-inner">
 				<div class="card-symbol">✦</div>
@@ -30,7 +31,7 @@ const { hero } = siteData;
 			<div class="mini-card-suit">♠</div>
 			<span>PLAY<br />YOUR<br />WAY</span>
 		</div>
-		<img class="hero-mascot" src="/Vetor/coelho-creme.svg" alt="" width="112" height="126" />
+		<Image class="hero-mascot" src="/Vetor/coelho-creme.svg" alt="" width={112} height={126} loading="eager" />
 		<div class="die">20</div>
 		<div class="sticker">BORA<br /><em>JOGAR?</em></div>
 	</div>

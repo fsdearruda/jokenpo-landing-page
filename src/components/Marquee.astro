@@ -1,7 +1,11 @@
+---
+import { Image } from 'astro:assets';
+---
+
 <section class="marquee" aria-label="RPG, TCG, board games e torneios">
 	<div class="marquee-track">
-		<img src="/Vetor/faixa-categorias.svg" alt="RPG, TCG, board games e torneios" width="675" height="44" loading="lazy" />
-		<img src="/Vetor/faixa-categorias.svg" alt="" width="675" height="44" loading="lazy" aria-hidden="true" />
+		<Image src="/Vetor/faixa-categorias.svg" alt="RPG, TCG, board games e torneios" width={675} height={44} loading="lazy" />
+		<Image src="/Vetor/faixa-categorias.svg" alt="" width={675} height={44} loading="lazy" aria-hidden="true" />
 	</div>
 	<button class="marquee-toggle" type="button" aria-pressed="false">Pausar movimento</button>
 </section>
