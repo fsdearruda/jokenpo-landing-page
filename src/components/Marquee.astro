@@ -30,21 +30,7 @@ const items = Array.from({ length: 6 });
 			))}
 		</div>
 	</div>
-	<button class="marquee-toggle" type="button" aria-pressed="false">Pausar movimento</button>
 </section>
-
-<script>
-	const marquee = document.querySelector('.marquee');
-	const marqueeToggle = document.querySelector('.marquee-toggle');
-
-	if (marquee instanceof HTMLElement && marqueeToggle instanceof HTMLButtonElement) {
-		marqueeToggle.addEventListener('click', () => {
-			const isPaused = marquee.classList.toggle('is-paused');
-			marqueeToggle.setAttribute('aria-pressed', String(isPaused));
-			marqueeToggle.textContent = isPaused ? 'Retomar movimento' : 'Pausar movimento';
-		});
-	}
-</script>
 
 <style>
 	.marquee {
@@ -63,7 +49,6 @@ const items = Array.from({ length: 6 });
 			animation: slide 120s linear infinite;
 		}
 	}
-	.marquee.is-paused .marquee-track { animation-play-state: paused; }
 	.marquee-group {
 		display: flex;
 		align-items: center;
@@ -76,21 +61,4 @@ const items = Array.from({ length: 6 });
 		flex: none;
 	}
 	@keyframes slide { to { transform: translateX(-50%); } }
-	.marquee-toggle {
-		position: absolute;
-		top: 8px;
-		right: 24px;
-		padding: 6px 10px;
-		border: 1px solid var(--mist);
-		border-radius: 999px;
-		background: var(--ink);
-		color: var(--white);
-		font: inherit;
-		font-size: 10px;
-		font-weight: 700;
-		cursor: pointer;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.marquee-toggle { display: none; }
-	}
 </style>
