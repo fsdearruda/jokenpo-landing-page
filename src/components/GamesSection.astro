@@ -131,16 +131,16 @@ const counts = {
 
 			<!-- Filter toolbar -->
 			<div class="filter-toolbar" role="toolbar" aria-label="Filtrar jogos por categoria">
-				<button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">
+				<button type="button" class="filter-btn all active" data-filter="all" aria-pressed="true">
 					Todos <span class="badge-count">({counts.all})</span>
 				</button>
-				<button type="button" class="filter-btn" data-filter="leves" aria-pressed="false">
+				<button type="button" class="filter-btn leves" data-filter="leves" aria-pressed="false">
 					Leves · R$ 10 <span class="badge-count">({counts.leves})</span>
 				</button>
-				<button type="button" class="filter-btn" data-filter="medios" aria-pressed="false">
+				<button type="button" class="filter-btn medios" data-filter="medios" aria-pressed="false">
 					Médios · R$ 13 <span class="badge-count">({counts.medios})</span>
 				</button>
-				<button type="button" class="filter-btn" data-filter="grandes" aria-pressed="false">
+				<button type="button" class="filter-btn grandes" data-filter="grandes" aria-pressed="false">
 					Grandes · R$ 15 <span class="badge-count">({counts.grandes})</span>
 				</button>
 			</div>
@@ -611,38 +611,117 @@ const counts = {
 	}
 
 	.filter-btn {
-		background: #171923;
-		border: 1px solid rgba(255, 255, 255, 0.15);
+		background: rgba(255, 255, 255, 0.04);
+		border: 2px solid rgba(255, 255, 255, 0.2);
 		color: #e0e0e0;
-		padding: 8px 16px;
+		padding: 8px 18px;
 		border-radius: 999px;
 		font-family: 'Poppins', sans-serif;
 		font-size: 13px;
-		font-weight: 600;
+		font-weight: 700;
 		cursor: pointer;
-		transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+		transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 	}
 
 	.filter-btn:hover {
-		border-color: rgba(255, 255, 255, 0.4);
 		transform: translateY(-2px);
 	}
 
-	.filter-btn:focus-visible {
+	.filter-btn:active {
+		transform: scale(0.97);
+	}
+
+	/* Todos (neutral white border) */
+	.filter-btn.all {
+		border-color: rgba(255, 255, 255, 0.35);
+		color: #ffffff;
+	}
+	.filter-btn.all:hover {
+		border-color: #ffffff;
+		background: rgba(255, 255, 255, 0.12);
+	}
+	.filter-btn.all:focus-visible {
+		outline: 2px solid #ffffff;
+		outline-offset: 2px;
+	}
+	.filter-btn.all.active {
+		background: #ffffff;
+		border-color: #ffffff;
+		color: var(--ink);
+		box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+	}
+
+	/* Leves (Cyan outline -> fills with cyan) */
+	.filter-btn.leves {
+		border-color: var(--cyan);
+		color: var(--cyan);
+		background: rgba(0, 200, 255, 0.06);
+	}
+	.filter-btn.leves:hover {
+		background: rgba(0, 200, 255, 0.16);
+		box-shadow: 0 4px 12px rgba(0, 200, 255, 0.2);
+	}
+	.filter-btn.leves:focus-visible {
+		outline: 2px solid var(--cyan);
+		outline-offset: 2px;
+	}
+	.filter-btn.leves.active {
+		background: var(--cyan);
+		border-color: var(--cyan);
+		color: var(--ink);
+		box-shadow: 0 4px 14px rgba(0, 200, 255, 0.4);
+	}
+
+	/* Médios (Yellow outline -> fills with yellow) */
+	.filter-btn.medios {
+		border-color: var(--yellow);
+		color: var(--yellow);
+		background: rgba(255, 212, 0, 0.06);
+	}
+	.filter-btn.medios:hover {
+		background: rgba(255, 212, 0, 0.16);
+		box-shadow: 0 4px 12px rgba(255, 212, 0, 0.2);
+	}
+	.filter-btn.medios:focus-visible {
 		outline: 2px solid var(--yellow);
 		outline-offset: 2px;
 	}
-
-	.filter-btn.active {
+	.filter-btn.medios.active {
 		background: var(--yellow);
-		color: var(--ink);
 		border-color: var(--yellow);
-		font-weight: 700;
+		color: var(--ink);
+		box-shadow: 0 4px 14px rgba(255, 212, 0, 0.4);
+	}
+
+	/* Grandes (Pink outline -> fills with pink) */
+	.filter-btn.grandes {
+		border-color: var(--pink);
+		color: var(--pink);
+		background: rgba(255, 62, 165, 0.06);
+	}
+	.filter-btn.grandes:hover {
+		background: rgba(255, 62, 165, 0.16);
+		box-shadow: 0 4px 12px rgba(255, 62, 165, 0.2);
+	}
+	.filter-btn.grandes:focus-visible {
+		outline: 2px solid var(--pink);
+		outline-offset: 2px;
+	}
+	.filter-btn.grandes.active {
+		background: var(--pink);
+		border-color: var(--pink);
+		color: var(--ink);
+		box-shadow: 0 4px 14px rgba(255, 62, 165, 0.4);
 	}
 
 	.badge-count {
 		font-size: 11px;
-		opacity: 0.8;
+		opacity: 0.85;
+		font-weight: 700;
+	}
+
+	.filter-btn.active .badge-count {
+		opacity: 0.9;
 	}
 
 	/* Games Grid */
