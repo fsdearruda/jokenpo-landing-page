@@ -1,8 +1,15 @@
 ---
 import siteData from '../data/site.json';
+import ArrowIcon from './ArrowIcon.astro';
 import SectionHeading from './SectionHeading.astro';
 
 const { howItWorks } = siteData;
+
+const symbols: Record<string, string> = {
+	cyan: '✦',
+	yellow: '◆',
+	pink: '●',
+};
 ---
 
 <section class="section how-it-works-section" id="como-funciona" tabindex="-1" aria-labelledby="how-it-works-title">
@@ -19,133 +26,245 @@ const { howItWorks } = siteData;
 	<div class="steps-grid">
 		{howItWorks.steps.map((step) => (
 			<article class={`step-card step-${step.color}`}>
+				<span class="step-bg-number" aria-hidden="true">{step.number}</span>
 				<div class="step-header">
-					<span class="step-number">{step.number}</span>
-					<span class="step-pill">Passo {step.number}</span>
+					<span class="step-kicker">PASSO {step.number}</span>
+					<span class="step-symbol" aria-hidden="true">{symbols[step.color] ?? '✦'}</span>
 				</div>
 				<h3 class="step-title">{step.title}</h3>
 				<p class="step-desc">{step.description}</p>
+				<div class="step-footer" aria-hidden="true">
+					<span class="step-line"></span>
+					<ArrowIcon direction="right" size={16} class="step-arrow" />
+				</div>
 			</article>
 		))}
 	</div>
 </section>
 
 <style>
-	.how-it-works-section {
-		display: flex;
-		flex-direction: column;
-		gap: 36px;
+	/* No mobile vale o espaçamento padrão de `.section`. */
+	@media (width > 800px) {
+		.how-it-works-section {
+			padding-top: 90px;
+			padding-bottom: 60px;
+		}
 	}
 
 	.steps-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 24px;
+		gap: 22px;
 	}
 
 	.step-card {
 		position: relative;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		padding: 32px 28px;
-		border-radius: 24px;
-		background: #171923;
-		border: 2px solid rgba(255, 255, 255, 0.08);
-		color: #ffffff;
-		transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-	}
-
-	.step-card:hover {
-		transform: translateY(-6px);
-		box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+		min-height: 250px;
+		padding: 28px 26px 24px;
+		border-radius: 22px;
+		background: var(--ink-2);
+		border: 3px solid var(--ink-3);
+		color: var(--white);
+		box-shadow: 8px 8px 0 var(--ink-2);
+		transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 	}
 
 	.step-card.step-cyan {
-		border-top: 5px solid var(--cyan);
-	}
-	.step-card.step-cyan:hover {
 		border-color: var(--cyan);
+		box-shadow: 8px 8px 0 var(--cyan);
 	}
 
 	.step-card.step-yellow {
-		border-top: 5px solid var(--yellow);
-	}
-	.step-card.step-yellow:hover {
 		border-color: var(--yellow);
+		box-shadow: 8px 8px 0 var(--yellow);
 	}
 
 	.step-card.step-pink {
-		border-top: 5px solid var(--pink);
-	}
-	.step-card.step-pink:hover {
 		border-color: var(--pink);
+		box-shadow: 8px 8px 0 var(--pink);
+	}
+
+	.step-card:hover {
+		transform: translateY(-6px) rotate(-1deg);
+	}
+
+	.step-card.step-yellow:hover {
+		transform: translateY(-6px) rotate(1deg);
+	}
+
+	.step-bg-number {
+		position: absolute;
+		right: -8px;
+		bottom: -18px;
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 120px;
+		line-height: 0.8;
+		letter-spacing: -6px;
+		color: transparent;
+		opacity: 0.14;
+		pointer-events: none;
+		user-select: none;
+		-webkit-text-stroke: 2px var(--white);
+	}
+
+	.step-card.step-cyan .step-bg-number {
+		-webkit-text-stroke-color: var(--cyan);
+	}
+
+	.step-card.step-yellow .step-bg-number {
+		-webkit-text-stroke-color: var(--yellow);
+	}
+
+	.step-card.step-pink .step-bg-number {
+		-webkit-text-stroke-color: var(--pink);
 	}
 
 	.step-header {
+		position: relative;
+		z-index: 1;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 24px;
 	}
 
-	.step-number {
-		font-family: 'Archivo Black', sans-serif;
-		font-size: 32px;
-		line-height: 1;
-		color: rgba(255, 255, 255, 0.25);
-		letter-spacing: -1px;
+	.step-kicker {
+		display: inline-flex;
+		align-items: center;
+		padding: 5px 12px;
+		border-radius: 999px;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		color: var(--ink);
 	}
 
-	.step-card.step-cyan .step-number {
+	.step-card.step-cyan .step-kicker {
+		background: var(--cyan);
+	}
+
+	.step-card.step-yellow .step-kicker {
+		background: var(--yellow);
+	}
+
+	.step-card.step-pink .step-kicker {
+		background: var(--pink);
+	}
+
+	.step-symbol {
+		display: grid;
+		width: 34px;
+		height: 34px;
+		place-items: center;
+		border: 2px solid var(--ink-3);
+		border-radius: 50%;
+		font-size: 16px;
+		line-height: 1;
+	}
+
+	.step-card.step-cyan .step-symbol {
+		border-color: var(--cyan);
 		color: var(--cyan);
 	}
-	.step-card.step-yellow .step-number {
+
+	.step-card.step-yellow .step-symbol {
+		border-color: var(--yellow);
 		color: var(--yellow);
 	}
-	.step-card.step-pink .step-number {
+
+	.step-card.step-pink .step-symbol {
+		border-color: var(--pink);
 		color: var(--pink);
 	}
 
-	.step-pill {
-		font-size: 11px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 1px;
-		padding: 4px 10px;
-		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.08);
-		color: rgba(255, 255, 255, 0.7);
-	}
-
 	.step-title {
+		position: relative;
+		z-index: 1;
 		font-family: 'Archivo Black', sans-serif;
-		font-size: 22px;
-		line-height: 1.2;
-		letter-spacing: -0.5px;
+		font-size: 26px;
+		line-height: 0.98;
+		letter-spacing: -1px;
+		text-transform: uppercase;
 		margin: 0 0 12px 0;
-		color: #ffffff;
+		color: var(--white);
 	}
 
 	.step-desc {
+		position: relative;
+		z-index: 1;
 		font-size: 13px;
-		font-weight: 500;
-		line-height: 1.6;
-		color: rgba(255, 255, 255, 0.75);
-		margin: 0;
+		font-weight: 600;
+		line-height: 1.55;
+		color: var(--mist);
+		margin: 0 0 22px 0;
+		max-width: 34ch;
+	}
+
+	.step-footer {
+		position: relative;
+		z-index: 1;
+		margin-top: auto;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.step-line {
+		height: 2px;
+		width: 36px;
+		background: var(--ink-3);
+		transition: width 0.2s ease;
+	}
+
+	.step-card:hover .step-line {
+		width: 58px;
+	}
+
+	.step-card.step-cyan .step-line,
+	.step-card.step-cyan :global(.step-arrow) {
+		color: var(--cyan);
+	}
+	.step-card.step-cyan .step-line {
+		background: var(--cyan);
+	}
+
+	.step-card.step-yellow .step-line,
+	.step-card.step-yellow :global(.step-arrow) {
+		color: var(--yellow);
+	}
+	.step-card.step-yellow .step-line {
+		background: var(--yellow);
+	}
+
+	.step-card.step-pink .step-line,
+	.step-card.step-pink :global(.step-arrow) {
+		color: var(--pink);
+	}
+	.step-card.step-pink .step-line {
+		background: var(--pink);
 	}
 
 	@media (max-width: 800px) {
 		.steps-grid {
 			grid-template-columns: 1fr;
-			gap: 16px;
+			gap: 22px;
 		}
 
 		.step-card {
-			padding: 24px;
+			min-height: auto;
+			padding: 24px 22px;
 		}
 
 		.step-title {
-			font-size: 20px;
+			font-size: 23px;
+		}
+
+		.step-desc {
+			max-width: none;
 		}
 	}
 </style>

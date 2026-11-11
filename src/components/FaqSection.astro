@@ -1,132 +1,323 @@
 ---
+import { Image } from 'astro:assets';
 import siteData from '../data/site.json';
-import SectionHeading from './SectionHeading.astro';
+import ArrowIcon from './ArrowIcon.astro';
 
 const { faq } = siteData;
+const colors = ['cyan', 'yellow', 'pink'];
 ---
 
 <section class="section faq-section" id="duvidas" tabindex="-1" aria-labelledby="faq-title">
-	<SectionHeading
-		eyebrow="TIRE SUAS DÚVIDAS"
-		eyebrowColor="yellow"
-		titleId="faq-title"
-		title="PERGUNTAS"
-		highlight="FREQUENTES"
-	>
-		Tudo o que você precisa saber antes de colar na loja para jogar:
-	</SectionHeading>
+	<div class="faq-intro">
+		<p class="eyebrow yellow-text">TIRE SUAS DÚVIDAS</p>
+		<h2 id="faq-title">PERGUNTAS<br /><span>FREQUENTES</span></h2>
+		<p class="faq-lead">
+			Tudo o que você precisa saber antes de colar na loja para jogar com a galera:
+		</p>
+
+		<div class="faq-sticker-card">
+			<div class="sticker-top">
+				<span class="sticker-kicker">ATENDIMENTO DIRETO</span>
+				<Image class="sticker-mascot" src="/Vetor/coelho-creme.svg" alt="" width={58} height={65} loading="lazy" />
+			</div>
+			<p class="sticker-title">AINDA FICOU<br /><strong>COM DÚVIDA?</strong></p>
+			<p class="sticker-desc">Chama a gente no WhatsApp que a equipe responde rapidinho.</p>
+			<a
+				class="button button-pink sticker-btn"
+				href="https://wa.me/5584987655623?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20Jokenp%C3%B4"
+				target="_blank"
+				rel="noreferrer"
+			>
+				Chamar no WhatsApp <ArrowIcon size={15} />
+			</a>
+		</div>
+	</div>
 
 	<div class="faq-list" role="region" aria-label="Lista de perguntas frequentes">
-		{faq.map((item) => (
-			<details class="faq-item">
-				<summary class="faq-summary">
-					<span class="faq-question-text">{item.question}</span>
-					<span class="faq-toggle-icon" aria-hidden="true">+</span>
-				</summary>
-				<div class="faq-content">
-					<p>{item.answer}</p>
-				</div>
-			</details>
-		))}
+		{faq.map((item, index) => {
+			const accent = colors[index % colors.length];
+			const num = String(index + 1).padStart(2, '0');
+			return (
+				<details class={`faq-item accent-${accent}`}>
+					<summary class="faq-summary">
+						<span class="faq-num" aria-hidden="true">{num}</span>
+						<span class="faq-question-text">{item.question}</span>
+						<span class="faq-toggle-icon" aria-hidden="true">+</span>
+					</summary>
+					<div class="faq-content">
+						<p>{item.answer}</p>
+					</div>
+				</details>
+			);
+		})}
 	</div>
 </section>
 
 <style>
-	.faq-section {
-		display: flex;
-		flex-direction: column;
-		gap: 36px;
+	/* No mobile vale o espaçamento padrão de `.section`. */
+	@media (width > 800px) {
+		.faq-section {
+			padding-top: 90px;
+			padding-bottom: 100px;
+		}
 	}
 
+	.faq-section {
+		display: grid;
+		grid-template-columns: 380px 1fr;
+		gap: 56px;
+		align-items: start;
+	}
+
+	.faq-intro h2 {
+		margin-bottom: 20px;
+	}
+
+	.faq-lead {
+		margin: 0 0 36px;
+		color: var(--mist);
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 1.6;
+		max-width: 34ch;
+	}
+
+	/* Tactile Sticker Card (matching AboutSection & VisitSection) */
+	.faq-sticker-card {
+		position: relative;
+		padding: 24px;
+		background: var(--white);
+		color: var(--ink);
+		border: 3px solid var(--ink);
+		border-radius: 22px;
+		box-shadow: 10px 10px 0 var(--cyan);
+		transform: rotate(-2deg);
+		transition: transform 0.2s ease;
+	}
+
+	.faq-sticker-card:hover {
+		transform: rotate(0deg) translateY(-3px);
+	}
+
+	.sticker-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		margin-bottom: 8px;
+	}
+
+	.sticker-kicker {
+		display: inline-block;
+		padding: 4px 10px;
+		background: var(--yellow);
+		border: 2px solid var(--ink);
+		border-radius: 999px;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+	}
+
+	.sticker-mascot {
+		width: 54px;
+		height: auto;
+		margin-top: -8px;
+		filter: drop-shadow(3px 3px 0 var(--ink));
+		transform: rotate(8deg);
+	}
+
+	.sticker-title {
+		margin: 6px 0 10px;
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 24px;
+		line-height: 0.95;
+		letter-spacing: -1px;
+		text-transform: uppercase;
+	}
+
+	.sticker-title strong {
+		color: var(--pink);
+	}
+
+	.sticker-desc {
+		margin: 0 0 20px;
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.5;
+		color: var(--ink-2);
+	}
+
+	.sticker-btn {
+		width: 100%;
+		border: 2px solid var(--ink);
+		box-shadow: 4px 4px 0 var(--ink);
+	}
+
+	/* FAQ Accordion List */
 	.faq-list {
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
-		max-width: 900px;
-		margin: 0 auto;
+		gap: 18px;
 		width: 100%;
 	}
 
 	.faq-item {
-		border-radius: 18px;
-		background: #171923;
-		border: 2px solid rgba(255, 255, 255, 0.08);
+		border-radius: 20px;
+		background: var(--ink-2);
+		border: 3px solid var(--ink-3);
+		box-shadow: 7px 7px 0 #00000055;
 		overflow: hidden;
-		transition: border-color 0.2s ease, background 0.2s ease;
+		transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 	}
 
-	.faq-item[open] {
-		border-color: rgba(255, 212, 0, 0.5);
-		background: #191c28;
+	.faq-item:hover {
+		transform: translate(-2px, -2px);
+	}
+
+	.faq-item.accent-cyan:hover,
+	.faq-item.accent-cyan[open] {
+		border-color: var(--cyan);
+		box-shadow: 7px 7px 0 var(--cyan);
+	}
+
+	.faq-item.accent-yellow:hover,
+	.faq-item.accent-yellow[open] {
+		border-color: var(--yellow);
+		box-shadow: 7px 7px 0 var(--yellow);
+	}
+
+	.faq-item.accent-pink:hover,
+	.faq-item.accent-pink[open] {
+		border-color: var(--pink);
+		box-shadow: 7px 7px 0 var(--pink);
 	}
 
 	.faq-summary {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
-		padding: 22px 26px;
+		gap: 16px;
+		padding: 20px 24px;
 		cursor: pointer;
 		user-select: none;
 		list-style: none;
-		font-family: 'Poppins', sans-serif;
-		font-size: 16px;
-		font-weight: 700;
-		color: #ffffff;
-		transition: color 0.15s ease;
+		color: var(--white);
 	}
 
 	.faq-summary::-webkit-details-marker {
 		display: none;
 	}
 
-	.faq-summary:hover {
-		color: var(--yellow);
+	.faq-summary:focus-visible {
+		outline: 3px solid var(--yellow);
+		outline-offset: -3px;
 	}
 
-	.faq-summary:focus-visible {
-		outline: 2px solid var(--yellow);
-		outline-offset: -2px;
+	.faq-num {
+		flex-shrink: 0;
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 18px;
+		letter-spacing: -1px;
+		line-height: 1;
+	}
+
+	.faq-item.accent-cyan .faq-num {
+		color: var(--cyan);
+	}
+	.faq-item.accent-yellow .faq-num {
+		color: var(--yellow);
+	}
+	.faq-item.accent-pink .faq-num {
+		color: var(--pink);
 	}
 
 	.faq-question-text {
-		padding-right: 18px;
-		line-height: 1.4;
+		flex: 1;
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 17px;
+		letter-spacing: -0.5px;
+		line-height: 1.15;
+		text-transform: uppercase;
 	}
 
 	.faq-toggle-icon {
 		flex-shrink: 0;
-		font-size: 24px;
-		font-weight: 700;
+		display: grid;
+		width: 34px;
+		height: 34px;
+		place-items: center;
+		border-radius: 10px;
+		border: 2px solid var(--ink);
+		background: var(--ink-3);
+		color: var(--white);
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 20px;
 		line-height: 1;
-		color: var(--yellow);
-		transition: transform 0.2s ease;
+		box-shadow: 3px 3px 0 var(--ink);
+		transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+	}
+
+	.faq-item.accent-cyan .faq-toggle-icon {
+		background: var(--cyan);
+		color: var(--ink);
+	}
+
+	.faq-item.accent-yellow .faq-toggle-icon {
+		background: var(--yellow);
+		color: var(--ink);
+	}
+
+	.faq-item.accent-pink .faq-toggle-icon {
+		background: var(--pink);
+		color: var(--ink);
 	}
 
 	.faq-item[open] .faq-toggle-icon {
 		transform: rotate(45deg);
-		color: var(--pink);
+		background: var(--white);
+		color: var(--ink);
 	}
 
 	.faq-content {
-		padding: 0 26px 24px 26px;
-		color: rgba(255, 255, 255, 0.78);
-		font-size: 14px;
+		padding: 0 24px 22px 56px;
+		color: var(--mist);
+		font-size: 13px;
+		font-weight: 600;
 		line-height: 1.65;
 	}
 
 	.faq-content p {
 		margin: 0;
+		padding-top: 14px;
+		border-top: 2px solid var(--ink-3);
+	}
+
+	@media (max-width: 920px) {
+		.faq-section {
+			grid-template-columns: 1fr;
+			gap: 40px;
+		}
+
+		.faq-lead {
+			max-width: none;
+		}
+
+		.faq-sticker-card {
+			max-width: 420px;
+		}
 	}
 
 	@media (max-width: 800px) {
 		.faq-summary {
-			padding: 18px 20px;
+			padding: 18px 18px;
+			gap: 12px;
+		}
+
+		.faq-question-text {
 			font-size: 15px;
 		}
 
 		.faq-content {
-			padding: 0 20px 20px 20px;
-			font-size: 13px;
+			padding: 0 18px 18px 18px;
 		}
 	}
 </style>
