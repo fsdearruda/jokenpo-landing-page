@@ -3,7 +3,7 @@
 Before changing code:
 
 1. Read `README.md` for setup, structure and validation commands.
-2. Read `jokenpo-style-guide.md` for visual and editorial rules.
+2. Read `docs/style-guide.md` for visual and editorial rules.
 3. Read `docs/ui-ux-guidelines.md` before changing UI or interaction behavior.
 4. Read `docs/brand-content.md` for public business information.
 5. Treat `src/data/site.json` as the source of truth for landing-page content.

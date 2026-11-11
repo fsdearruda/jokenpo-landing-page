@@ -95,4 +95,3 @@ Nos posts, não citar nomes específicos de jogos de tabuleiro. Use as categoria
 - Confirmar bandeiras de cartão, Pix e formas de pagamento.
 - Definir política e valores de reserva.
 - Confirmar happy hour, faixa etária e regras de convivência.
-- Substituir o CNPJ placeholder antes do deploy final.

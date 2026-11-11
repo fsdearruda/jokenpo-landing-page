@@ -7,11 +7,12 @@ O projeto usa Astro 7, TypeScript e deploy server-side na Vercel.
 
 Antes de editar:
 
-1. Leia este arquivo.
-2. Leia `AGENTS.md` para regras de desenvolvimento.
-3. Leia `jokenpo-style-guide.md` para decisões visuais e de conteúdo.
-4. Leia `docs/ui-ux-guidelines.md` antes de alterar UI.
-5. Confira `src/data/site.json`, a fonte dos dados exibidos na landing page.
+1. Leia este arquivo (`README.md`).
+2. Leia `AGENTS.md` para regras de desenvolvimento e fluxo do repositório.
+3. Leia `docs/style-guide.md` para decisões visuais, paleta e identidade da marca.
+4. Leia `docs/ui-ux-guidelines.md` antes de alterar qualquer elemento de UI/UX.
+5. Leia `docs/brand-content.md` para dados operacionais e referência editorial.
+6. Confira `src/data/site.json`, a fonte dos dados exibidos na landing page.
 
 ## Desenvolvimento
 
@@ -54,7 +55,7 @@ pnpm build
 | `public/` | Imagens, SVGs, manifest e arquivos públicos |
 | `docs/brand-content.md` | Referência editorial e informações da loja |
 | `docs/ui-ux-guidelines.md` | Regras compactas de UI/UX para agentes |
-| `jokenpo-style-guide.md` | Identidade visual para novas peças |
+| `docs/style-guide.md` | Identidade visual, tokens e especificações de estilo |
 | `astro.config.mjs` | Configuração do Astro e da Vercel |
 
 Não edite arquivos gerados em `dist/`, `.vercel/` ou `.astro/`.
@@ -66,7 +67,6 @@ Não edite arquivos gerados em `dist/`, `.vercel/` ou `.astro/`.
 - Mantenha `alt`, dimensões das imagens, navegação por teclado e suporte a
   `prefers-reduced-motion`.
 - Preserve o tom informal em português brasileiro, sem emojis.
-- Não publique o CNPJ enquanto o rodapé ainda usar o placeholder.
 - Não coloque credenciais no código. Use `.env` local e variáveis da Vercel.
 - Evite refatorações amplas; faça mudanças pequenas e relacionadas ao pedido.
 - Ao adicionar UI, confira responsividade, foco, contraste e zoom de 200%.
@@ -97,4 +97,4 @@ valores reais.
 6. Criar um commit descritivo quando solicitado.
 
 Para informações públicas da marca, consulte `docs/brand-content.md`. Para
-decisões visuais, consulte `jokenpo-style-guide.md`.
+decisões visuais, consulte `docs/style-guide.md`.
