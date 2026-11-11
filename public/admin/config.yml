@@ -41,6 +41,7 @@ collections:
               - { label: Segunda linha, name: titleLine2, widget: string }
               - { label: Terceira linha, name: titleLine3, widget: string }
               - { label: Descrição, name: description, widget: text }
+              - { label: Cor do botão da comunidade, name: communityButtonColor, widget: color, default: "#14532d", required: false }
           - label: Contatos
             name: contact
             widget: object

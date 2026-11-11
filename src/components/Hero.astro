@@ -3,7 +3,12 @@ import { Image } from 'astro:assets';
 import siteData from '../data/site.json';
 import ArrowIcon from './ArrowIcon.astro';
 
-const { hero } = siteData;
+const { hero, contact } = siteData;
+const communityBtnColor = hero.communityButtonColor || '#14532d';
+const heroDescriptionHtml = hero.description.replace(
+	/\bNatal\b/,
+	'<a href="#visite" class="hero-location-link">Natal</a>',
+);
 ---
 
 <section class="hero" aria-labelledby="hero-title">
@@ -11,10 +16,28 @@ const { hero } = siteData;
 	<div class="hero-copy">
 		<p class="eyebrow"><span class="eyebrow-dot"></span> {hero.eyebrow}</p>
 		<h1 id="hero-title">{hero.titleLine1}<br /><span>{hero.titleLine2}</span><br />{hero.titleLine3}</h1>
-		<p class="hero-text">{hero.description}</p>
+		<p class="hero-text" set:html={heroDescriptionHtml}></p>
 		<div class="hero-actions">
 			<a class="button button-yellow" href="#agenda">Ver agenda <ArrowIcon direction="right" size={16} /></a>
-			<a class="button button-outline" href="#visite">Como chegar <ArrowIcon size={16} /></a>
+			<a
+				class="button button-community"
+				style={`--community-btn-bg: ${communityBtnColor};`}
+				href={contact.communityWhatsapp}
+				target="_blank"
+				rel="noreferrer"
+			>
+				<svg
+					class="whatsapp-icon"
+					viewBox="0 0 24 24"
+					width="18"
+					height="18"
+					fill="currentColor"
+					aria-hidden="true"
+				>
+					<path d="M12.031 2c-5.506 0-9.989 4.478-9.99 9.984a9.964 9.964 0 0 0 1.333 4.993L2 22l5.233-1.237a9.994 9.994 0 0 0 4.779 1.217h.004c5.505 0 9.988-4.478 9.989-9.984 0-2.669-1.037-5.176-2.922-7.062A9.935 9.935 0 0 0 12.031 2Zm5.829 14.12c-.246.693-1.432 1.325-1.988 1.411-.51.078-1.156.111-1.869-.115-.433-.138-.988-.321-1.699-.628-2.989-1.29-4.941-4.301-5.091-4.5-.149-.199-1.215-1.616-1.215-3.083 0-1.466.768-2.187 1.041-2.486.273-.299.596-.374.795-.374.198 0 .397.002.571.01.183.009.428-.07.67.511.248.597.844 2.063.918 2.212.075.149.124.323.025.522-.099.199-.149.323-.298.497-.149.174-.313.389-.447.523-.149.149-.304.311-.131.609.174.298.771 1.272 1.656 2.061 1.139 1.015 2.099 1.329 2.397 1.479.298.149.472.124.646-.075.174-.199.745-.87.944-1.168.198-.299.397-.249.67-.149.273.099 1.738.82 2.036.969.298.149.497.224.571.348.075.124.075.721-.171 1.414Z" />
+				</svg>
+				<span>Participe da comunidade</span>
+			</a>
 		</div>
 	</div>
 	<div class="hero-stage" aria-hidden="true">
@@ -94,7 +117,30 @@ const { hero } = siteData;
 	.hero-copy { position: relative; z-index: 2; max-width: 550px; }
 	.eyebrow-dot { display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--pink); }
 	.hero-text { max-inline-size: 60ch; margin-bottom: 30px; color: var(--mist); font-size: 1.0625rem; font-weight: 600; line-height: 1.65; text-wrap: pretty; }
+	.hero-text :global(.hero-location-link) {
+		color: var(--yellow);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
+		font-weight: 700;
+		transition: color 0.15s ease;
+	}
+	.hero-text :global(.hero-location-link:hover) {
+		color: var(--cyan);
+	}
 	.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+	.button-community {
+		gap: 10px;
+		padding: 16px 24px;
+		background: var(--community-btn-bg, #14532d);
+		border: 2px solid #ffffff33;
+		color: var(--white);
+	}
+	.whatsapp-icon {
+		width: 18px;
+		height: 18px;
+		flex-shrink: 0;
+	}
 	.hero-stage { position: absolute; z-index: 1; top: 150px; right: max(42px, calc((100% - 1160px) / 2)); width: min(45vw, 540px); height: 515px; }
 	.card-back { position: absolute; border: 10px solid var(--white); border-radius: 22px; background: var(--ink); box-shadow: 24px 28px 40px #00000055; }
 	.card-back-main { top: 42px; right: 65px; width: 270px; height: 390px; padding: 12px; transform: rotate(9deg); }

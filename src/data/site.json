@@ -370,7 +370,8 @@
     "titleLine1": "VEM",
     "titleLine2": "JOGAR",
     "titleLine3": "COM A GENTE",
-    "description": "Um espaço aconchegante para a comunidade geek de Natal: Magic, Pokémon, Yu-Gi-Oh!, One Piece, jogos de tabuleiro e torneios toda semana."
+    "description": "Um espaço aconchegante para a comunidade geek de Natal: Magic, Pokémon, Yu-Gi-Oh!, One Piece, jogos de tabuleiro e torneios toda semana.",
+    "communityButtonColor": "#14532d"
   },
   "description": "Jokenpo: card games, jogos de tabuleiro, espaço para jogar e torneios na Zona Norte de Natal. Vem jogar com a gente!"
 }
