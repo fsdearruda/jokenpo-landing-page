@@ -174,7 +174,7 @@
   "boardgames": [
     {
       "id": "uno",
-      "name": "Uno",
+      "name": "Uno: Show 'Em No Mercy",
       "category": "leves",
       "categoryName": "Leves",
       "price": "R$ 10",
@@ -240,14 +240,14 @@
     },
     {
       "id": "bang",
-      "name": "Bang!",
+      "name": "Bang! Dice Game",
       "category": "medios",
       "categoryName": "Médios",
       "price": "R$ 13",
       "publisher": "Galápagos / dV Giochi",
       "tag": "Faroeste e papéis secretos",
-      "players": "4–7 jogadores",
-      "image": "bang.png"
+      "players": "3–8 jogadores",
+      "image": "bang.jpg"
     },
     {
       "id": "coup",
