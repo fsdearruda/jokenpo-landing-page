@@ -25,6 +25,7 @@ const structuredData = {
 	image: socialImageUrl,
 	telephone: siteData.contact.whatsapp,
 	email: siteData.contact.email,
+	priceRange: '$$',
 	address: {
 		'@type': 'PostalAddress',
 		streetAddress: `${siteData.location.street}, ${siteData.location.venue}`,
@@ -32,6 +33,11 @@ const structuredData = {
 		addressRegion: 'RN',
 		postalCode: siteData.location.postalCode,
 		addressCountry: 'BR',
+	},
+	geo: {
+		'@type': 'GeoCoordinates',
+		latitude: -5.7483,
+		longitude: -35.2536,
 	},
 	openingHoursSpecification: siteData.hours
 		.filter((hours) => !hours.closed && hours.opens && hours.closes)
@@ -41,6 +47,25 @@ const structuredData = {
 			opens: hours.opens,
 			closes: hours.closes,
 		})),
+	event: siteData.agenda.map((item) => ({
+		'@type': 'Event',
+		name: `${item.name} — Jokenpo`,
+		description: item.detail,
+		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+		eventStatus: 'https://schema.org/EventScheduled',
+		location: {
+			'@type': 'Place',
+			name: siteData.name,
+			address: {
+				'@type': 'PostalAddress',
+				streetAddress: `${siteData.location.street}, ${siteData.location.venue}`,
+				addressLocality: 'Natal',
+				addressRegion: 'RN',
+				postalCode: siteData.location.postalCode,
+				addressCountry: 'BR',
+			},
+		},
+	})),
 	sameAs: [siteData.contact.instagram],
 };
 ---
