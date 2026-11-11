@@ -229,7 +229,7 @@ const counts = {
 	const expandArrowIcon = document.getElementById('expand-arrow-icon');
 	const catalogSection = document.getElementById('acervo');
 
-	function updateDisplay(announceText?: string) {
+	function updateDisplay(announceText?: string, triggerAnimation = true) {
 		const matching = gameCards.filter((card) => {
 			const cat = card.dataset.category;
 			return currentFilter === 'all' || cat === currentFilter;
@@ -261,11 +261,25 @@ const counts = {
 
 			if (!isMatch) {
 				card.classList.add('hidden');
+				card.classList.remove('animate-reveal');
 			} else {
 				const matchIndex = matching.indexOf(card);
 				const isVisible = isExpanded || !needsExpand || matchIndex < INITIAL_LIMIT;
+				const wasHidden = card.classList.contains('hidden');
+
 				card.classList.toggle('hidden', !isVisible);
-				if (isVisible) visibleCount++;
+
+				if (isVisible) {
+					card.style.setProperty('--stagger-index', visibleCount.toString());
+					if (triggerAnimation && (wasHidden || matchIndex >= INITIAL_LIMIT || triggerAnimation)) {
+						card.classList.remove('animate-reveal');
+						void card.offsetWidth;
+						card.classList.add('animate-reveal');
+					}
+					visibleCount++;
+				} else {
+					card.classList.remove('animate-reveal');
+				}
 			}
 		});
 
@@ -731,6 +745,17 @@ const counts = {
 		gap: 24px;
 	}
 
+	@keyframes cardReveal {
+		from {
+			opacity: 0;
+			transform: translateY(18px) scale(0.96);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
 	.game-card {
 		background: #171923;
 		border: 2px solid rgba(255, 255, 255, 0.08);
@@ -739,6 +764,20 @@ const counts = {
 		display: flex;
 		flex-direction: column;
 		transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.game-card.animate-reveal {
+			animation: cardReveal 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+			--stagger-time: 0.04s;
+			animation-delay: calc(var(--stagger-index, 0) * var(--stagger-time));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.game-card {
+			animation: none !important;
+		}
 	}
 
 	.game-card:hover,
