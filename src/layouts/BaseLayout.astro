@@ -2,6 +2,7 @@
 import siteData from '../data/site.json';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import '../styles/fonts.css';
 import '../styles/global.css';
 
 interface Props {
@@ -70,13 +71,6 @@ const structuredData = {
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={socialImageUrl} />
 		<meta name="twitter:image:alt" content="Jokenpo — card games, boardgames e torneios" />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-		<link id="font-stylesheet" rel="preload" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:ital,wght@0,400;0,600;0,700;1,600;1,700&display=swap" as="style" />
-		<script is:inline>
-			document.getElementById('font-stylesheet')?.setAttribute('rel', 'stylesheet');
-		</script>
-		<noscript><link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:ital,wght@0,400;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet" /></noscript>
 		<title>{title}</title>
 		<script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
 	</head>

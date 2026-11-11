@@ -11,6 +11,12 @@ importers:
       '@astrojs/vercel':
         specifier: ^11.0.20
         version: 11.0.20(astro@7.4.8(@types/node@26.6.6)(@vercel/functions@3.11.0)(yaml@2.9.1))
+      '@fontsource/archivo-black':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/poppins':
+        specifier: ^5.3.0
+        version: 5.3.0
       astro:
         specifier: ^7.4.8
         version: 7.4.8(@types/node@26.6.6)(@vercel/functions@3.11.0)(yaml@2.9.1)
@@ -271,6 +277,12 @@ packages:
 
   '@emnapi/wasi-threads@1.2.3':
     resolution: {integrity: sha512-ELEBe8PsLvvJ6QMr0zLt8ffvOHW/dc1m3CEzNMg7aJUv3bMaoDtw2TXyDAwkYBuroxxuHEwhRTLJSe5sya547g==}
+
+  '@fontsource/archivo-black@5.3.0':
+    resolution: {integrity: sha512-7EsTIQ+Blf96ktpzTUpI7msi+u9/AJxM/GZxOSkEubVd1jSTrFSTNxMgfpX/8rQsjZ+19a+qvRbtcTEp5J/72g==}
+
+  '@fontsource/poppins@5.3.0':
+    resolution: {integrity: sha512-cms1nM7U6SN8epIV1WMVOV8VsA645aSm3wHfzIQnkk188U341ThbJGSl2Sv54V29gnDbT2arMPfLzvVIIVCceQ==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2178,6 +2190,10 @@ snapshots:
   '@emnapi/wasi-threads@1.2.3':
     dependencies:
       tslib: 2.9.1
+
+  '@fontsource/archivo-black@5.3.0': {}
+
+  '@fontsource/poppins@5.3.0': {}
 
   '@img/colour@1.1.0':
     optional: true

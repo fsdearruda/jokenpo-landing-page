@@ -1,0 +1,18 @@
+/*
+ * Fontes auto-hospedadas via Fontsource (subsets latin e latin-ext para pt-BR).
+ * Evita requisições externas para Google Fonts e elimina scripts inline de
+ * carregamento assíncrono no <head>.
+ */
+
+@import '@fontsource/archivo-black/latin-400.css';
+@import '@fontsource/archivo-black/latin-ext-400.css';
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-ext-400.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-ext-600.css';
+@import '@fontsource/poppins/latin-600-italic.css';
+@import '@fontsource/poppins/latin-ext-600-italic.css';
+@import '@fontsource/poppins/latin-700.css';
+@import '@fontsource/poppins/latin-ext-700.css';
+@import '@fontsource/poppins/latin-700-italic.css';
+@import '@fontsource/poppins/latin-ext-700-italic.css';
