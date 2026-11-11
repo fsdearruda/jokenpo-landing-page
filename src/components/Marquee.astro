@@ -1,0 +1,51 @@
+<section class="marquee" aria-label="RPG, TCG, board games e torneios">
+	<div class="marquee-track">
+		<img src="/Vetor/faixa-categorias.svg" alt="RPG, TCG, board games e torneios" width="675" height="44" loading="lazy" />
+		<img src="/Vetor/faixa-categorias.svg" alt="" width="675" height="44" loading="lazy" aria-hidden="true" />
+	</div>
+	<button class="marquee-toggle" type="button" aria-pressed="false">Pausar movimento</button>
+</section>
+
+<script>
+	const marquee = document.querySelector('.marquee');
+	const marqueeToggle = document.querySelector('.marquee-toggle');
+
+	if (marquee instanceof HTMLElement && marqueeToggle instanceof HTMLButtonElement) {
+		marqueeToggle.addEventListener('click', () => {
+			const isPaused = marquee.classList.toggle('is-paused');
+			marqueeToggle.setAttribute('aria-pressed', String(isPaused));
+			marqueeToggle.textContent = isPaused ? 'Retomar movimento' : 'Pausar movimento';
+		});
+	}
+</script>
+
+<style>
+	.marquee { position: relative; overflow: hidden; background: var(--ink); white-space: nowrap; transform: rotate(-1.5deg) scale(1.03); }
+	.marquee-track {
+		display: flex;
+		width: max-content;
+		@media (prefers-reduced-motion: no-preference) {
+			animation: slide 24s linear infinite;
+		}
+	}
+	.marquee.is-paused .marquee-track { animation-play-state: paused; }
+	.marquee-track img { display: block; width: max(675px, 50vw); height: auto; aspect-ratio: 675 / 44; flex: none; }
+	@keyframes slide { to { transform: translateX(-50%); } }
+	.marquee-toggle {
+		position: absolute;
+		top: 8px;
+		right: 24px;
+		padding: 6px 10px;
+		border: 1px solid var(--mist);
+		border-radius: 999px;
+		background: var(--ink);
+		color: var(--white);
+		font: inherit;
+		font-size: 10px;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.marquee-toggle { display: none; }
+	}
+</style>

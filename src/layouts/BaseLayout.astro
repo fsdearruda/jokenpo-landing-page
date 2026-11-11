@@ -1,0 +1,113 @@
+---
+import siteData from '../data/site.json';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const { title = siteData.title, description = siteData.description } = Astro.props;
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
+const canonicalUrl = siteUrl ? `${siteUrl}/` : '/';
+const socialImageUrl = `${siteUrl}/Vetor/jokenpo-coelho-branco.svg`;
+
+const structuredData = {
+	'@context': 'https://schema.org',
+	'@type': 'GameStore',
+	name: siteData.name,
+	description: siteData.description,
+	url: canonicalUrl,
+	image: socialImageUrl,
+	telephone: siteData.contact.whatsapp,
+	email: siteData.contact.email,
+	address: {
+		'@type': 'PostalAddress',
+		streetAddress: `${siteData.location.street}, ${siteData.location.venue}`,
+		addressLocality: 'Natal',
+		addressRegion: 'RN',
+		postalCode: siteData.location.postalCode,
+		addressCountry: 'BR',
+	},
+	openingHoursSpecification: siteData.hours
+		.filter((hours) => !hours.closed && hours.opens && hours.closes)
+		.map((hours) => ({
+			'@type': 'OpeningHoursSpecification',
+			dayOfWeek: hours.schemaDays,
+			opens: hours.opens,
+			closes: hours.closes,
+		})),
+	sameAs: [siteData.contact.instagram],
+};
+---
+
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/Vetor/coelho.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="text-scale" content="scale" />
+		<meta name="description" content={description} />
+		<meta name="robots" content="index, follow, max-image-preview:large" />
+		<meta name="author" content="Jokenpo" />
+		<meta name="theme-color" content="#0e0e10" />
+		<link rel="canonical" href={canonicalUrl} />
+		<link rel="manifest" href="/site.webmanifest" />
+		<meta property="og:locale" content="pt_BR" />
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={siteData.name} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:image" content={socialImageUrl} />
+		<meta property="og:image:alt" content="Jokenpo — card games, boardgames e torneios" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={socialImageUrl} />
+		<meta name="twitter:image:alt" content="Jokenpo — card games, boardgames e torneios" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+		<link id="font-stylesheet" rel="preload" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:ital,wght@0,400;0,600;0,700;1,600;1,700&display=swap" as="style" />
+		<script is:inline>
+			document.getElementById('font-stylesheet')?.setAttribute('rel', 'stylesheet');
+		</script>
+		<noscript><link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:ital,wght@0,400;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet" /></noscript>
+		<title>{title}</title>
+		<script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+	</head>
+	<body>
+		<div class="site-shell">
+			<div class="noise" aria-hidden="true"></div>
+			<a class="skip-link" href="#main-content">Pular para o conteúdo principal</a>
+			<Header />
+			<main id="main-content" tabindex="-1">
+				<slot />
+			</main>
+			<Footer />
+		</div>
+	</body>
+</html>
+
+<style>
+	.skip-link {
+		position: fixed;
+		top: 12px;
+		left: 12px;
+		z-index: 30;
+		padding: 10px 14px;
+		background: var(--yellow);
+		color: var(--ink);
+		font-size: 13px;
+		font-weight: 700;
+		transform: translateY(-150%);
+	}
+	.skip-link:focus-visible { transform: translateY(0); }
+	.site-shell { min-height: 100vh; overflow: hidden; background: var(--ink); }
+	.noise { position: fixed; inset: 0; z-index: 20; pointer-events: none; opacity: .07; mix-blend-mode: screen; }
+	.noise::before { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E"); }
+</style>

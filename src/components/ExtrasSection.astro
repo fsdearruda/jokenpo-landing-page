@@ -1,0 +1,36 @@
+---
+import siteData from '../data/site.json';
+import SectionHeading from './SectionHeading.astro';
+---
+
+<section class="section extras-section" aria-labelledby="extras-title">
+	<SectionHeading eyebrow="NO ESPAÇO DA LOJA" eyebrowColor="yellow" titleId="extras-title" title="FICA À VONTADE" highlight="PARA VOLTAR">Um canto para a comunidade<br />jogar, reunir e comemorar</SectionHeading>
+	<div class="extras-grid">
+		{siteData.extras.map((extra) => (
+			<article class={`extra-card extra-card-${extra.color}`}>
+				<span>{extra.number}</span>
+				<h3>{extra.title}</h3>
+				<p set:html={extra.description}></p>
+			</article>
+		))}
+	</div>
+</section>
+
+<style>
+	/* No mobile vale o espaçamento padrão de `.section`. */
+	@media (width > 800px) {
+		.extras-section { padding-top: 115px; padding-bottom: 115px; }
+	}
+	.extras-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+	.extra-card { min-height: 215px; padding: 25px; border-radius: 22px; color: var(--ink); }
+	.extra-card-cyan { background: var(--cyan); }
+	.extra-card-yellow { background: var(--yellow); }
+	.extra-card-pink { background: var(--pink); }
+	.extra-card > span { font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+	.extra-card h3 { margin: 50px 0 10px; font-family: 'Archivo Black', sans-serif; font-size: 25px; letter-spacing: -1px; }
+	.extra-card p { margin: 0; font-size: 12px; font-weight: 600; line-height: 1.55; }
+
+	@media (max-width: 800px) {
+		.extras-grid { grid-template-columns: 1fr; }
+	}
+</style>

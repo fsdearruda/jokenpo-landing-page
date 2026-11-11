@@ -1,0 +1,42 @@
+---
+import { Image } from 'astro:assets';
+import siteData from '../data/site.json';
+
+const { location, contact } = siteData;
+---
+
+<footer class="site-footer">
+	<div class="footer-brand"><Image class="brand-logo brand-logo-header" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="Jokenpô" width={150} height={33} loading="lazy" /></div>
+	<div class="footer-details">
+		<p><strong>Jokenpo</strong> · Feito para quem gosta de jogar</p>
+		<p>{location.venue}<br />{location.street}<br />{location.neighborhood}</p>
+		<p><a href={`mailto:${contact.email}`}>{contact.email}</a>{contact.cnpj && <><br />CNPJ: {contact.cnpj}</>}</p>
+		<p>© 2026 Jokenpo</p>
+	</div>
+	<div class="footer-links">
+		<a href={contact.communityWhatsapp} target="_blank" rel="noreferrer">WhatsApp</a>
+		<a href={contact.instagram} target="_blank" rel="noreferrer">Instagram</a>
+		<a href={`mailto:${contact.email}`}>E-mail</a>
+	</div>
+</footer>
+
+<style>
+	.site-footer { display: grid; grid-template-columns: 180px 1fr auto; align-items: start; gap: 42px; max-width: 1176px; margin: auto; padding: 30px 42px 45px; border-top: 1px solid var(--ink-3); color: var(--mist); font-size: 11px; }
+	.footer-brand { display: flex; align-items: center; }
+	.brand-logo { display: block; height: auto; }
+	.brand-logo-header { filter: invert(1); }
+	.footer-brand .brand-logo { width: 125px; }
+	.footer-details { display: grid; gap: 8px; line-height: 1.5; }
+	.footer-details p { margin: 0; }
+	.footer-details strong { color: var(--white); }
+	.footer-details a { color: var(--mist); }
+	.footer-details a:hover { color: var(--yellow); }
+	.footer-links { display: flex; justify-self: end; gap: 18px; padding-top: 2px; }
+	.site-footer a { color: var(--yellow); font-weight: 700; }
+
+	@media (max-width: 800px) {
+		.site-footer { grid-template-columns: 1fr; gap: 18px; padding: 30px 24px 35px; text-align: center; }
+		.footer-brand, .footer-links { justify-self: center; }
+		.footer-details { justify-items: center; }
+	}
+</style>

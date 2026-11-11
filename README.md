@@ -44,9 +44,11 @@ pnpm build
 
 | Caminho | Responsabilidade |
 |---|---|
-| `src/pages/index.astro` | Landing page, layout, interações e estilos |
+| `src/pages/index.astro` | Composição das seções da landing page |
 | `src/pages/404.astro` | Página de erro |
-| `src/components/` | Componentes Astro reutilizáveis |
+| `src/layouts/BaseLayout.astro` | `<head>` (SEO, Open Graph, JSON-LD), cabeçalho, `<main>` e rodapé |
+| `src/components/` | Seções (`Hero`, `GamesSection`, `AgendaSection`…) e componentes reutilizáveis (`SectionHeading`, `ArrowIcon`) |
+| `src/styles/global.css` | Tokens de cor, tipografia base e padrões compartilhados (botões, `.section`, `.eyebrow`) |
 | `src/data/site.json` | Conteúdo público usado pela página |
 | `public/` | Imagens, SVGs, manifest e arquivos públicos |
 | `docs/brand-content.md` | Referência editorial e informações da loja |

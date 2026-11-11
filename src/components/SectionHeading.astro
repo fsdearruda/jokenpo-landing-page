@@ -1,0 +1,35 @@
+---
+interface Props {
+	/** Texto curto acima do título. */
+	eyebrow: string;
+	/** Cor do eyebrow. */
+	eyebrowColor?: 'pink' | 'cyan' | 'yellow';
+	/** ID do `<h2>`, usado em `aria-labelledby` da seção. */
+	titleId: string;
+	/** Primeira linha do título. */
+	title: string;
+	/** Segunda linha do título, exibida em destaque. */
+	highlight: string;
+}
+
+const { eyebrow, eyebrowColor, titleId, title, highlight } = Astro.props;
+---
+
+<div class="section-heading">
+	<div>
+		<p class:list={['eyebrow', eyebrowColor && `${eyebrowColor}-text`]}>{eyebrow}</p>
+		<h2 id={titleId}>{title}<br /><span>{highlight}</span></h2>
+	</div>
+	{Astro.slots.has('default') && <p class="heading-aside"><slot /></p>}
+</div>
+
+<style>
+	.section-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 50px; }
+	.section-heading .eyebrow { margin-bottom: 18px; }
+	.heading-aside { margin: 0 0 4px; color: var(--mist); font-size: 14px; font-weight: 600; line-height: 1.6; text-align: right; }
+
+	@media (max-width: 800px) {
+		.section-heading { display: block; }
+		.heading-aside { margin-top: 22px; text-align: left; }
+	}
+</style>

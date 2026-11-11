@@ -1,0 +1,42 @@
+---
+import siteData from '../data/site.json';
+import ArrowIcon from './ArrowIcon.astro';
+import SectionHeading from './SectionHeading.astro';
+
+const categories = siteData.boardgameCategories;
+---
+
+<section class="section games-section" id="jogar" tabindex="-1" aria-labelledby="games-title">
+	<SectionHeading eyebrow="JOGOS DE TABULEIRO" eyebrowColor="pink" titleId="games-title" title="PASSE" highlight="DA TARDE">Passe da Tarde: SEG · TER · QUA · SEX<br />14h às 18h · por pessoa</SectionHeading>
+	<div class="category-grid">
+		{categories.map((category, index) => (
+			<a class={`category-card ${category.color}`} href="#agenda">
+				<span class="category-number">0{index + 1}</span>
+				<span class="category-icon">{category.icon}</span>
+				<h3>{category.name}</h3>
+				<p>{category.description}</p>
+				<ArrowIcon class="category-arrow" size={24} />
+			</a>
+		))}
+	</div>
+</section>
+
+<style>
+	.category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+	.category-card { position: relative; min-height: 270px; padding: 27px; border-radius: 29px; color: var(--ink); transition: transform .2s; }
+	.category-card:hover { transform: translateY(-8px) rotate(-1deg); }
+	.category-card.cyan { background: var(--cyan); }
+	.category-card.yellow { background: var(--yellow); }
+	.category-card.pink { background: var(--pink); }
+	.category-number { position: absolute; top: 24px; right: 27px; font-size: 12px; font-weight: 700; }
+	.category-icon { display: block; margin-bottom: 55px; font-size: 43px; }
+	.category-card h3 { margin-bottom: 8px; font-family: 'Archivo Black', sans-serif; font-size: 33px; letter-spacing: -1px; }
+	.category-card p { margin-bottom: 0; max-width: 180px; font-size: 13px; font-weight: 600; line-height: 1.4; }
+	:global(.category-arrow) { position: absolute; right: 27px; bottom: 24px; width: 16px; height: 16px; }
+
+	@media (max-width: 800px) {
+		.category-grid { grid-template-columns: 1fr; }
+		.category-card { min-height: 210px; }
+		.category-icon { margin-bottom: 24px; }
+	}
+</style>

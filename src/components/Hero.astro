@@ -1,0 +1,99 @@
+---
+import siteData from '../data/site.json';
+import ArrowIcon from './ArrowIcon.astro';
+
+const { hero } = siteData;
+---
+
+<section class="hero" aria-labelledby="hero-title">
+	<div class="hero-bg-word" aria-hidden="true">PLAY</div>
+	<div class="hero-copy">
+		<p class="eyebrow"><span class="eyebrow-dot"></span> {hero.eyebrow}</p>
+		<h1 id="hero-title">{hero.titleLine1}<br /><span>{hero.titleLine2}</span><br />{hero.titleLine3}</h1>
+		<p class="hero-text">{hero.description}</p>
+		<div class="hero-actions">
+			<a class="button button-yellow" href="#agenda">Ver agenda <ArrowIcon direction="right" size={16} /></a>
+			<a class="button button-outline" href="#visite">Como chegar <ArrowIcon size={16} /></a>
+		</div>
+	</div>
+	<div class="hero-stage" aria-hidden="true">
+		<div class="burst burst-one"><img src="/Vetor/brilho-rosa.svg" alt="" width="47" height="47" /></div>
+		<div class="burst burst-two"><img src="/Vetor/brilho-preto.svg" alt="" width="32" height="32" /></div>
+		<div class="card-back card-back-main">
+			<div class="card-inner">
+				<div class="card-symbol">✦</div>
+				<strong>JOKENPÔ</strong>
+				<small>JOGUE MAIS</small>
+			</div>
+		</div>
+		<div class="mini-card">
+			<div class="mini-card-suit">♠</div>
+			<span>PLAY<br />YOUR<br />WAY</span>
+		</div>
+		<img class="hero-mascot" src="/Vetor/coelho-creme.svg" alt="" width="112" height="126" />
+		<div class="die">20</div>
+		<div class="sticker">BORA<br /><em>JOGAR?</em></div>
+	</div>
+	<div class="hero-note">SEG — SÁB<br />14H — 22H<span>LOJA 24 · NEW WAY CENTER</span></div>
+	<div class="scroll-cue">
+		<div class="scroll-cue-row">
+			<span class="scroll-line"></span>
+			<span class="scroll-label">DESÇA PRA JOGAR</span>
+			<span class="scroll-line"></span>
+		</div>
+		<ArrowIcon direction="down" class="scroll-arrow" size={16} />
+	</div>
+</section>
+
+<style>
+	.hero { position: relative; min-height: 760px; padding: 174px max(42px, calc((100% - 1176px) / 2)) 90px; overflow: hidden; background: radial-gradient(circle at 74% 40%, #4a3a99 0, var(--purple) 23%, var(--ink) 57%); }
+	.hero::after { position: absolute; right: -9%; bottom: -34%; width: 60%; height: 80%; border: 2px solid #ffffff17; border-radius: 50%; content: ''; transform: rotate(-24deg); }
+	.hero-bg-word { position: absolute; top: 130px; right: -46px; color: transparent; font-family: 'Archivo Black', sans-serif; font-size: clamp(150px, 22vw, 290px); line-height: .8; opacity: .15; -webkit-text-stroke: 2px var(--white); transform: rotate(-8deg); }
+	.hero-copy { position: relative; z-index: 2; max-width: 550px; }
+	.eyebrow-dot { display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--pink); }
+	.hero-text { max-inline-size: 60ch; margin-bottom: 30px; color: var(--mist); font-size: 1.0625rem; font-weight: 600; line-height: 1.65; text-wrap: pretty; }
+	.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+	.hero-stage { position: absolute; z-index: 1; top: 150px; right: max(42px, calc((100% - 1160px) / 2)); width: min(45vw, 540px); height: 515px; }
+	.card-back { position: absolute; border: 10px solid var(--white); border-radius: 22px; background: var(--ink); box-shadow: 24px 28px 40px #00000055; }
+	.card-back-main { top: 42px; right: 65px; width: 270px; height: 390px; padding: 12px; transform: rotate(9deg); }
+	.card-inner { display: flex; height: 100%; flex-direction: column; align-items: center; justify-content: center; border: 3px solid var(--pink); border-radius: 11px; background: repeating-linear-gradient(135deg, #ff3ea51c 0 13px, transparent 13px 28px); }
+	.card-symbol { display: grid; width: 95px; height: 95px; place-items: center; margin-bottom: 22px; border: 3px solid var(--yellow); border-radius: 50%; color: var(--yellow); font-size: 54px; }
+	.card-inner strong { font-family: 'Archivo Black', sans-serif; font-size: 25px; }
+	.card-inner small { margin-top: 5px; color: var(--cyan); font-size: 10px; font-weight: 700; letter-spacing: 3px; }
+	.mini-card { position: absolute; top: 148px; left: 40px; width: 148px; height: 214px; padding: 14px; border: 7px solid var(--white); border-radius: 14px; background: var(--cyan); color: var(--ink); box-shadow: 14px 18px 25px #00000040; transform: rotate(-13deg); }
+	.mini-card-suit { margin-bottom: 18px; color: var(--pink); font-size: 38px; line-height: 1; }
+	.mini-card span { font-family: 'Archivo Black', sans-serif; font-size: 17px; line-height: .9; }
+	.die { position: absolute; right: 8px; bottom: 32px; display: grid; width: 80px; height: 80px; place-items: center; border: 5px solid var(--ink); border-radius: 18px; background: var(--yellow); box-shadow: 8px 8px 0 var(--ink); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 28px; transform: rotate(16deg); }
+	.hero-mascot { position: absolute; right: 65px; bottom: 18px; width: 112px; height: auto; filter: drop-shadow(4px 5px 0 var(--ink)); transform: rotate(8deg); }
+	.sticker { position: absolute; bottom: 12px; left: 65px; padding: 18px 22px; background: var(--pink); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 17px; line-height: .9; text-align: center; transform: rotate(-9deg); filter: drop-shadow(4px 0 0 var(--ink)) drop-shadow(-4px 0 0 var(--ink)) drop-shadow(0 4px 0 var(--ink)) drop-shadow(0 -4px 0 var(--ink)); }
+	.sticker em { color: var(--ink); font-style: normal; }
+	.burst { position: absolute; line-height: 0; }
+	.burst img { display: block; width: 100%; height: auto; }
+	.burst-one { top: 20px; right: 5px; }
+	.burst-one img { width: 47px; }
+	.burst-two { bottom: 100px; left: -20px; }
+	.burst-two img { width: 32px; }
+	.hero-note { position: absolute; right: max(42px, calc((100% - 1176px) / 2)); bottom: 100px; z-index: 3; color: var(--yellow); font-family: 'Archivo Black', sans-serif; font-size: 18px; line-height: .9; text-align: right; transform: rotate(-4deg); }
+	.hero-note span { display: block; margin-top: 9px; color: var(--white); font-family: 'Poppins', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 2px; }
+	.scroll-cue { position: absolute; bottom: 52px; left: 50%; display: flex; flex-direction: column; align-items: center; gap: 7px; color: var(--mist); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-align: center; transform: translateX(-50%); white-space: nowrap; }
+	.scroll-cue-row { display: flex; align-items: center; gap: 10px; }
+	.scroll-line { display: block; width: 28px; height: 1px; flex: none; background: var(--mist); }
+	.scroll-label { display: block; line-height: 1.25; }
+	:global(.scroll-cue .scroll-arrow) {
+		width: 16px;
+		height: 16px;
+		@media (prefers-reduced-motion: no-preference) {
+			animation: scroll-arrow 1.4s ease-in-out infinite;
+		}
+	}
+	@keyframes scroll-arrow { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
+
+	@media (max-width: 800px) {
+		.hero { min-height: 850px; padding: 145px 24px 80px; }
+		.hero-stage { top: 430px; right: 4%; width: 92%; height: 350px; transform: scale(.78); transform-origin: top right; }
+		.hero-bg-word { top: 280px; right: -75px; font-size: 150px; }
+		.hero-stage .card-back, .hero-stage .mini-card, .hero-stage .hero-mascot, .hero-stage .die, .hero-stage .sticker { display: none; }
+		.hero-note { right: 24px; bottom: 100px; }
+		.scroll-cue { bottom: 28px; }
+	}
+</style>

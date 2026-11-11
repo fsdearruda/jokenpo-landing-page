@@ -1,0 +1,42 @@
+---
+import siteData from '../data/site.json';
+import ArrowIcon from './ArrowIcon.astro';
+import SectionHeading from './SectionHeading.astro';
+
+const agenda = siteData.agenda;
+---
+
+<section class="section agenda-section" id="agenda" tabindex="-1" aria-labelledby="agenda-title">
+	<SectionHeading eyebrow="TODA SEMANA" eyebrowColor="cyan" titleId="agenda-title" title="A AGENDA" highlight="DA GALERA">Inscrições no balcão<br />Capacidade máxima: 12 jogadores</SectionHeading>
+	<div class="agenda-grid">
+		{agenda.map((event) => (
+			<article class={`agenda-card ${event.color}`}>
+				<span class="agenda-day">{event.day}</span>
+				<h3>{event.name}</h3>
+				<p>{event.detail}</p>
+				<ArrowIcon class="agenda-arrow" size={22} />
+			</article>
+		))}
+	</div>
+</section>
+
+<style>
+	/* No mobile vale o espaçamento padrão de `.section`. */
+	@media (width > 800px) {
+		.agenda-section { padding-top: 55px; }
+	}
+	.agenda-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+	.agenda-card { position: relative; min-height: 170px; padding: 25px; border-radius: 22px; color: var(--ink); box-shadow: 7px 7px 0 var(--ink-2); transition: transform .2s; }
+	.agenda-card:hover { transform: translateY(-5px) rotate(-1deg); }
+	.agenda-card.yellow { background: var(--yellow); }
+	.agenda-card.cyan { background: var(--cyan); }
+	.agenda-card.pink { background: var(--pink); }
+	.agenda-day { display: block; margin-bottom: 23px; font-size: 11px; font-weight: 700; letter-spacing: 3px; }
+	.agenda-card h3 { max-width: 190px; margin-bottom: 8px; font-family: 'Archivo Black', sans-serif; font-size: 22px; line-height: 1; letter-spacing: -1px; }
+	.agenda-card p { margin: 0; max-width: 220px; font-size: 12px; font-weight: 600; line-height: 1.4; }
+	:global(.agenda-arrow) { position: absolute; right: 22px; bottom: 17px; width: 15px; height: 15px; }
+
+	@media (max-width: 800px) {
+		.agenda-grid { grid-template-columns: 1fr; }
+	}
+</style>

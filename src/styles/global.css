@@ -1,0 +1,63 @@
+/*
+ * Estilos globais da landing page: tokens, base tipográfica e padrões usados
+ * por mais de uma seção. Estilos exclusivos de uma seção ficam no componente.
+ */
+
+:root {
+	color-scheme: dark;
+	--ink: #0e0e10;
+	--ink-2: #1c1c21;
+	--ink-3: #3a3a42;
+	--mist: #cfcdd4;
+	--white: #fff;
+	--yellow: #ffd400;
+	--cyan: #00c8ff;
+	--pink: #ff3ea5;
+	--purple: #2a1e5c;
+}
+
+* { box-sizing: border-box; }
+html {
+	@media (prefers-reduced-motion: no-preference) {
+		scroll-behavior: smooth;
+	}
+}
+body { margin: 0; background: var(--ink); color: var(--white); font-family: 'Poppins', sans-serif; font-size-adjust: from-font; line-height: 1.5; }
+a { color: inherit; text-decoration: none; }
+:where(a, button):focus-visible {
+	outline: 3px solid var(--yellow);
+	outline-offset: 4px;
+}
+.arrow-icon { display: inline-block; width: .6em; height: .6em; flex: none; vertical-align: middle; }
+
+/* Tipografia */
+h1, h2, h3, p { margin-top: 0; }
+h1, h2 { font-family: 'Archivo Black', sans-serif; letter-spacing: -3px; line-height: .91; text-wrap: balance; }
+h1 { margin-bottom: 26px; font-size: clamp(4.0625rem, 1rem + 8.5vw, 8.25rem); }
+h2 { margin-bottom: 0; font-size: clamp(3rem, 1rem + 5vw, 4.875rem); }
+h1 span, h2 span { color: var(--pink); }
+
+.eyebrow { margin: 0 0 22px; color: var(--cyan); font-size: 12px; font-weight: 700; letter-spacing: 3px; }
+.pink-text { color: var(--pink); }
+.cyan-text { color: var(--cyan); }
+.yellow-text { color: var(--yellow); }
+
+/* Botões */
+.button { position: relative; display: inline-flex; min-inline-size: 176px; min-block-size: 52px; align-items: center; justify-content: center; padding: 16px 36px 16px 24px; border-radius: 24px; color: var(--ink); font-size: .8125rem; font-weight: 700; transition: transform .2s, box-shadow .2s; }
+.button:hover { box-shadow: 7px 7px 0 var(--ink); transform: translate(-2px, -2px); }
+.button:active { transform: scale(.97); }
+.button .arrow-icon { position: absolute; right: 18px; width: 12px; height: 12px; }
+.button-yellow { background: var(--yellow); }
+.button-pink { background: var(--pink); }
+.button-outline { border: 2px solid var(--white); color: var(--white); }
+
+/* Seções */
+.section { max-width: 1176px; margin: auto; padding: 130px 42px; }
+
+@media (forced-colors: active) {
+	.button-outline { border-color: ButtonText; }
+}
+
+@media (max-width: 800px) {
+	.section { padding: 85px 24px; }
+}
