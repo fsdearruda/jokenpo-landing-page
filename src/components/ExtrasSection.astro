@@ -1,5 +1,6 @@
 ---
 import siteData from '../data/site.json';
+import ArrowIcon from './ArrowIcon.astro';
 import SectionHeading from './SectionHeading.astro';
 ---
 
@@ -8,7 +9,20 @@ import SectionHeading from './SectionHeading.astro';
 	<div class="extras-grid">
 		{siteData.extras.map((extra) => (
 			<article class={`extra-card extra-card-${extra.color}`}>
-				<span>{extra.number}</span>
+				<div class="card-top">
+					<span>{extra.number}</span>
+					{extra.number === '02' && (
+						<a
+							class="card-link"
+							href="https://wa.me/5584987655623?text=Ol%C3%A1!%20Gostaria%20de%20saber%20sobre%20reserva%20de%20mesa%20na%20Jokenp%C3%B4"
+							target="_blank"
+							rel="noreferrer"
+							aria-label="Reservar mesa pelo WhatsApp"
+						>
+							Reservar <ArrowIcon size={12} />
+						</a>
+					)}
+				</div>
 				<h3>{extra.title}</h3>
 				<p set:html={extra.description}></p>
 			</article>
@@ -22,12 +36,33 @@ import SectionHeading from './SectionHeading.astro';
 		.extras-section { padding-top: 115px; padding-bottom: 115px; }
 	}
 	.extras-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-	.extra-card { min-height: 215px; padding: 25px; border-radius: 22px; color: var(--ink); }
+	.extra-card { display: flex; flex-direction: column; min-height: 220px; padding: 25px; border-radius: 22px; color: var(--ink); transition: transform 0.2s ease; }
+	.extra-card:hover { transform: translateY(-4px); }
 	.extra-card-cyan { background: var(--cyan); }
 	.extra-card-yellow { background: var(--yellow); }
 	.extra-card-pink { background: var(--pink); }
-	.extra-card > span { font-size: 11px; font-weight: 700; letter-spacing: 2px; }
-	.extra-card h3 { margin: 50px 0 10px; font-family: 'Archivo Black', sans-serif; font-size: 25px; letter-spacing: -1px; }
+
+	.card-top { display: flex; justify-content: space-between; align-items: center; }
+	.card-top > span { font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+
+	.card-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 5px 12px;
+		border-radius: 999px;
+		background: var(--ink);
+		color: var(--white);
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		transition: opacity 0.15s ease, transform 0.15s ease;
+	}
+	.card-link:hover { opacity: 0.85; transform: scale(1.03); }
+	:global(.card-link .arrow-icon) { width: 10px; height: 10px; }
+
+	.extra-card h3 { margin: 38px 0 10px; font-family: 'Archivo Black', sans-serif; font-size: 25px; letter-spacing: -1px; }
 	.extra-card p { margin: 0; font-size: 12px; font-weight: 600; line-height: 1.55; }
 
 	@media (max-width: 800px) {

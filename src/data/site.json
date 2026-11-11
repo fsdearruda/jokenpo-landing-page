@@ -316,6 +316,54 @@
       "image": "zombicide.jpg"
     }
   ],
+  "howItWorks": {
+    "eyebrow": "COMO FUNCIONA",
+    "title": "PASSO A PASSO",
+    "highlight": "PRA JOGAR",
+    "lead": "Traga sua galera ou venha sozinho para encontrar outros jogadores. É simples assim:",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Escolha seu jogo",
+        "description": "Alugue um boardgame da nossa estante com 13+ opções abertas ou traga seu baralho de Magic, Pokémon, Yu-Gi-Oh! ou One Piece.",
+        "color": "cyan"
+      },
+      {
+        "number": "02",
+        "title": "Aproveite os passes",
+        "description": "Passe da Tarde econômico (R$ 10 a 15), aluguel por hora à noite (R$ 10 a 15/h) ou passe livre o dia todo na quinta (R$ 20) e no sábado (R$ 30).",
+        "color": "yellow"
+      },
+      {
+        "number": "03",
+        "title": "Zero complicação",
+        "description": "Espaço climatizado com mesas prontas, snacks no balcão e a galera da loja para dar aquela força nas regras dos jogos.",
+        "color": "pink"
+      }
+    ]
+  },
+  "faq": [
+    {
+      "question": "Preciso saber jogar ou ter grupo formado?",
+      "answer": "Não precisa! Temos acervo com jogos de tabuleiro de regras rápidas a estratégicas e ajudamos você a entender o jogo. Se você joga card games (Magic, Pokémon, Yu-Gi-Oh!, One Piece), pode trazer seu baralho para os torneios ou para as mesas livres e conhecer a galera da comunidade."
+    },
+    {
+      "question": "Qual a diferença entre o Passe da Tarde e o Pegue e Jogue?",
+      "answer": "O Passe da Tarde funciona de segunda a sexta, das 14h às 18h, com valor fixo por pessoa (R$ 10, R$ 13 ou R$ 15 para jogar a tarde inteira). Já o Pegue e Jogue acontece das 18h30 às 22h, cobrando por hora de jogo alugado (R$ 10, 13 ou 15 a cada hora)."
+    },
+    {
+      "question": "Como funcionam os dias livres (Quinta e Sábado)?",
+      "answer": "Na quinta-feira temos o Dia do Boardgame: R$ 20 por pessoa para jogar qualquer jogo do acervo o dia todo. No sábado temos o Passe de Sábado: R$ 30 por pessoa o dia todo para curtir tanto os card games quanto os jogos de tabuleiro."
+    },
+    {
+      "question": "Como faço para reservar mesa para RPG ou aniversário?",
+      "answer": "Nossas mesas podem ser reservadas em períodos de 3 horas para grupos de RPG, aniversários ou encontros de amigos. Basta clicar no botão de reserva para combinar a data e o horário pelo nosso WhatsApp oficial."
+    },
+    {
+      "question": "Tem comida ou bebida para consumir durante as partidas?",
+      "answer": "Sim! Temos refrigerantes gelados, água, doces e salgadinhos prontos no balcão da loja para você recarregar as energias entre uma rodada e outra."
+    }
+  ],
   "location": {
     "venue": "Shopping New Way Center, loja 24",
     "street": "Av. Dr. João Medeiros Filho, 5421",

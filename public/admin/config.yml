@@ -162,3 +162,27 @@ collections:
               - { label: Título, name: title, widget: string }
               - { label: Descrição, name: description, widget: text }
               - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+          - label: Como Funciona (Passo a Passo)
+            name: howItWorks
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Título Linha 1, name: title, widget: string }
+              - { label: Título Destaque, name: highlight, widget: string }
+              - { label: Texto Introdutório, name: lead, widget: text }
+              - label: Passos
+                name: steps
+                widget: list
+                summary: "{{fields.number}} - {{fields.title}}"
+                fields:
+                  - { label: Número (ex. 01), name: number, widget: string }
+                  - { label: Título do Passo, name: title, widget: string }
+                  - { label: Descrição, name: description, widget: text }
+                  - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+          - label: Perguntas Frequentes (FAQ)
+            name: faq
+            widget: list
+            summary: "{{fields.question}}"
+            fields:
+              - { label: Pergunta, name: question, widget: string }
+              - { label: Resposta, name: answer, widget: text }

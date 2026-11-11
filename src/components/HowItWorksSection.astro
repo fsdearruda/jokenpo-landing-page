@@ -1,0 +1,151 @@
+---
+import siteData from '../data/site.json';
+import SectionHeading from './SectionHeading.astro';
+
+const { howItWorks } = siteData;
+---
+
+<section class="section how-it-works-section" id="como-funciona" tabindex="-1" aria-labelledby="how-it-works-title">
+	<SectionHeading
+		eyebrow={howItWorks.eyebrow}
+		eyebrowColor="cyan"
+		titleId="how-it-works-title"
+		title={howItWorks.title}
+		highlight={howItWorks.highlight}
+	>
+		{howItWorks.lead}
+	</SectionHeading>
+
+	<div class="steps-grid">
+		{howItWorks.steps.map((step) => (
+			<article class={`step-card step-${step.color}`}>
+				<div class="step-header">
+					<span class="step-number">{step.number}</span>
+					<span class="step-pill">Passo {step.number}</span>
+				</div>
+				<h3 class="step-title">{step.title}</h3>
+				<p class="step-desc">{step.description}</p>
+			</article>
+		))}
+	</div>
+</section>
+
+<style>
+	.how-it-works-section {
+		display: flex;
+		flex-direction: column;
+		gap: 36px;
+	}
+
+	.steps-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
+	}
+
+	.step-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		padding: 32px 28px;
+		border-radius: 24px;
+		background: #171923;
+		border: 2px solid rgba(255, 255, 255, 0.08);
+		color: #ffffff;
+		transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.step-card:hover {
+		transform: translateY(-6px);
+		box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+	}
+
+	.step-card.step-cyan {
+		border-top: 5px solid var(--cyan);
+	}
+	.step-card.step-cyan:hover {
+		border-color: var(--cyan);
+	}
+
+	.step-card.step-yellow {
+		border-top: 5px solid var(--yellow);
+	}
+	.step-card.step-yellow:hover {
+		border-color: var(--yellow);
+	}
+
+	.step-card.step-pink {
+		border-top: 5px solid var(--pink);
+	}
+	.step-card.step-pink:hover {
+		border-color: var(--pink);
+	}
+
+	.step-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 24px;
+	}
+
+	.step-number {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 32px;
+		line-height: 1;
+		color: rgba(255, 255, 255, 0.25);
+		letter-spacing: -1px;
+	}
+
+	.step-card.step-cyan .step-number {
+		color: var(--cyan);
+	}
+	.step-card.step-yellow .step-number {
+		color: var(--yellow);
+	}
+	.step-card.step-pink .step-number {
+		color: var(--pink);
+	}
+
+	.step-pill {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		padding: 4px 10px;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.08);
+		color: rgba(255, 255, 255, 0.7);
+	}
+
+	.step-title {
+		font-family: 'Archivo Black', sans-serif;
+		font-size: 22px;
+		line-height: 1.2;
+		letter-spacing: -0.5px;
+		margin: 0 0 12px 0;
+		color: #ffffff;
+	}
+
+	.step-desc {
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.75);
+		margin: 0;
+	}
+
+	@media (max-width: 800px) {
+		.steps-grid {
+			grid-template-columns: 1fr;
+			gap: 16px;
+		}
+
+		.step-card {
+			padding: 24px;
+		}
+
+		.step-title {
+			font-size: 20px;
+		}
+	}
+</style>

@@ -2,10 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
 import Marquee from '../components/Marquee.astro';
+import HowItWorksSection from '../components/HowItWorksSection.astro';
 import GamesSection from '../components/GamesSection.astro';
 import AgendaSection from '../components/AgendaSection.astro';
 import AboutSection from '../components/AboutSection.astro';
 import ExtrasSection from '../components/ExtrasSection.astro';
+import FaqSection from '../components/FaqSection.astro';
 import VisitSection from '../components/VisitSection.astro';
 
 export const prerender = true;
@@ -14,9 +16,11 @@ export const prerender = true;
 <BaseLayout>
 	<Hero />
 	<Marquee />
+	<HowItWorksSection />
 	<GamesSection />
 	<AgendaSection />
 	<AboutSection />
 	<ExtrasSection />
+	<FaqSection />
 	<VisitSection />
 </BaseLayout>

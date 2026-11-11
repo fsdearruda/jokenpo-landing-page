@@ -1,0 +1,132 @@
+---
+import siteData from '../data/site.json';
+import SectionHeading from './SectionHeading.astro';
+
+const { faq } = siteData;
+---
+
+<section class="section faq-section" id="duvidas" tabindex="-1" aria-labelledby="faq-title">
+	<SectionHeading
+		eyebrow="TIRE SUAS DÚVIDAS"
+		eyebrowColor="yellow"
+		titleId="faq-title"
+		title="PERGUNTAS"
+		highlight="FREQUENTES"
+	>
+		Tudo o que você precisa saber antes de colar na loja para jogar:
+	</SectionHeading>
+
+	<div class="faq-list" role="region" aria-label="Lista de perguntas frequentes">
+		{faq.map((item) => (
+			<details class="faq-item">
+				<summary class="faq-summary">
+					<span class="faq-question-text">{item.question}</span>
+					<span class="faq-toggle-icon" aria-hidden="true">+</span>
+				</summary>
+				<div class="faq-content">
+					<p>{item.answer}</p>
+				</div>
+			</details>
+		))}
+	</div>
+</section>
+
+<style>
+	.faq-section {
+		display: flex;
+		flex-direction: column;
+		gap: 36px;
+	}
+
+	.faq-list {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		max-width: 900px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.faq-item {
+		border-radius: 18px;
+		background: #171923;
+		border: 2px solid rgba(255, 255, 255, 0.08);
+		overflow: hidden;
+		transition: border-color 0.2s ease, background 0.2s ease;
+	}
+
+	.faq-item[open] {
+		border-color: rgba(255, 212, 0, 0.5);
+		background: #191c28;
+	}
+
+	.faq-summary {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 22px 26px;
+		cursor: pointer;
+		user-select: none;
+		list-style: none;
+		font-family: 'Poppins', sans-serif;
+		font-size: 16px;
+		font-weight: 700;
+		color: #ffffff;
+		transition: color 0.15s ease;
+	}
+
+	.faq-summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.faq-summary:hover {
+		color: var(--yellow);
+	}
+
+	.faq-summary:focus-visible {
+		outline: 2px solid var(--yellow);
+		outline-offset: -2px;
+	}
+
+	.faq-question-text {
+		padding-right: 18px;
+		line-height: 1.4;
+	}
+
+	.faq-toggle-icon {
+		flex-shrink: 0;
+		font-size: 24px;
+		font-weight: 700;
+		line-height: 1;
+		color: var(--yellow);
+		transition: transform 0.2s ease;
+	}
+
+	.faq-item[open] .faq-toggle-icon {
+		transform: rotate(45deg);
+		color: var(--pink);
+	}
+
+	.faq-content {
+		padding: 0 26px 24px 26px;
+		color: rgba(255, 255, 255, 0.78);
+		font-size: 14px;
+		line-height: 1.65;
+	}
+
+	.faq-content p {
+		margin: 0;
+	}
+
+	@media (max-width: 800px) {
+		.faq-summary {
+			padding: 18px 20px;
+			font-size: 15px;
+		}
+
+		.faq-content {
+			padding: 0 20px 20px 20px;
+			font-size: 13px;
+		}
+	}
+</style>
