@@ -2,20 +2,44 @@
 import { Image } from 'astro:assets';
 import siteData from '../data/site.json';
 import ArrowIcon from './ArrowIcon.astro';
+import SectionHeading from './SectionHeading.astro';
 
 const { faq } = siteData;
 const colors = ['cyan', 'yellow', 'pink'];
 ---
 
 <section class="section faq-section" id="duvidas" tabindex="-1" aria-labelledby="faq-title">
-	<div class="faq-intro">
-		<p class="eyebrow yellow-text">TIRE SUAS DÚVIDAS</p>
-		<h2 id="faq-title">PERGUNTAS<br /><span>FREQUENTES</span></h2>
-		<p class="faq-lead">
-			Tudo o que você precisa saber antes de colar na loja para jogar com a galera:
-		</p>
+	<SectionHeading
+		eyebrow="TIRE SUAS DÚVIDAS"
+		eyebrowColor="yellow"
+		titleId="faq-title"
+		title="PERGUNTAS"
+		highlight="FREQUENTES"
+	>
+		Tudo o que você precisa saber antes de<br />colar na loja para jogar com a galera
+	</SectionHeading>
 
-		<div class="faq-sticker-card">
+	<div class="faq-body">
+		<div class="faq-list" role="region" aria-label="Lista de perguntas frequentes">
+			{faq.map((item, index) => {
+				const accent = colors[index % colors.length];
+				const num = String(index + 1).padStart(2, '0');
+				return (
+					<details class={`faq-item accent-${accent}`}>
+						<summary class="faq-summary">
+							<span class="faq-num" aria-hidden="true">{num}</span>
+							<span class="faq-question-text">{item.question}</span>
+							<span class="faq-toggle-icon" aria-hidden="true">+</span>
+						</summary>
+						<div class="faq-content">
+							<p>{item.answer}</p>
+						</div>
+					</details>
+				);
+			})}
+		</div>
+
+		<aside class="faq-sticker-card" aria-label="Atendimento via WhatsApp">
 			<div class="sticker-top">
 				<span class="sticker-kicker">ATENDIMENTO DIRETO</span>
 				<Image class="sticker-mascot" src="/Vetor/coelho-creme.svg" alt="" width={58} height={65} loading="lazy" />
@@ -30,26 +54,7 @@ const colors = ['cyan', 'yellow', 'pink'];
 			>
 				Chamar no WhatsApp <ArrowIcon size={15} />
 			</a>
-		</div>
-	</div>
-
-	<div class="faq-list" role="region" aria-label="Lista de perguntas frequentes">
-		{faq.map((item, index) => {
-			const accent = colors[index % colors.length];
-			const num = String(index + 1).padStart(2, '0');
-			return (
-				<details class={`faq-item accent-${accent}`}>
-					<summary class="faq-summary">
-						<span class="faq-num" aria-hidden="true">{num}</span>
-						<span class="faq-question-text">{item.question}</span>
-						<span class="faq-toggle-icon" aria-hidden="true">+</span>
-					</summary>
-					<div class="faq-content">
-						<p>{item.answer}</p>
-					</div>
-				</details>
-			);
-		})}
+		</aside>
 	</div>
 </section>
 
@@ -62,36 +67,24 @@ const colors = ['cyan', 'yellow', 'pink'];
 		}
 	}
 
-	.faq-section {
+	.faq-body {
 		display: grid;
-		grid-template-columns: 380px 1fr;
-		gap: 56px;
+		grid-template-columns: minmax(0, 1fr) 330px;
+		gap: 42px;
 		align-items: start;
-	}
-
-	.faq-intro h2 {
-		margin-bottom: 20px;
-	}
-
-	.faq-lead {
-		margin: 0 0 36px;
-		color: var(--mist);
-		font-size: 14px;
-		font-weight: 600;
-		line-height: 1.6;
-		max-width: 34ch;
 	}
 
 	/* Tactile Sticker Card (matching AboutSection & VisitSection) */
 	.faq-sticker-card {
-		position: relative;
-		padding: 24px;
+		position: sticky;
+		top: 110px;
+		padding: 26px 24px;
 		background: var(--white);
 		color: var(--ink);
 		border: 3px solid var(--ink);
 		border-radius: 22px;
 		box-shadow: 10px 10px 0 var(--cyan);
-		transform: rotate(-2deg);
+		transform: rotate(2deg);
 		transition: transform 0.2s ease;
 	}
 
@@ -140,7 +133,7 @@ const colors = ['cyan', 'yellow', 'pink'];
 	}
 
 	.sticker-desc {
-		margin: 0 0 20px;
+		margin: 0 0 22px;
 		font-size: 12px;
 		font-weight: 600;
 		line-height: 1.5;
@@ -159,6 +152,7 @@ const colors = ['cyan', 'yellow', 'pink'];
 		flex-direction: column;
 		gap: 18px;
 		width: 100%;
+		min-width: 0;
 	}
 
 	.faq-item {
@@ -291,18 +285,17 @@ const colors = ['cyan', 'yellow', 'pink'];
 		border-top: 2px solid var(--ink-3);
 	}
 
-	@media (max-width: 920px) {
-		.faq-section {
+	@media (max-width: 960px) {
+		.faq-body {
 			grid-template-columns: 1fr;
-			gap: 40px;
-		}
-
-		.faq-lead {
-			max-width: none;
+			gap: 36px;
 		}
 
 		.faq-sticker-card {
+			position: relative;
+			top: 0;
 			max-width: 420px;
+			margin: 0 auto;
 		}
 	}
 
