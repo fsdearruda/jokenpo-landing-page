@@ -1,10 +1,8 @@
 ---
-import { Image } from 'astro:assets';
 import siteData from '../data/site.json';
-import ArrowIcon from './ArrowIcon.astro';
 import SectionHeading from './SectionHeading.astro';
 
-const { faq } = siteData;
+const { faq, contact } = siteData;
 const colors = ['cyan', 'yellow', 'pink'];
 ---
 
@@ -19,178 +17,79 @@ const colors = ['cyan', 'yellow', 'pink'];
 		Tudo o que você precisa saber antes de<br />colar na loja para jogar com a galera
 	</SectionHeading>
 
-	<div class="faq-body">
-		<div class="faq-list" role="region" aria-label="Lista de perguntas frequentes">
-			{faq.map((item, index) => {
-				const accent = colors[index % colors.length];
-				const num = String(index + 1).padStart(2, '0');
-				return (
-					<details class={`faq-item accent-${accent}`}>
-						<summary class="faq-summary">
-							<span class="faq-num" aria-hidden="true">{num}</span>
-							<span class="faq-question-text">{item.question}</span>
-							<span class="faq-toggle-icon" aria-hidden="true">+</span>
-						</summary>
-						<div class="faq-content">
-							<p>{item.answer}</p>
-						</div>
-					</details>
-				);
-			})}
-		</div>
-
-		<aside class="faq-sticker-card" aria-label="Atendimento via WhatsApp">
-			<div class="sticker-top">
-				<span class="sticker-kicker">ATENDIMENTO DIRETO</span>
-				<Image class="sticker-mascot" src="/Vetor/coelho-creme.svg" alt="" width={58} height={65} loading="lazy" />
-			</div>
-			<p class="sticker-title">AINDA FICOU<br /><strong>COM DÚVIDA?</strong></p>
-			<p class="sticker-desc">Chama a gente no WhatsApp que a equipe responde rapidinho.</p>
-			<a
-				class="button button-pink sticker-btn"
-				href="https://wa.me/5584987655623?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20Jokenp%C3%B4"
-				target="_blank"
-				rel="noreferrer"
-			>
-				Chamar no WhatsApp <ArrowIcon size={15} />
-			</a>
-		</aside>
+	<div class="faq-list" role="region" aria-label="Lista de perguntas frequentes">
+		{faq.map((item, index) => {
+			const accent = colors[index % colors.length];
+			const num = String(index + 1).padStart(2, '0');
+			return (
+				<details class={`faq-item accent-${accent}`}>
+					<summary class="faq-summary">
+						<span class="faq-num" aria-hidden="true">{num}</span>
+						<span class="faq-question-text">{item.question}</span>
+						<span class="faq-toggle-icon" aria-hidden="true">+</span>
+					</summary>
+					<div class="faq-content">
+						<p>{item.answer}</p>
+					</div>
+				</details>
+			);
+		})}
 	</div>
+
+	<p class="faq-footer-note">
+		Ficou com mais alguma dúvida?
+		<a
+			href="https://wa.me/5584987655623?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20Jokenp%C3%B4"
+			target="_blank"
+			rel="noreferrer"
+		>
+			Chama a gente no WhatsApp
+		</a>
+		ou entre na
+		<a href={contact.communityWhatsapp} target="_blank" rel="noreferrer">comunidade</a>.
+	</p>
 </section>
 
 <style>
 	/* No mobile vale o espaçamento padrão de `.section`. */
 	@media (width > 800px) {
 		.faq-section {
-			padding-top: 90px;
-			padding-bottom: 100px;
+			padding-top: 80px;
+			padding-bottom: 80px;
 		}
 	}
 
-	.faq-body {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 330px;
-		gap: 42px;
-		align-items: start;
-	}
-
-	/* Tactile Sticker Card (matching AboutSection & VisitSection) */
-	.faq-sticker-card {
-		position: sticky;
-		top: 110px;
-		padding: 26px 24px;
-		background: var(--white);
-		color: var(--ink);
-		border: 3px solid var(--ink);
-		border-radius: 22px;
-		box-shadow: 10px 10px 0 var(--cyan);
-		transform: rotate(2deg);
-		transition: transform 0.2s ease;
-	}
-
-	.faq-sticker-card:hover {
-		transform: rotate(0deg) translateY(-3px);
-	}
-
-	.sticker-top {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: 8px;
-	}
-
-	.sticker-kicker {
-		display: inline-block;
-		padding: 4px 10px;
-		background: var(--yellow);
-		border: 2px solid var(--ink);
-		border-radius: 999px;
-		font-size: 10px;
-		font-weight: 700;
-		letter-spacing: 1.5px;
-		text-transform: uppercase;
-	}
-
-	.sticker-mascot {
-		width: 54px;
-		height: auto;
-		margin-top: -8px;
-		filter: drop-shadow(3px 3px 0 var(--ink));
-		transform: rotate(8deg);
-	}
-
-	.sticker-title {
-		margin: 6px 0 10px;
-		font-family: 'Archivo Black', sans-serif;
-		font-size: 24px;
-		line-height: 0.95;
-		letter-spacing: -1px;
-		text-transform: uppercase;
-	}
-
-	.sticker-title strong {
-		color: var(--pink);
-	}
-
-	.sticker-desc {
-		margin: 0 0 22px;
-		font-size: 12px;
-		font-weight: 600;
-		line-height: 1.5;
-		color: var(--ink-2);
-	}
-
-	.sticker-btn {
-		width: 100%;
-		border: 2px solid var(--ink);
-		box-shadow: 4px 4px 0 var(--ink);
-	}
-
-	/* FAQ Accordion List */
 	.faq-list {
 		display: flex;
 		flex-direction: column;
-		gap: 18px;
-		width: 100%;
-		min-width: 0;
+		gap: 14px;
 	}
 
 	.faq-item {
-		border-radius: 20px;
+		border-radius: 22px;
 		background: var(--ink-2);
-		border: 3px solid var(--ink-3);
-		box-shadow: 7px 7px 0 #00000055;
+		border: 2px solid var(--ink-3);
 		overflow: hidden;
-		transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+		transition: border-color 0.2s ease, transform 0.2s ease;
 	}
 
-	.faq-item:hover {
-		transform: translate(-2px, -2px);
-	}
-
-	.faq-item.accent-cyan:hover,
 	.faq-item.accent-cyan[open] {
 		border-color: var(--cyan);
-		box-shadow: 7px 7px 0 var(--cyan);
 	}
 
-	.faq-item.accent-yellow:hover,
 	.faq-item.accent-yellow[open] {
 		border-color: var(--yellow);
-		box-shadow: 7px 7px 0 var(--yellow);
 	}
 
-	.faq-item.accent-pink:hover,
 	.faq-item.accent-pink[open] {
 		border-color: var(--pink);
-		box-shadow: 7px 7px 0 var(--pink);
 	}
 
 	.faq-summary {
 		display: flex;
 		align-items: center;
-		gap: 16px;
-		padding: 20px 24px;
+		gap: 18px;
+		padding: 22px 26px;
 		cursor: pointer;
 		user-select: none;
 		list-style: none;
@@ -208,10 +107,9 @@ const colors = ['cyan', 'yellow', 'pink'];
 
 	.faq-num {
 		flex-shrink: 0;
-		font-family: 'Archivo Black', sans-serif;
-		font-size: 18px;
-		letter-spacing: -1px;
-		line-height: 1;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 2px;
 	}
 
 	.faq-item.accent-cyan .faq-num {
@@ -227,90 +125,74 @@ const colors = ['cyan', 'yellow', 'pink'];
 	.faq-question-text {
 		flex: 1;
 		font-family: 'Archivo Black', sans-serif;
-		font-size: 17px;
+		font-size: 20px;
 		letter-spacing: -0.5px;
 		line-height: 1.15;
-		text-transform: uppercase;
 	}
 
 	.faq-toggle-icon {
 		flex-shrink: 0;
-		display: grid;
-		width: 34px;
-		height: 34px;
-		place-items: center;
-		border-radius: 10px;
-		border: 2px solid var(--ink);
-		background: var(--ink-3);
-		color: var(--white);
 		font-family: 'Archivo Black', sans-serif;
-		font-size: 20px;
+		font-size: 24px;
 		line-height: 1;
-		box-shadow: 3px 3px 0 var(--ink);
-		transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+		color: var(--mist);
+		transition: transform 0.2s ease, color 0.2s ease;
 	}
 
-	.faq-item.accent-cyan .faq-toggle-icon {
-		background: var(--cyan);
-		color: var(--ink);
-	}
-
-	.faq-item.accent-yellow .faq-toggle-icon {
-		background: var(--yellow);
-		color: var(--ink);
-	}
-
-	.faq-item.accent-pink .faq-toggle-icon {
-		background: var(--pink);
-		color: var(--ink);
+	.faq-summary:hover .faq-toggle-icon {
+		color: var(--white);
 	}
 
 	.faq-item[open] .faq-toggle-icon {
 		transform: rotate(45deg);
-		background: var(--white);
-		color: var(--ink);
+		color: var(--yellow);
 	}
 
 	.faq-content {
-		padding: 0 24px 22px 56px;
+		padding: 0 26px 24px 60px;
 		color: var(--mist);
-		font-size: 13px;
+		font-size: 14px;
 		font-weight: 600;
 		line-height: 1.65;
 	}
 
 	.faq-content p {
 		margin: 0;
-		padding-top: 14px;
-		border-top: 2px solid var(--ink-3);
+		max-width: 72ch;
 	}
 
-	@media (max-width: 960px) {
-		.faq-body {
-			grid-template-columns: 1fr;
-			gap: 36px;
-		}
+	.faq-footer-note {
+		margin: 26px 0 0;
+		color: var(--mist);
+		font-size: 13px;
+		font-weight: 600;
+	}
 
-		.faq-sticker-card {
-			position: relative;
-			top: 0;
-			max-width: 420px;
-			margin: 0 auto;
-		}
+	.faq-footer-note a {
+		color: var(--yellow);
+		font-weight: 700;
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
+	}
+
+	.faq-footer-note a:hover {
+		color: var(--white);
 	}
 
 	@media (max-width: 800px) {
 		.faq-summary {
-			padding: 18px 18px;
+			padding: 18px 20px;
 			gap: 12px;
 		}
 
 		.faq-question-text {
-			font-size: 15px;
+			font-size: 17px;
 		}
 
 		.faq-content {
-			padding: 0 18px 18px 18px;
+			padding: 0 20px 20px 20px;
+			font-size: 13px;
 		}
 	}
 </style>

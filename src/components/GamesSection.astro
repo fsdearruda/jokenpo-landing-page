@@ -57,12 +57,8 @@ const counts = {
 		Jogue na loja por período ou por hora.<br />Confira nossos passes, horários e acervo completo:
 	</SectionHeading>
 
-	<!-- Visual Pricing Board matching the official store reference & Arcade 2.0 style -->
+	<!-- Visual Pricing Board matching the official store reference -->
 	<div class="pricing-board" aria-label="Tabela de preços e passes dos jogos de tabuleiro">
-		<div class="pricing-Burst" aria-hidden="true">
-			<Image src="/Vetor/brilho-rosa.svg" alt="" width={42} height={42} loading="lazy" />
-		</div>
-
 		<!-- Card Passe da Tarde -->
 		<article class="pricing-card afternoon-card">
 			<div class="card-schedule-header">
@@ -113,25 +109,7 @@ const counts = {
 			</div>
 			<div class="hourly-body">
 				<div class="hourly-title-group">
-					<h3 class="hourly-title">
-						<svg
-							class="bag-icon"
-							width="28"
-							height="28"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-						>
-							<rect width="18" height="18" x="3" y="3" rx="4" />
-							<path d="M3 9h18" />
-							<path d="M9 13a3 3 0 0 0 6 0" />
-						</svg>
-						{passes.hourly.title}
-					</h3>
+					<h3 class="hourly-title">{passes.hourly.title}</h3>
 					<span class="hourly-note">{passes.hourly.note}</span>
 				</div>
 				<div class="hourly-price-group">
@@ -153,16 +131,16 @@ const counts = {
 			<!-- Filter toolbar -->
 			<div class="filter-toolbar" role="toolbar" aria-label="Filtrar jogos por categoria">
 				<button type="button" class="filter-btn all active" data-filter="all" aria-pressed="true">
-					TODOS <span class="badge-count">({counts.all})</span>
+					Todos <span class="badge-count">({counts.all})</span>
 				</button>
 				<button type="button" class="filter-btn leves" data-filter="leves" aria-pressed="false">
-					LEVES <span class="badge-count">({counts.leves})</span>
+					Leves <span class="badge-count">({counts.leves})</span>
 				</button>
 				<button type="button" class="filter-btn medios" data-filter="medios" aria-pressed="false">
-					MÉDIOS <span class="badge-count">({counts.medios})</span>
+					Médios <span class="badge-count">({counts.medios})</span>
 				</button>
 				<button type="button" class="filter-btn grandes" data-filter="grandes" aria-pressed="false">
-					GRANDES <span class="badge-count">({counts.grandes})</span>
+					Grandes <span class="badge-count">({counts.grandes})</span>
 				</button>
 			</div>
 		</div>
@@ -172,7 +150,7 @@ const counts = {
 
 		<!-- Games Grid -->
 		<div class="games-grid" id="games-grid">
-			{games.map((game, index) => (
+			{games.map((game) => (
 				<article
 					class={`game-card category-${game.category}`}
 					data-category={game.category}
@@ -180,32 +158,28 @@ const counts = {
 					aria-label={`${game.name}, categoria ${game.categoryName}`}
 				>
 					<div class="game-cover-wrap">
-						<span class="game-index" aria-hidden="true">#{String(index + 1).padStart(2, '0')}</span>
-						<div class="game-cover-frame">
-							<Image
-								src={imageMap[game.image]}
-								alt={`Capa da caixa do jogo ${game.name}`}
-								width={280}
-								height={280}
-								class="game-cover"
-								loading="lazy"
-								decoding="async"
-							/>
-						</div>
+						<Image
+							src={imageMap[game.image]}
+							alt={`Capa da caixa do jogo ${game.name}`}
+							width={280}
+							height={280}
+							class="game-cover"
+							loading="lazy"
+							decoding="async"
+						/>
 						<span class={`game-badge ${game.category}`}>
 							{game.categoryName}
 						</span>
 					</div>
 
 					<div class="game-details">
-						<div class="game-meta-top">
-							<span class="game-publisher">{game.publisher}</span>
-						</div>
+						<span class="game-publisher">{game.publisher}</span>
 						<h4 class="game-name">{game.name}</h4>
-						<div class="game-tags">
-							<span class="game-tag">{game.players}</span>
-							<span class={`game-tag highlight ${game.category}`}>{game.tag}</span>
-						</div>
+						<p class="game-meta">
+							<span>{game.players}</span>
+							<span class="meta-dot" aria-hidden="true">·</span>
+							<span class={`game-tag-text ${game.category}`}>{game.tag}</span>
+						</p>
 					</div>
 				</article>
 			))}
@@ -397,20 +371,11 @@ const counts = {
 		margin-bottom: 85px;
 	}
 
-	.pricing-Burst {
-		position: absolute;
-		top: -24px;
-		right: 24px;
-		z-index: 2;
-		pointer-events: none;
-		transform: rotate(12deg);
-	}
-
 	.pricing-card {
 		position: relative;
 		border-radius: 24px;
 		padding: 30px 34px;
-		box-shadow: 8px 8px 0 var(--ink-2);
+		box-shadow: 7px 7px 0 var(--ink-2);
 		transition: transform 0.2s ease, box-shadow 0.2s ease;
 	}
 
@@ -423,7 +388,6 @@ const counts = {
 		background: var(--ink-2);
 		border: 2px solid var(--ink-3);
 		color: var(--white);
-		box-shadow: 9px 9px 0 #00000055;
 	}
 
 	.card-schedule-header {
@@ -475,11 +439,6 @@ const counts = {
 		gap: 12px;
 		padding: 18px 4px;
 		border-bottom: 2px solid var(--ink-3);
-		transition: padding-left 0.2s ease;
-	}
-
-	.tier-row:hover {
-		padding-left: 12px;
 	}
 
 	.tier-info {
@@ -541,23 +500,15 @@ const counts = {
 		justify-content: space-between;
 		min-height: 220px;
 		color: var(--ink);
-		box-shadow: 8px 8px 0 var(--ink-2);
+		box-shadow: 7px 7px 0 var(--ink-2);
 	}
 
 	.pass-card.yellow {
 		background: var(--yellow);
 	}
 
-	.pass-card.yellow:hover {
-		transform: translateY(-5px) rotate(-1deg);
-	}
-
 	.pass-card.pink {
 		background: var(--pink);
-	}
-
-	.pass-card.pink:hover {
-		transform: translateY(-5px) rotate(1deg);
 	}
 
 	.card-tag {
@@ -599,11 +550,7 @@ const counts = {
 	.hourly-card.cyan {
 		background: var(--cyan);
 		color: var(--ink);
-		box-shadow: 8px 8px 0 var(--ink-2);
-	}
-
-	.hourly-card.cyan:hover {
-		transform: translateY(-5px) rotate(-0.6deg);
+		box-shadow: 7px 7px 0 var(--ink-2);
 	}
 
 	.hourly-body {
@@ -621,21 +568,12 @@ const counts = {
 	}
 
 	.hourly-title {
-		display: flex;
-		align-items: center;
-		gap: 10px;
 		font-family: 'Archivo Black', sans-serif;
 		font-size: clamp(1.65rem, 1.2rem + 1.2vw, 2.15rem);
 		margin: 0;
 		letter-spacing: -1.5px;
 		line-height: 1;
 		text-transform: uppercase;
-	}
-
-	.bag-icon {
-		flex-shrink: 0;
-		width: 28px;
-		height: 28px;
 	}
 
 	.hourly-note {
@@ -697,156 +635,111 @@ const counts = {
 		color: var(--pink);
 	}
 
-	/* Filter Buttons (Arcade 2.0 Pill Toggles) */
+	/* Filter Buttons */
 	.filter-toolbar {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 10px;
+		gap: 8px;
 	}
 
 	.filter-btn {
 		background: var(--ink-2);
 		border: 2px solid var(--ink-3);
-		color: var(--white);
+		color: var(--mist);
 		padding: 10px 18px;
 		border-radius: 999px;
 		font-family: 'Poppins', sans-serif;
 		font-size: 12px;
 		font-weight: 700;
-		letter-spacing: 1px;
-		text-transform: uppercase;
 		cursor: pointer;
-		box-shadow: 4px 4px 0 var(--ink-2);
-		transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+		transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 	}
 
 	.filter-btn:hover {
-		transform: translate(-2px, -2px);
-	}
-
-	.filter-btn:active {
-		transform: scale(0.97);
-	}
-
-	/* Todos */
-	.filter-btn.all {
-		border-color: var(--white);
 		color: var(--white);
+		border-color: var(--mist);
 	}
-	.filter-btn.all:hover {
-		box-shadow: 5px 5px 0 var(--white);
-	}
+
 	.filter-btn.all.active {
 		background: var(--white);
 		border-color: var(--white);
 		color: var(--ink);
-		box-shadow: 5px 5px 0 var(--ink-3);
 	}
 
-	/* Leves (Cyan) */
-	.filter-btn.leves {
-		border-color: var(--cyan);
-		color: var(--cyan);
-	}
-	.filter-btn.leves:hover {
-		box-shadow: 5px 5px 0 var(--cyan);
-	}
 	.filter-btn.leves.active {
 		background: var(--cyan);
 		border-color: var(--cyan);
 		color: var(--ink);
-		box-shadow: 5px 5px 0 var(--ink-3);
 	}
 
-	/* Médios (Yellow) */
-	.filter-btn.medios {
-		border-color: var(--yellow);
-		color: var(--yellow);
-	}
-	.filter-btn.medios:hover {
-		box-shadow: 5px 5px 0 var(--yellow);
-	}
 	.filter-btn.medios.active {
 		background: var(--yellow);
 		border-color: var(--yellow);
 		color: var(--ink);
-		box-shadow: 5px 5px 0 var(--ink-3);
 	}
 
-	/* Grandes (Pink) */
-	.filter-btn.grandes {
-		border-color: var(--pink);
-		color: var(--pink);
-	}
-	.filter-btn.grandes:hover {
-		box-shadow: 5px 5px 0 var(--pink);
-	}
 	.filter-btn.grandes.active {
 		background: var(--pink);
 		border-color: var(--pink);
 		color: var(--ink);
-		box-shadow: 5px 5px 0 var(--ink-3);
 	}
 
 	.badge-count {
 		font-size: 11px;
-		font-weight: 700;
+		font-weight: 600;
+		opacity: 0.75;
 	}
 
-	/* Games Grid (Arcade 2.0 Tactile Collector Cards) */
+	/* Games Grid */
 	.games-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 24px;
+		gap: 20px;
 	}
 
 	@keyframes cardReveal {
 		from {
 			opacity: 0;
-			transform: translateY(18px) scale(0.96);
+			transform: translateY(14px);
 		}
 		to {
 			opacity: 1;
-			transform: translateY(0) scale(1);
+			transform: translateY(0);
 		}
 	}
 
 	.game-card {
 		background: var(--ink-2);
-		border: 3px solid var(--ink-3);
+		border: 2px solid var(--ink-3);
 		border-radius: 22px;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		box-shadow: 8px 8px 0 #00000066;
-		transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+		transition: transform 0.2s ease, border-color 0.2s ease;
 	}
 
 	.game-card.category-leves:hover,
 	.game-card.category-leves:focus-visible {
-		transform: translateY(-6px) rotate(-1deg);
+		transform: translateY(-4px);
 		border-color: var(--cyan);
-		box-shadow: 8px 8px 0 var(--cyan);
 	}
 
 	.game-card.category-medios:hover,
 	.game-card.category-medios:focus-visible {
-		transform: translateY(-6px) rotate(1deg);
+		transform: translateY(-4px);
 		border-color: var(--yellow);
-		box-shadow: 8px 8px 0 var(--yellow);
 	}
 
 	.game-card.category-grandes:hover,
 	.game-card.category-grandes:focus-visible {
-		transform: translateY(-6px) rotate(-1deg);
+		transform: translateY(-4px);
 		border-color: var(--pink);
-		box-shadow: 8px 8px 0 var(--pink);
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
 		.game-card.animate-reveal {
-			animation: cardReveal 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-			--stagger-time: 0.04s;
+			animation: cardReveal 0.3s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+			--stagger-time: 0.03s;
 			animation-delay: calc(var(--stagger-index, 0) * var(--stagger-time));
 		}
 	}
@@ -869,50 +762,13 @@ const counts = {
 	.game-cover-wrap {
 		position: relative;
 		width: 100%;
-		height: 235px;
-		background:
-			radial-gradient(circle at 50% 50%, var(--ink-2) 0%, var(--ink) 100%),
-			repeating-linear-gradient(135deg, #ffffff06 0 12px, transparent 12px 24px);
-		border-bottom: 3px solid var(--ink-3);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 22px;
-		overflow: hidden;
-	}
-
-	.game-index {
-		position: absolute;
-		top: 12px;
-		left: 14px;
-		font-family: 'Archivo Black', sans-serif;
-		font-size: 13px;
-		letter-spacing: 0.5px;
-		color: var(--ink-3);
-		user-select: none;
-	}
-
-	.game-cover-frame {
-		width: 170px;
-		height: 170px;
+		height: 220px;
 		background: var(--white);
-		border: 3px solid var(--ink);
-		border-radius: 14px;
-		padding: 10px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 6px 6px 0 var(--ink);
-		transform: rotate(-2deg);
-		transition: transform 0.25s ease;
-	}
-
-	.game-card:nth-child(even) .game-cover-frame {
-		transform: rotate(2deg);
-	}
-
-	.game-card:hover .game-cover-frame {
-		transform: rotate(0deg) scale(1.05);
+		padding: 18px;
+		overflow: hidden;
 	}
 
 	.game-cover {
@@ -921,22 +777,25 @@ const counts = {
 		width: auto;
 		height: auto;
 		object-fit: contain;
+		border-radius: 8px;
+		transition: transform 0.25s ease;
+	}
+
+	.game-card:hover .game-cover {
+		transform: scale(1.04);
 	}
 
 	.game-badge {
 		position: absolute;
 		top: 12px;
 		right: 12px;
-		font-family: 'Archivo Black', sans-serif;
-		font-size: 11px;
-		padding: 6px 11px;
-		border: 2px solid var(--ink);
+		font-size: 10px;
+		font-weight: 700;
+		padding: 5px 10px;
 		border-radius: 999px;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 		color: var(--ink);
-		box-shadow: 3px 3px 0 var(--ink);
-		transform: rotate(3deg);
 	}
 
 	.game-badge.leves {
@@ -956,13 +815,7 @@ const counts = {
 		display: flex;
 		flex-direction: column;
 		flex: 1;
-		gap: 8px;
-	}
-
-	.game-meta-top {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
+		gap: 6px;
 	}
 
 	.game-publisher {
@@ -975,42 +828,38 @@ const counts = {
 
 	.game-name {
 		font-family: 'Archivo Black', sans-serif;
-		font-size: 21px;
-		letter-spacing: -1px;
-		margin: 0 0 8px 0;
+		font-size: 20px;
+		letter-spacing: -0.5px;
+		margin: 0;
 		color: var(--white);
-		line-height: 1.05;
-		text-transform: uppercase;
+		line-height: 1.1;
 	}
 
-	.game-tags {
-		margin-top: auto;
+	.game-meta {
+		margin: auto 0 0;
+		padding-top: 8px;
 		display: flex;
 		flex-wrap: wrap;
-		gap: 8px;
-	}
-
-	.game-tag {
-		font-size: 11px;
-		font-weight: 700;
-		padding: 4px 10px;
-		border-radius: 999px;
-		border: 2px solid var(--ink-3);
+		align-items: center;
+		gap: 6px;
+		font-size: 12px;
+		font-weight: 600;
 		color: var(--mist);
 	}
 
-	.game-tag.highlight.leves {
-		border-color: var(--cyan);
+	.meta-dot {
+		opacity: 0.5;
+	}
+
+	.game-tag-text.leves {
 		color: var(--cyan);
 	}
 
-	.game-tag.highlight.medios {
-		border-color: var(--yellow);
+	.game-tag-text.medios {
 		color: var(--yellow);
 	}
 
-	.game-tag.highlight.grandes {
-		border-color: var(--pink);
+	.game-tag-text.grandes {
 		color: var(--pink);
 	}
 
@@ -1018,7 +867,7 @@ const counts = {
 	.expand-actions {
 		display: flex;
 		justify-content: center;
-		margin-top: 12px;
+		margin-top: 8px;
 	}
 
 	.expand-actions[hidden] {
@@ -1027,24 +876,12 @@ const counts = {
 
 	.expand-btn {
 		cursor: pointer;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
-		min-inline-size: 260px;
-		font-family: 'Poppins', sans-serif;
-		font-size: 13px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		border: 2px solid var(--ink);
-		box-shadow: 6px 6px 0 var(--ink-2);
 	}
 
 	.expand-arrow {
 		position: static !important;
-		width: 14px;
-		height: 14px;
+		width: 15px;
+		height: 15px;
 		transition: transform 0.2s ease;
 	}
 
