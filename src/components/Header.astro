@@ -9,11 +9,17 @@ import ArrowIcon from './ArrowIcon.astro';
 			<Image class="brand-logo brand-logo-header" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="Jokenpô" width={150} height={33} loading="eager" />
 		</a>
 		<nav class="main-nav" aria-label="Navegação principal">
-			<button class="menu-button" type="button" popovertarget="site-menu" popovertargetaction="toggle" aria-controls="site-menu">
-				<span aria-hidden="true">☰</span>
+			<button
+				class="menu-button"
+				id="menu-toggle-btn"
+				type="button"
+				aria-expanded="false"
+				aria-controls="site-menu"
+			>
+				<span class="menu-icon" aria-hidden="true">☰</span>
 				<span>Menu</span>
 			</button>
-			<ul id="site-menu" class="site-menu" popover="auto">
+			<ul id="site-menu" class="site-menu">
 				<li><a href="#como-funciona">Como funciona</a></li>
 				<li><a href="#jogar">Jogos</a></li>
 				<li><a href="#agenda">Agenda</a></li>
@@ -26,14 +32,13 @@ import ArrowIcon from './ArrowIcon.astro';
 </header>
 
 <script>
-	const siteHeader = document.querySelector('.site-header');
-	const siteHeaderInner = document.querySelector('.site-header-inner');
-	const siteNav = document.querySelector('.main-nav');
-	const siteMenu = document.querySelector('.site-menu');
-	const menuButton = document.querySelector('.menu-button');
-	const navLinks = [...document.querySelectorAll('.site-menu a[href^="#"]')];
+	const siteHeader = document.querySelector<HTMLElement>('.site-header');
+	const siteMenu = document.querySelector<HTMLUListElement>('#site-menu');
+	const menuButton = document.querySelector<HTMLButtonElement>('#menu-toggle-btn');
+	const menuIcon = menuButton?.querySelector<HTMLElement>('.menu-icon');
+	const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.site-menu a[href^="#"]')];
 
-	if (siteHeader instanceof HTMLElement) {
+	if (siteHeader) {
 		const updateScrolledState = () => {
 			siteHeader.classList.toggle('is-scrolled', window.scrollY > 24);
 		};
@@ -41,66 +46,50 @@ import ArrowIcon from './ArrowIcon.astro';
 		window.addEventListener('scroll', updateScrolledState, { passive: true });
 	}
 
-	if (
-		siteHeader instanceof HTMLElement &&
-		siteHeaderInner instanceof HTMLElement &&
-		siteNav instanceof HTMLElement &&
-		siteMenu instanceof HTMLUListElement &&
-		menuButton instanceof HTMLButtonElement
-	) {
-		const supportsPopover = 'popover' in HTMLElement.prototype;
-
-		const updateNavigationLayout = () => {
-			siteHeader.classList.add('is-measuring');
-			siteHeader.classList.add('is-wide');
-			siteMenu.removeAttribute('popover');
-			const fits = siteHeaderInner.scrollWidth <= siteHeaderInner.clientWidth;
-
-			if (fits) {
-				siteHeader.classList.add('is-wide');
-				siteMenu.removeAttribute('popover');
-				menuButton.hidden = true;
-			} else {
-				siteHeader.classList.remove('is-wide');
-				menuButton.hidden = false;
-				if (supportsPopover) {
-					siteMenu.setAttribute('popover', 'auto');
-				}
+	if (siteHeader && siteMenu && menuButton) {
+		const setMenuOpen = (open: boolean) => {
+			siteMenu.classList.toggle('is-open', open);
+			menuButton.setAttribute('aria-expanded', String(open));
+			if (menuIcon) {
+				menuIcon.textContent = open ? '✕' : '☰';
 			}
-
-			siteHeader.classList.remove('is-measuring');
 		};
 
-		if (supportsPopover) {
-			siteMenu.addEventListener('beforetoggle', (event) => {
-				const isOpening = (event as ToggleEvent).newState === 'open';
-				menuButton.setAttribute('aria-expanded', String(isOpening));
-			});
-		} else {
-			siteMenu.hidden = true;
-			menuButton.addEventListener('click', () => {
-				const isOpen = !siteMenu.hidden;
-				siteMenu.hidden = isOpen;
-				menuButton.setAttribute('aria-expanded', String(!isOpen));
-			});
-		}
+		menuButton.addEventListener('click', (event) => {
+			event.stopPropagation();
+			const isOpen = siteMenu.classList.contains('is-open');
+			setMenuOpen(!isOpen);
+		});
+
+		document.addEventListener('click', (event) => {
+			if (
+				siteMenu.classList.contains('is-open') &&
+				event.target instanceof Node &&
+				!siteMenu.contains(event.target) &&
+				!menuButton.contains(event.target)
+			) {
+				setMenuOpen(false);
+			}
+		});
+
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && siteMenu.classList.contains('is-open')) {
+				setMenuOpen(false);
+				menuButton.focus();
+			}
+		});
 
 		navLinks.forEach((link) => {
 			link.addEventListener('click', () => {
-				if (!siteHeader.classList.contains('is-wide')) {
-					if (supportsPopover && siteMenu.matches(':popover-open')) {
-						siteMenu.hidePopover();
-					} else {
-						siteMenu.hidden = true;
-						menuButton.setAttribute('aria-expanded', 'false');
-					}
-				}
+				setMenuOpen(false);
 			});
 		});
 
-		updateNavigationLayout();
-		new ResizeObserver(updateNavigationLayout).observe(siteHeaderInner);
-		document.fonts?.ready.then(updateNavigationLayout);
+		window.matchMedia('(min-width: 961px)').addEventListener('change', (e) => {
+			if (e.matches) {
+				setMenuOpen(false);
+			}
+		});
 	}
 
 	if (navLinks.length > 0) {
@@ -158,7 +147,7 @@ import ArrowIcon from './ArrowIcon.astro';
 	}
 
 	.site-header.is-scrolled {
-		background: rgba(14, 14, 16, 0.9);
+		background: rgba(14, 14, 16, 0.92);
 		backdrop-filter: blur(12px);
 		border-bottom-color: var(--ink-3);
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
@@ -179,84 +168,110 @@ import ArrowIcon from './ArrowIcon.astro';
 		padding-bottom: 14px;
 	}
 
-	.site-header-inner > * { flex-shrink: 0; white-space: nowrap; }
-	.site-header.is-measuring .site-header-inner > * { transition: none !important; }
-	.brand { display: flex; align-items: center; }
-	.brand-logo { display: block; width: 150px; height: auto; transition: width 0.2s ease; }
-	.site-header.is-scrolled .brand-logo { width: 134px; }
-	.brand-logo-header { filter: invert(1); }
-	.main-nav { display: flex; align-items: center; color: var(--mist); font-size: .8125rem; font-weight: 700; }
+	.site-header-inner > * {
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+
+	.brand {
+		display: flex;
+		align-items: center;
+	}
+
+	.brand-logo {
+		display: block;
+		width: 150px;
+		height: auto;
+		transition: width 0.2s ease;
+	}
+
+	.site-header.is-scrolled .brand-logo {
+		width: 134px;
+	}
+
+	.brand-logo-header {
+		filter: invert(1);
+	}
+
+	.main-nav {
+		position: relative;
+		display: flex;
+		align-items: center;
+		color: var(--mist);
+		font-size: 0.8125rem;
+		font-weight: 700;
+	}
+
 	.menu-button {
-		display: inline-flex;
+		display: none;
 		min-block-size: 44px;
 		align-items: center;
 		gap: 8px;
-		padding: 9px 13px;
+		padding: 9px 14px;
 		border: 2px solid var(--white);
 		border-radius: 999px;
 		background: var(--ink-2);
 		color: var(--white);
 		font: inherit;
 		cursor: pointer;
+		transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 	}
-	.menu-button:active { transform: scale(.97); }
-	.menu-button span:first-child { color: var(--yellow); font-size: 1.1em; line-height: 1; }
-	.site-menu {
-		position: fixed;
-		inset: 76px 24px auto auto;
-		inline-size: min(80dvw, 24rem);
-		max-inline-size: calc(100dvw - 2rem);
-		max-block-size: calc(100dvh - 6rem);
-		margin: 0;
-		padding: 12px;
-		overflow: auto;
-		border: 2px solid var(--ink-3);
-		border-radius: 18px;
-		background: var(--ink-2);
-		box-shadow: 8px 8px 0 var(--pink);
-		list-style: none;
-		scroll-target-group: auto;
+
+	.menu-button:hover {
+		border-color: var(--yellow);
 	}
-	.site-menu li + li { margin-top: 4px; }
-	.site-menu a {
-		display: block;
-		min-block-size: 44px;
-		padding: 12px 14px;
-		border-radius: 10px;
-		color: var(--mist);
-	}
-	.site-menu a:hover, .site-menu a:focus-visible { color: var(--yellow); }
-	.site-menu a.target-current {
+
+	.menu-button[aria-expanded='true'] {
 		background: var(--yellow);
+		border-color: var(--yellow);
 		color: var(--ink);
-		font-weight: 700;
 	}
-	.site-header.is-wide .menu-button { display: none; }
-	.site-header.is-wide .site-menu {
-		position: static;
+
+	.menu-button:active {
+		transform: scale(0.97);
+	}
+
+	.menu-icon {
+		color: var(--yellow);
+		font-size: 1.1em;
+		line-height: 1;
+	}
+
+	.menu-button[aria-expanded='true'] .menu-icon {
+		color: var(--ink);
+	}
+
+	/* Desktop navigation (default > 960px) */
+	.site-menu {
 		display: flex;
 		align-items: center;
 		gap: 36px;
-		inline-size: auto;
-		max-inline-size: none;
-		max-block-size: none;
 		margin: 0;
 		padding: 0;
-		overflow: visible;
-		border: 0;
-		border-radius: 0;
-		background: transparent;
-		box-shadow: none;
+		list-style: none;
+		scroll-target-group: auto;
 	}
-	.site-header.is-wide .site-menu li + li { margin-top: 0; }
-	.site-header.is-wide .site-menu a { min-block-size: 24px; padding: 0; border-radius: 0; }
-	.site-header.is-wide .site-menu a.target-current {
-		background: transparent;
+
+	.site-menu a {
+		display: block;
+		padding: 6px 0;
+		color: var(--mist);
+		transition: color 0.15s ease;
+	}
+
+	.site-menu a:hover,
+	.site-menu a:focus-visible {
+		color: var(--yellow);
+	}
+
+	.site-menu a.target-current {
 		color: var(--yellow);
 		text-decoration: underline;
 		text-decoration-thickness: 2px;
 		text-underline-offset: 5px;
+		font-weight: 700;
 	}
+
 	.header-cta {
 		padding: 10px 18px;
 		border: 2px solid var(--white);
@@ -265,26 +280,97 @@ import ArrowIcon from './ArrowIcon.astro';
 		font-weight: 700;
 		transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 	}
+
 	.header-cta:hover {
 		background: var(--yellow);
 		border-color: var(--yellow);
 		color: var(--ink);
 		transform: translateY(-2px);
 	}
+
 	.header-cta:hover :global(.arrow-icon) {
 		color: var(--ink);
 	}
-	:global(.header-cta .arrow-icon) { width: 11px; height: 11px; margin-left: 8px; color: var(--yellow); }
+
+	:global(.header-cta .arrow-icon) {
+		width: 11px;
+		height: 11px;
+		margin-left: 8px;
+		color: var(--yellow);
+	}
+
+	/* Mobile / Tablet dropdown menu (<= 960px) */
+	@media (max-width: 960px) {
+		.menu-button {
+			display: inline-flex;
+		}
+
+		.site-menu {
+			display: none;
+			position: fixed;
+			top: 76px;
+			right: 24px;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 4px;
+			inline-size: min(80dvw, 22rem);
+			max-inline-size: calc(100dvw - 2rem);
+			max-block-size: calc(100dvh - 6rem);
+			padding: 12px;
+			overflow: auto;
+			border: 2px solid var(--ink-3);
+			border-radius: 18px;
+			background: var(--ink-2);
+			box-shadow: 8px 8px 0 var(--pink);
+		}
+
+		.site-header.is-scrolled .site-menu {
+			top: 66px;
+		}
+
+		.site-menu.is-open {
+			display: flex;
+		}
+
+		.site-menu a {
+			min-block-size: 44px;
+			padding: 12px 14px;
+			border-radius: 10px;
+		}
+
+		.site-menu a.target-current {
+			background: var(--yellow);
+			color: var(--ink);
+			text-decoration: none;
+		}
+	}
 
 	@media (forced-colors: active) {
-		.menu-button, .header-cta, .site-menu { border-color: ButtonText; }
-		.site-menu a.target-current { background: Highlight; color: HighlightText; }
+		.menu-button,
+		.header-cta,
+		.site-menu {
+			border-color: ButtonText;
+		}
+		.site-menu a.target-current {
+			background: Highlight;
+			color: HighlightText;
+		}
 	}
 
 	@media (max-width: 800px) {
-		.site-header-inner { padding: 18px 24px; }
-		.site-header.is-scrolled .site-header-inner { padding-top: 12px; padding-bottom: 12px; }
-		.brand-logo, .site-header.is-scrolled .brand-logo { width: 124px; }
-		.header-cta { padding: 9px 13px; }
+		.site-header-inner {
+			padding: 18px 24px;
+		}
+		.site-header.is-scrolled .site-header-inner {
+			padding-top: 12px;
+			padding-bottom: 12px;
+		}
+		.brand-logo,
+		.site-header.is-scrolled .brand-logo {
+			width: 124px;
+		}
+		.header-cta {
+			padding: 9px 13px;
+		}
 	}
 </style>
