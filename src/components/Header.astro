@@ -16,7 +16,10 @@ import ArrowIcon from './ArrowIcon.astro';
 				aria-expanded="false"
 				aria-controls="site-menu"
 			>
-				<span class="menu-icon" aria-hidden="true">☰</span>
+				<span class="menu-icon" aria-hidden="true">
+					<span class="icon-open">☰</span>
+					<span class="icon-close">✕</span>
+				</span>
 				<span>Menu</span>
 			</button>
 			<ul id="site-menu" class="site-menu">
@@ -35,7 +38,6 @@ import ArrowIcon from './ArrowIcon.astro';
 	const siteHeader = document.querySelector<HTMLElement>('.site-header');
 	const siteMenu = document.querySelector<HTMLUListElement>('#site-menu');
 	const menuButton = document.querySelector<HTMLButtonElement>('#menu-toggle-btn');
-	const menuIcon = menuButton?.querySelector<HTMLElement>('.menu-icon');
 	const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.site-menu a[href^="#"]')];
 
 	if (siteHeader) {
@@ -49,19 +51,28 @@ import ArrowIcon from './ArrowIcon.astro';
 	if (siteHeader && siteMenu && menuButton) {
 		const setMenuOpen = (open: boolean) => {
 			siteMenu.classList.toggle('is-open', open);
-			menuButton.setAttribute('aria-expanded', String(open));
-			if (menuIcon) {
-				menuIcon.textContent = open ? '✕' : '☰';
-			}
+			menuButton.setAttribute('aria-expanded', open ? 'true' : 'false');
 		};
 
-		menuButton.addEventListener('click', (event) => {
-			event.stopPropagation();
+		// Handle pointerdown on button so even rapid clicks or slight pointer movement
+		// between spans never swallows the click event
+		menuButton.addEventListener('pointerdown', (event) => {
+			if (event.button !== 0) return;
+			event.preventDefault();
 			const isOpen = siteMenu.classList.contains('is-open');
 			setMenuOpen(!isOpen);
 		});
 
-		document.addEventListener('click', (event) => {
+		// Fallback for keyboard activation (Space / Enter) which fires 'click' with detail === 0
+		menuButton.addEventListener('click', (event) => {
+			if (event.detail === 0) {
+				const isOpen = siteMenu.classList.contains('is-open');
+				setMenuOpen(!isOpen);
+			}
+		});
+
+		// Close when pressing outside the menu and button
+		document.addEventListener('pointerdown', (event) => {
 			if (
 				siteMenu.classList.contains('is-open') &&
 				event.target instanceof Node &&
@@ -214,7 +225,14 @@ import ArrowIcon from './ArrowIcon.astro';
 		color: var(--white);
 		font: inherit;
 		cursor: pointer;
-		transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+		user-select: none;
+		-webkit-user-select: none;
+		touch-action: manipulation;
+		transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+	}
+
+	.menu-button > * {
+		pointer-events: none;
 	}
 
 	.menu-button:hover {
@@ -227,18 +245,29 @@ import ArrowIcon from './ArrowIcon.astro';
 		color: var(--ink);
 	}
 
-	.menu-button:active {
-		transform: scale(0.97);
-	}
-
 	.menu-icon {
+		display: inline-grid;
+		place-items: center;
+		width: 1.1em;
 		color: var(--yellow);
 		font-size: 1.1em;
 		line-height: 1;
 	}
 
+	.menu-icon .icon-close {
+		display: none;
+	}
+
 	.menu-button[aria-expanded='true'] .menu-icon {
 		color: var(--ink);
+	}
+
+	.menu-button[aria-expanded='true'] .menu-icon .icon-open {
+		display: none;
+	}
+
+	.menu-button[aria-expanded='true'] .menu-icon .icon-close {
+		display: inline;
 	}
 
 	/* Desktop navigation (default > 960px) */
