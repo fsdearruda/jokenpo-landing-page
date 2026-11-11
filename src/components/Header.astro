@@ -216,8 +216,8 @@ import { Image } from 'astro:assets';
 		min-block-size: 44px;
 		align-items: center;
 		gap: 8px;
-		padding: 9px 14px;
-		border: 2px solid var(--white);
+		padding: 9px 16px;
+		border: 0;
 		border-radius: 999px;
 		background: var(--ink-2);
 		color: var(--white);
@@ -226,7 +226,7 @@ import { Image } from 'astro:assets';
 		user-select: none;
 		-webkit-user-select: none;
 		touch-action: manipulation;
-		transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+		transition: background 0.15s ease, color 0.15s ease;
 	}
 
 	.menu-button > * {
@@ -234,12 +234,11 @@ import { Image } from 'astro:assets';
 	}
 
 	.menu-button:hover {
-		border-color: var(--yellow);
+		background: var(--ink-3);
 	}
 
 	.menu-button[aria-expanded='true'] {
 		background: var(--yellow);
-		border-color: var(--yellow);
 		color: var(--ink);
 	}
 
