@@ -183,10 +183,11 @@ const counts = {
 							<Image
 								src={imageMap[game.image]}
 								alt={`Capa da caixa do jogo ${game.name}`}
-								width={400}
-								height={400}
+								width={280}
+								height={280}
 								class="game-cover"
 								loading="lazy"
+								decoding="async"
 							/>
 						</div>
 						<span class={`game-badge ${game.category}`}>

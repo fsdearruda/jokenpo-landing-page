@@ -53,7 +53,13 @@ h1 span, h2 span { color: var(--pink); }
 .button-outline { border: 2px solid var(--white); color: var(--white); }
 
 /* Seções */
-.section { max-width: 1176px; margin: auto; padding: 130px 42px; }
+.section {
+	max-width: 1176px;
+	margin: auto;
+	padding: 130px 42px;
+	content-visibility: auto;
+	contain-intrinsic-size: auto 650px;
+}
 
 @media (forced-colors: active) {
 	.button-outline { border-color: ButtonText; }
