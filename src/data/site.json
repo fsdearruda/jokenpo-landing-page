@@ -273,14 +273,14 @@
     },
     {
       "id": "exploding-kittens",
-      "name": "Exploding Kittens",
+      "name": "Exploding Kittens: Para a Galera",
       "category": "medios",
       "categoryName": "Médios",
       "price": "R$ 13",
       "publisher": "Galápagos / Exploding Kittens",
       "tag": "Roleta-russa felina",
-      "players": "2–5 jogadores",
-      "image": "exploding-kittens.png"
+      "players": "2–10 jogadores",
+      "image": "exploding-kittens.jpg"
     },
     {
       "id": "catan",
