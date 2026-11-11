@@ -154,13 +154,13 @@ const counts = {
 					TODOS <span class="badge-count">({counts.all})</span>
 				</button>
 				<button type="button" class="filter-btn leves" data-filter="leves" aria-pressed="false">
-					LEVES · R$ 10 <span class="badge-count">({counts.leves})</span>
+					LEVES <span class="badge-count">({counts.leves})</span>
 				</button>
 				<button type="button" class="filter-btn medios" data-filter="medios" aria-pressed="false">
-					MÉDIOS · R$ 13 <span class="badge-count">({counts.medios})</span>
+					MÉDIOS <span class="badge-count">({counts.medios})</span>
 				</button>
 				<button type="button" class="filter-btn grandes" data-filter="grandes" aria-pressed="false">
-					GRANDES · R$ 15 <span class="badge-count">({counts.grandes})</span>
+					GRANDES <span class="badge-count">({counts.grandes})</span>
 				</button>
 			</div>
 		</div>
@@ -175,7 +175,7 @@ const counts = {
 					class={`game-card category-${game.category}`}
 					data-category={game.category}
 					tabindex="0"
-					aria-label={`${game.name}, categoria ${game.categoryName}, passe ${game.price}`}
+					aria-label={`${game.name}, categoria ${game.categoryName}`}
 				>
 					<div class="game-cover-wrap">
 						<span class="game-index" aria-hidden="true">#{String(index + 1).padStart(2, '0')}</span>
@@ -190,7 +190,7 @@ const counts = {
 							/>
 						</div>
 						<span class={`game-badge ${game.category}`}>
-							{game.categoryName} · {game.price}
+							{game.categoryName}
 						</span>
 					</div>
 
