@@ -58,9 +58,9 @@ Uma vez por mês há Challenger ou Cup. Confirmar datas antes de divulgar.
 
 | Categoria | Passe da Tarde | Pegue e jogue |
 |---|---:|---:|
-| Leves — ciano | R$ 10 | R$ 12/h |
-| Médios — amarelo | R$ 13 | R$ 15/h |
-| Grandes — rosa | R$ 15 | R$ 20/h |
+| Leves — ciano | R$ 10 | R$ 10/h |
+| Médios — amarelo | R$ 13 | R$ 13/h |
+| Grandes — rosa | R$ 15 | R$ 15/h |
 
 - Quinta: **R$ 20 por pessoa**, o dia todo, qualquer jogo.
 - Sábado: **R$ 30 por pessoa**, o dia todo, qualquer jogo.
