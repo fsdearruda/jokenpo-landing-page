@@ -1,11 +1,34 @@
 ---
 import { Image } from 'astro:assets';
+
+const items = Array.from({ length: 6 });
 ---
 
 <section class="marquee" aria-label="RPG, TCG, board games e torneios">
 	<div class="marquee-track">
-		<Image src="/Vetor/faixa-categorias.svg" alt="RPG, TCG, board games e torneios" width={675} height={44} loading="lazy" />
-		<Image src="/Vetor/faixa-categorias.svg" alt="" width={675} height={44} loading="lazy" aria-hidden="true" />
+		<div class="marquee-group">
+			{items.map((_, i) => (
+				<Image
+					src="/Vetor/faixa-categorias.svg"
+					alt={i === 0 ? "RPG, TCG, board games e torneios" : ""}
+					width={654}
+					height={44}
+					loading="eager"
+					aria-hidden={i > 0 ? "true" : undefined}
+				/>
+			))}
+		</div>
+		<div class="marquee-group" aria-hidden="true">
+			{items.map(() => (
+				<Image
+					src="/Vetor/faixa-categorias.svg"
+					alt=""
+					width={654}
+					height={44}
+					loading="eager"
+				/>
+			))}
+		</div>
 	</div>
 	<button class="marquee-toggle" type="button" aria-pressed="false">Pausar movimento</button>
 </section>
@@ -24,16 +47,34 @@ import { Image } from 'astro:assets';
 </script>
 
 <style>
-	.marquee { position: relative; overflow: hidden; background: var(--ink); white-space: nowrap; transform: rotate(-1.5deg) scale(1.03); }
+	.marquee {
+		position: relative;
+		overflow: hidden;
+		background: var(--ink);
+		white-space: nowrap;
+		transform: rotate(-1.5deg) scale(1.03);
+		user-select: none;
+	}
 	.marquee-track {
 		display: flex;
 		width: max-content;
+		will-change: transform;
 		@media (prefers-reduced-motion: no-preference) {
-			animation: slide 24s linear infinite;
+			animation: slide 35s linear infinite;
 		}
 	}
 	.marquee.is-paused .marquee-track { animation-play-state: paused; }
-	.marquee-track img { display: block; width: max(675px, 50vw); height: auto; aspect-ratio: 675 / 44; flex: none; }
+	.marquee-group {
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+	.marquee-group img {
+		display: block;
+		width: 654px;
+		height: 44px;
+		flex: none;
+	}
 	@keyframes slide { to { transform: translateX(-50%); } }
 	.marquee-toggle {
 		position: absolute;
