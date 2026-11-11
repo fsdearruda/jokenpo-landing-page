@@ -147,7 +147,7 @@ const counts = {
 		</div>
 
 		<!-- Screen reader feedback on filter change -->
-		<p id="filter-status" class="sr-only" aria-live="polite">Mostrando todos os 13 jogos disponíveis.</p>
+		<p id="filter-status" class="sr-only" aria-live="polite">Mostrando jogos disponíveis.</p>
 
 		<!-- Games Grid -->
 		<div class="games-grid" id="games-grid">
@@ -183,17 +183,106 @@ const counts = {
 				</article>
 			))}
 		</div>
+
+		<!-- Expand / Collapse button for long lists -->
+		<div class="expand-actions" id="expand-actions">
+			<button
+				type="button"
+				class="button button-yellow expand-btn"
+				id="expand-games-btn"
+				aria-expanded="false"
+				aria-controls="games-grid"
+			>
+				<span id="expand-btn-text">Ver todos os {counts.all} jogos</span>
+				<svg
+					id="expand-arrow-icon"
+					class="arrow-icon expand-arrow"
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M12 5v14"></path>
+					<path d="m19 12-7 7-7-7"></path>
+				</svg>
+			</button>
+		</div>
 	</div>
 </section>
 
 <script>
+	const INITIAL_LIMIT = 6;
+	let isExpanded = false;
+	let currentFilter = 'all';
+
 	const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
-	const gameCards = document.querySelectorAll<HTMLElement>('.game-card');
+	const gameCards = Array.from(document.querySelectorAll<HTMLElement>('.game-card'));
 	const filterStatus = document.getElementById('filter-status');
+	const expandActions = document.getElementById('expand-actions');
+	const expandBtn = document.getElementById('expand-games-btn');
+	const expandBtnText = document.getElementById('expand-btn-text');
+	const expandArrowIcon = document.getElementById('expand-arrow-icon');
+	const catalogSection = document.getElementById('acervo');
+
+	function updateDisplay(announceText?: string) {
+		const matching = gameCards.filter((card) => {
+			const cat = card.dataset.category;
+			return currentFilter === 'all' || cat === currentFilter;
+		});
+
+		const needsExpand = matching.length > INITIAL_LIMIT;
+
+		if (expandActions && expandBtn && expandBtnText && expandArrowIcon) {
+			if (needsExpand) {
+				expandActions.hidden = false;
+				expandBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+
+				if (isExpanded) {
+					expandBtnText.textContent = 'Ver menos jogos';
+					expandArrowIcon.innerHTML = '<path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path>';
+				} else {
+					expandBtnText.textContent = `Ver todos os ${matching.length} jogos`;
+					expandArrowIcon.innerHTML = '<path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path>';
+				}
+			} else {
+				expandActions.hidden = true;
+			}
+		}
+
+		let visibleCount = 0;
+		gameCards.forEach((card) => {
+			const cat = card.dataset.category;
+			const isMatch = currentFilter === 'all' || cat === currentFilter;
+
+			if (!isMatch) {
+				card.classList.add('hidden');
+			} else {
+				const matchIndex = matching.indexOf(card);
+				const isVisible = isExpanded || !needsExpand || matchIndex < INITIAL_LIMIT;
+				card.classList.toggle('hidden', !isVisible);
+				if (isVisible) visibleCount++;
+			}
+		});
+
+		if (filterStatus) {
+			if (announceText) {
+				filterStatus.textContent = announceText;
+			} else {
+				const activeBtn = document.querySelector<HTMLButtonElement>('.filter-btn.active');
+				const filterLabel = activeBtn?.textContent?.trim().replace(/\s+/g, ' ') || 'Todos';
+				filterStatus.textContent = `Mostrando ${visibleCount} de ${matching.length} jogos para o filtro ${filterLabel}.`;
+			}
+		}
+	}
 
 	filterButtons.forEach((btn) => {
 		btn.addEventListener('click', () => {
-			const targetFilter = btn.dataset.filter || 'all';
+			currentFilter = btn.dataset.filter || 'all';
 
 			filterButtons.forEach((b) => {
 				const isCurrent = b === btn;
@@ -201,20 +290,27 @@ const counts = {
 				b.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
 			});
 
-			let visibleCount = 0;
-			gameCards.forEach((card) => {
-				const cardCat = card.dataset.category;
-				const shouldShow = targetFilter === 'all' || cardCat === targetFilter;
-				card.classList.toggle('hidden', !shouldShow);
-				if (shouldShow) visibleCount++;
-			});
-
-			if (filterStatus) {
-				const label = btn.textContent?.trim().replace(/\s+/g, ' ') || targetFilter;
-				filterStatus.textContent = `Mostrando ${visibleCount} jogos para o filtro ${label}.`;
-			}
+			updateDisplay();
 		});
 	});
+
+	if (expandBtn) {
+		expandBtn.addEventListener('click', () => {
+			isExpanded = !isExpanded;
+			const msg = isExpanded
+				? 'Lista expandida: todos os jogos estão visíveis.'
+				: `Lista recolhida: mostrando os primeiros ${INITIAL_LIMIT} jogos.`;
+
+			updateDisplay(msg);
+
+			if (!isExpanded && catalogSection) {
+				catalogSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		});
+	}
+
+	// Initialize on page load
+	updateDisplay();
 </script>
 
 <style>
@@ -676,6 +772,37 @@ const counts = {
 	.game-tag.highlight {
 		background: rgba(0, 229, 255, 0.12);
 		color: var(--cyan);
+	}
+
+	/* Expand / Collapse Action */
+	.expand-actions {
+		display: flex;
+		justify-content: center;
+		margin-top: 16px;
+	}
+
+	.expand-actions[hidden] {
+		display: none;
+	}
+
+	.expand-btn {
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		min-inline-size: 250px;
+		font-family: 'Poppins', sans-serif;
+		font-size: 14px;
+		font-weight: 700;
+		border: none;
+	}
+
+	.expand-arrow {
+		position: static !important;
+		width: 14px;
+		height: 14px;
+		transition: transform 0.2s ease;
 	}
 
 	/* Screen-reader utility */
