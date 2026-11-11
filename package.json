@@ -11,6 +11,7 @@
     "check": "astro check",
     "test:build": "pnpm build",
     "preview": "astro preview",
+    "lighthouse": "lighthouse http://localhost:4321 --quiet --chrome-flags='--headless --no-sandbox --disable-gpu'",
     "astro": "astro"
   },
   "dependencies": {
