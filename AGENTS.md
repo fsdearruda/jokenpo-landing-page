@@ -4,8 +4,9 @@ Before changing code:
 
 1. Read `README.md` for setup, structure and validation commands.
 2. Read `jokenpo-style-guide.md` for visual and editorial rules.
-3. Read `docs/brand-content.md` for public business information.
-4. Treat `src/data/site.json` as the source of truth for landing-page content.
+3. Read `docs/ui-ux-guidelines.md` before changing UI or interaction behavior.
+4. Read `docs/brand-content.md` for public business information.
+5. Treat `src/data/site.json` as the source of truth for landing-page content.
 
 Keep changes focused. Do not edit generated files in `dist/`, `.vercel/` or
 `.astro/`. Run `pnpm check` and `pnpm build` after code changes. Report changed

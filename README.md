@@ -10,7 +10,8 @@ Antes de editar:
 1. Leia este arquivo.
 2. Leia `AGENTS.md` para regras de desenvolvimento.
 3. Leia `jokenpo-style-guide.md` para decisões visuais e de conteúdo.
-4. Confira `src/data/site.json`, a fonte dos dados exibidos na landing page.
+4. Leia `docs/ui-ux-guidelines.md` antes de alterar UI.
+5. Confira `src/data/site.json`, a fonte dos dados exibidos na landing page.
 
 ## Desenvolvimento
 
@@ -46,6 +47,7 @@ pnpm build
 | `src/data/site.json` | Conteúdo público usado pela página |
 | `public/` | Imagens, SVGs, manifest e arquivos públicos |
 | `docs/brand-content.md` | Referência editorial e informações da loja |
+| `docs/ui-ux-guidelines.md` | Regras compactas de UI/UX para agentes |
 | `jokenpo-style-guide.md` | Identidade visual para novas peças |
 | `astro.config.mjs` | Configuração do Astro e da Vercel |
 
