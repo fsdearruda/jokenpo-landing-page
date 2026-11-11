@@ -57,7 +57,12 @@ import ArrowIcon from './ArrowIcon.astro';
 			siteHeader.classList.remove('is-measuring');
 		};
 
-		if (!supportsPopover) {
+		if (supportsPopover) {
+			siteMenu.addEventListener('beforetoggle', (event) => {
+				const isOpening = (event as ToggleEvent).newState === 'open';
+				menuButton.setAttribute('aria-expanded', String(isOpening));
+			});
+		} else {
 			siteMenu.hidden = true;
 			menuButton.addEventListener('click', () => {
 				const isOpen = !siteMenu.hidden;
@@ -65,6 +70,19 @@ import ArrowIcon from './ArrowIcon.astro';
 				menuButton.setAttribute('aria-expanded', String(!isOpen));
 			});
 		}
+
+		navLinks.forEach((link) => {
+			link.addEventListener('click', () => {
+				if (!siteHeader.classList.contains('is-wide')) {
+					if (supportsPopover && siteMenu.matches(':popover-open')) {
+						siteMenu.hidePopover();
+					} else {
+						siteMenu.hidden = true;
+						menuButton.setAttribute('aria-expanded', 'false');
+					}
+				}
+			});
+		});
 
 		updateNavigationLayout();
 		new ResizeObserver(updateNavigationLayout).observe(siteHeader);
