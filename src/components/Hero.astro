@@ -32,7 +32,48 @@ const { hero } = siteData;
 			<span>PLAY<br />YOUR<br />WAY</span>
 		</div>
 		<Image class="hero-mascot" src="/Vetor/coelho-creme.svg" alt="" width={112} height={126} loading="eager" />
-		<div class="die">20</div>
+		<div class="die">
+			<svg class="die-svg" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+				<polygon
+					points="50,6 88.1,28 88.1,72 50,94 11.9,72 11.9,28"
+					fill="var(--yellow)"
+					stroke="var(--ink)"
+					stroke-width="5"
+					stroke-linejoin="round"
+				/>
+				<polygon points="11.9,72 26.6,63.5 50,94" fill="#e6bc00" />
+				<polygon points="88.1,72 73.4,63.5 50,94" fill="#e6bc00" />
+				<polygon points="26.6,63.5 73.4,63.5 50,94" fill="#d9b000" />
+				<polygon points="50,6 88.1,28 50,23" fill="#ffe14d" />
+				<polygon points="50,6 11.9,28 50,23" fill="#ffe14d" />
+				<g stroke="var(--ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="50" y1="23" x2="50" y2="6" />
+					<line x1="50" y1="23" x2="11.9" y2="28" />
+					<line x1="50" y1="23" x2="88.1" y2="28" />
+					<line x1="73.4" y1="63.5" x2="88.1" y2="28" />
+					<line x1="73.4" y1="63.5" x2="88.1" y2="72" />
+					<line x1="73.4" y1="63.5" x2="50" y2="94" />
+					<line x1="26.6" y1="63.5" x2="11.9" y2="28" />
+					<line x1="26.6" y1="63.5" x2="11.9" y2="72" />
+					<line x1="26.6" y1="63.5" x2="50" y2="94" />
+				</g>
+				<polygon
+					points="50,23 73.4,63.5 26.6,63.5"
+					fill="var(--yellow)"
+					stroke="var(--ink)"
+					stroke-width="3.5"
+					stroke-linejoin="round"
+				/>
+				<polygon
+					points="50,6 88.1,28 88.1,72 50,94 11.9,72 11.9,28"
+					fill="none"
+					stroke="var(--ink)"
+					stroke-width="5"
+					stroke-linejoin="round"
+				/>
+			</svg>
+			<span class="die-number">20</span>
+		</div>
 		<div class="sticker">BORA<br /><em>JOGAR?</em></div>
 	</div>
 	<div class="hero-note">SEG — SÁB<br />14H — 22H<span>LOJA 24 · NEW WAY CENTER</span></div>
@@ -64,7 +105,9 @@ const { hero } = siteData;
 	.mini-card { position: absolute; top: 148px; left: 40px; width: 148px; height: 214px; padding: 14px; border: 7px solid var(--white); border-radius: 14px; background: var(--cyan); color: var(--ink); box-shadow: 14px 18px 25px #00000040; transform: rotate(-13deg); }
 	.mini-card-suit { margin-bottom: 18px; color: var(--pink); font-size: 38px; line-height: 1; }
 	.mini-card span { font-family: 'Archivo Black', sans-serif; font-size: 17px; line-height: .9; }
-	.die { position: absolute; right: 8px; bottom: 32px; display: grid; width: 80px; height: 80px; place-items: center; border: 5px solid var(--ink); border-radius: 18px; background: var(--yellow); box-shadow: 8px 8px 0 var(--ink); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 28px; transform: rotate(16deg); }
+	.die { position: absolute; right: 2px; bottom: 26px; display: grid; width: 96px; height: 96px; place-items: center; filter: drop-shadow(6px 7px 0 var(--ink)); transform: rotate(16deg); }
+	.die-svg { width: 100%; height: 100%; display: block; }
+	.die-number { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 19px; letter-spacing: -1px; line-height: 1; }
 	.hero-mascot { position: absolute; right: 65px; bottom: 18px; width: 112px; height: auto; filter: drop-shadow(4px 5px 0 var(--ink)); transform: rotate(8deg); }
 	.sticker { position: absolute; bottom: 12px; left: 65px; padding: 18px 22px; background: var(--pink); color: var(--ink); font-family: 'Archivo Black', sans-serif; font-size: 17px; line-height: .9; text-align: center; transform: rotate(-9deg); filter: drop-shadow(4px 0 0 var(--ink)) drop-shadow(-4px 0 0 var(--ink)) drop-shadow(0 4px 0 var(--ink)) drop-shadow(0 -4px 0 var(--ink)); }
 	.sticker em { color: var(--ink); font-style: normal; }
