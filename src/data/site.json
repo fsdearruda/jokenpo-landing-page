@@ -10,7 +10,7 @@
     {
       "number": "01",
       "title": "Pegue e jogue",
-      "description": "SEG · TER · QUA · SEX<br />18h30 às 22h · 12 · 15 · 20 por hora",
+      "description": "SEG · TER · QUA · SEX<br />18h30 às 22h · 10 · 13 · 15 por hora",
       "color": "cyan"
     },
     {
@@ -140,7 +140,7 @@
     "hourly": {
       "title": "Pegue e Jogue",
       "schedule": "SEG, TER, QUA E SEX · 18H30 ÀS 22H",
-      "price": "12 · 15 · 20",
+      "price": "10 · 13 · 15",
       "note": "aluguel de jogo por hora",
       "color": "cyan"
     }

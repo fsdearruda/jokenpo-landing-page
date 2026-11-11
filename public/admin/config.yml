@@ -73,14 +73,79 @@ collections:
               - { label: Abertura, name: opens, widget: string, required: false }
               - { label: Fechamento, name: closes, widget: string, required: false }
               - { label: Fechado, name: closed, widget: boolean, required: false, default: false }
+          - label: Tabela e Passes de Boardgame
+            name: boardgamePasses
+            widget: object
+            fields:
+              - label: Passe da Tarde (Seg, Ter, Qua, Sex)
+                name: afternoon
+                widget: object
+                fields:
+                  - { label: Título, name: title, widget: string }
+                  - { label: Dias, name: days, widget: string }
+                  - { label: Horário, name: hours, widget: string }
+                  - { label: Observação, name: note, widget: string }
+                  - label: Categorias e Preços
+                    name: tiers
+                    widget: list
+                    fields:
+                      - { label: Identificador, name: id, widget: string }
+                      - { label: Nome da Categoria, name: name, widget: string }
+                      - { label: Preço, name: price, widget: string }
+                      - { label: Descrição, name: description, widget: string }
+                      - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+                      - { label: Ícone, name: icon, widget: string }
+              - label: Dia do Boardgame (Quinta)
+                name: thursday
+                widget: object
+                fields:
+                  - { label: Título, name: title, widget: string }
+                  - { label: Dias/Horário, name: schedule, widget: string }
+                  - { label: Preço, name: price, widget: string }
+                  - { label: Observação, name: note, widget: string }
+                  - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+              - label: Passe de Sábado
+                name: saturday
+                widget: object
+                fields:
+                  - { label: Título, name: title, widget: string }
+                  - { label: Dias/Horário, name: schedule, widget: string }
+                  - { label: Preço, name: price, widget: string }
+                  - { label: Observação, name: note, widget: string }
+                  - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+              - label: Pegue e Jogue (Por hora)
+                name: hourly
+                widget: object
+                fields:
+                  - { label: Título, name: title, widget: string }
+                  - { label: Dias/Horário, name: schedule, widget: string }
+                  - { label: Preços por hora (ex. 10 · 13 · 15), name: price, widget: string }
+                  - { label: Observação, name: note, widget: string }
+                  - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
           - label: Categorias de jogos
             name: boardgameCategories
             widget: list
             fields:
+              - { label: Identificador, name: id, widget: string }
               - { label: Nome, name: name, widget: string }
+              - { label: Preço, name: price, widget: string }
               - { label: Descrição, name: description, widget: string }
               - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
               - { label: Ícone, name: icon, widget: string }
+          - label: Catálogo de Jogos da Loja
+            name: boardgames
+            widget: list
+            summary: "{{fields.name}} ({{fields.categoryName}} - {{fields.price}})"
+            fields:
+              - { label: Identificador, name: id, widget: string }
+              - { label: Nome do Jogo, name: name, widget: string }
+              - { label: Categoria, name: category, widget: select, options: [leves, medios, grandes] }
+              - { label: Rótulo da Categoria, name: categoryName, widget: string }
+              - { label: Preço do Passe, name: price, widget: string }
+              - { label: Editora Oficial, name: publisher, widget: string }
+              - { label: Tag / Estilo, name: tag, widget: string }
+              - { label: Jogadores, name: players, widget: string }
+              - { label: Arquivo de Imagem, name: image, widget: string }
           - label: Agenda semanal
             name: agenda
             widget: list
