@@ -15,9 +15,12 @@ Antes de editar:
 
 ## Desenvolvimento
 
-Requisitos: Node `>=22.23.4` e pnpm.
+Requisitos: Node 24 (veja `.nvmrc`) e pnpm. A Vercel executa as funções em
+Node 24; usar a mesma versão localmente evita diferenças entre desenvolvimento
+e produção.
 
 ```bash
+nvm use
 pnpm install
 astro dev --background
 ```
