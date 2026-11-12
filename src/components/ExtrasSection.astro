@@ -7,12 +7,21 @@ const whatsappDigits = siteData.contact.whatsapp.replace(/\D/g, '');
 ---
 
 <section class="section extras-section" aria-labelledby="extras-title">
-	<SectionHeading eyebrow="NO ESPAÇO DA LOJA" eyebrowColor="yellow" titleId="extras-title" title="FICA À VONTADE" highlight="PARA VOLTAR">Um canto para a comunidade<br />jogar, reunir e comemorar</SectionHeading>
+	<SectionHeading
+		eyebrow="NO ESPAÇO DA LOJA"
+		eyebrowColor="yellow"
+		titleId="extras-title"
+		title="FICA À VONTADE"
+		highlight="PARA VOLTAR"
+	>
+		Um canto para a comunidade<br />jogar, reunir e comemorar
+	</SectionHeading>
+
 	<div class="extras-grid">
 		{siteData.extras.map((extra) => (
 			<article class={`extra-card extra-card-${extra.color}`}>
 				<div class="card-top">
-					<span>{extra.number}</span>
+					<span class="extra-num">{extra.number}</span>
 					{extra.number === '02' && (
 						<a
 							class="card-link"
@@ -21,7 +30,8 @@ const whatsappDigits = siteData.contact.whatsapp.replace(/\D/g, '');
 							rel="noreferrer"
 							aria-label="Reservar mesa pelo WhatsApp"
 						>
-							Reservar <ArrowIcon size={12} />
+							<span>Reservar</span>
+							<ArrowIcon size={12} />
 						</a>
 					)}
 				</div>
@@ -33,41 +43,136 @@ const whatsappDigits = siteData.contact.whatsapp.replace(/\D/g, '');
 </section>
 
 <style>
-	/* No mobile vale o espaçamento padrão de `.section`. */
 	@media (width > 800px) {
-		.extras-section { padding-top: 115px; padding-bottom: 115px; }
+		.extras-section {
+			padding-top: 6rem;
+			padding-bottom: 5.5rem;
+		}
 	}
-	.extras-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-	.extra-card { display: flex; flex-direction: column; min-height: 220px; padding: 25px; border-radius: 22px; color: var(--ink); transition: transform 0.2s ease; }
-	.extra-card:hover { transform: translateY(-4px); }
-	.extra-card-cyan { background: var(--cyan); }
-	.extra-card-yellow { background: var(--yellow); }
-	.extra-card-pink { background: var(--pink); }
 
-	.card-top { display: flex; justify-content: space-between; align-items: center; }
-	.card-top > span { font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+	.extras-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.375rem;
+	}
+
+	.extra-card {
+		display: flex;
+		flex-direction: column;
+		min-height: 230px;
+		padding: 1.75rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-card);
+		color: var(--ink);
+		box-shadow: var(--shadow-hard-surface);
+		transition:
+			transform var(--duration-normal) var(--ease-out),
+			box-shadow var(--duration-normal) var(--ease-out);
+	}
+
+	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.extra-card:hover {
+			transform: translateY(-4px);
+			box-shadow: 9px 9px 0 var(--ink-3);
+		}
+	}
+
+	.extra-card-cyan {
+		background: var(--cyan);
+	}
+
+	.extra-card-yellow {
+		background: var(--yellow);
+	}
+
+	.extra-card-pink {
+		background: var(--pink);
+	}
+
+	.card-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		min-block-size: 2.5rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.extra-num {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.25rem 0.6875rem;
+		border-radius: var(--radius-pill);
+		background: oklch(0.16 0.006 285 / 0.12);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		font-variant-numeric: tabular-nums;
+	}
 
 	.card-link {
 		display: inline-flex;
 		align-items: center;
-		gap: 6px;
-		padding: 5px 12px;
-		border-radius: 999px;
+		gap: 0.4375rem;
+		min-block-size: 2.5rem;
+		padding: 0.4375rem 0.9375rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-pill);
 		background: var(--ink);
 		color: var(--white);
-		font-size: 11px;
+		font-size: 0.75rem;
 		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		transition: opacity 0.15s ease, transform 0.15s ease;
+		letter-spacing: 0.06em;
+		box-shadow: 3px 3px 0 oklch(0.16 0.006 285 / 0.28);
+		transition:
+			transform var(--duration-fast) var(--ease-out),
+			background-color var(--duration-fast) var(--ease-out),
+			color var(--duration-fast) var(--ease-out);
 	}
-	.card-link:hover { opacity: 0.85; transform: scale(1.03); }
-	:global(.card-link .arrow-icon) { width: 10px; height: 10px; }
 
-	.extra-card h3 { margin: 38px 0 10px; font-family: 'Archivo Black', sans-serif; font-size: 25px; letter-spacing: -1px; }
-	.extra-card p { margin: 0; font-size: 12px; font-weight: 600; line-height: 1.55; }
+	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.card-link:hover {
+			transform: translate(-1px, -1px);
+			background: var(--surface-warm);
+			color: var(--ink);
+		}
+	}
+
+	.card-link:active {
+		transform: scale(0.97);
+	}
+
+	:global(.card-link .arrow-icon) {
+		width: 0.75rem;
+		height: 0.75rem;
+	}
+
+	.extra-card h3 {
+		margin: auto 0 0.625rem;
+		font-family: var(--font-display);
+		font-size: clamp(1.375rem, 1.15rem + 0.5vw, 1.5625rem);
+		line-height: 1.04;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+	}
+
+	.extra-card p {
+		margin: 0;
+		color: var(--ink-on-color);
+		font-size: 0.9375rem;
+		font-weight: 600;
+		line-height: 1.55;
+		font-variant-numeric: tabular-nums;
+	}
 
 	@media (max-width: 800px) {
-		.extras-grid { grid-template-columns: 1fr; }
+		.extras-grid {
+			grid-template-columns: 1fr;
+			gap: 1.125rem;
+		}
+
+		.extra-card {
+			min-height: auto;
+		}
 	}
 </style>

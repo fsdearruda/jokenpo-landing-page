@@ -16,45 +16,70 @@ const { howItWorks } = siteData;
 		{howItWorks.lead}
 	</SectionHeading>
 
-	<div class="steps-grid">
+	<ol class="steps-grid">
 		{howItWorks.steps.map((step) => (
-			<article class={`step-card step-${step.color}`}>
-				<span class="step-num">{step.number}</span>
+			<li class={`step-card step-${step.color}`}>
+				<div class="step-header">
+					<span class="step-badge">PASSO {step.number}</span>
+					<span class="step-watermark" aria-hidden="true">{step.number}</span>
+				</div>
 				<h3 class="step-title">{step.title}</h3>
 				<p class="step-desc">{step.description}</p>
-			</article>
+			</li>
 		))}
-	</div>
+	</ol>
 </section>
 
 <style>
-	/* No mobile vale o espaçamento padrão de `.section`. */
 	@media (width > 800px) {
 		.how-it-works-section {
-			padding-top: 90px;
-			padding-bottom: 50px;
+			padding-top: 5.5rem;
+			padding-bottom: 3.5rem;
 		}
 	}
 
 	.steps-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 18px;
+		gap: 1.375rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 
 	.step-card {
+		position: relative;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		min-height: 220px;
-		padding: 26px;
-		border-radius: 22px;
+		min-height: 230px;
+		padding: 1.75rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-card);
 		color: var(--ink);
-		box-shadow: 7px 7px 0 var(--ink-2);
-		transition: transform 0.2s ease;
+		box-shadow: var(--shadow-hard-surface);
+		transition:
+			transform var(--duration-normal) var(--ease-out),
+			box-shadow var(--duration-normal) var(--ease-out);
 	}
 
-	.step-card:hover {
-		transform: translateY(-4px);
+	@media (width > 800px) {
+		.step-card:nth-child(1) {
+			transform: rotate(-1.2deg);
+		}
+		.step-card:nth-child(2) {
+			transform: translateY(8px) rotate(0.8deg);
+		}
+		.step-card:nth-child(3) {
+			transform: rotate(-0.8deg);
+		}
+	}
+
+	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.step-card:hover {
+			transform: translateY(-4px) rotate(0deg);
+			box-shadow: 9px 9px 0 var(--ink-3);
+		}
 	}
 
 	.step-card.step-cyan {
@@ -69,23 +94,54 @@ const { howItWorks } = siteData;
 		background: var(--pink);
 	}
 
-	.step-num {
-		font-size: 11px;
+	.step-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 1.75rem;
+	}
+
+	.step-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.3125rem 0.75rem;
+		border-radius: var(--radius-pill);
+		background: var(--ink);
+		color: var(--white);
+		font-size: 0.75rem;
 		font-weight: 700;
-		letter-spacing: 2px;
+		letter-spacing: 0.14em;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.step-watermark {
+		position: absolute;
+		top: -0.5rem;
+		right: 0.75rem;
+		font-family: var(--font-display);
+		font-size: 4.5rem;
+		line-height: 1;
+		letter-spacing: -0.04em;
+		color: var(--ink);
+		opacity: 0.12;
+		pointer-events: none;
+		user-select: none;
+		font-variant-numeric: tabular-nums;
 	}
 
 	.step-title {
-		margin: 34px 0 10px;
-		font-family: 'Archivo Black', sans-serif;
-		font-size: 24px;
-		line-height: 1;
-		letter-spacing: -1px;
+		margin: auto 0 0.625rem;
+		font-family: var(--font-display);
+		font-size: clamp(1.375rem, 1.15rem + 0.5vw, 1.5625rem);
+		line-height: 1.04;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
 	}
 
 	.step-desc {
 		margin: 0;
-		font-size: 13px;
+		color: var(--ink-on-color);
+		font-size: 0.9375rem;
 		font-weight: 600;
 		line-height: 1.55;
 	}
@@ -93,6 +149,11 @@ const { howItWorks } = siteData;
 	@media (max-width: 800px) {
 		.steps-grid {
 			grid-template-columns: 1fr;
+			gap: 1.125rem;
+		}
+
+		.step-card {
+			min-height: auto;
 		}
 	}
 </style>

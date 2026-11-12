@@ -4,17 +4,17 @@ import { Image } from 'astro:assets';
 const items = Array.from({ length: 6 });
 ---
 
-<section class="marquee" aria-label="RPG, TCG, board games e torneios">
+<section class="marquee" id="categories-marquee" aria-label="RPG, TCG, board games e torneios">
 	<div class="marquee-track">
 		<div class="marquee-group">
 			{items.map((_, i) => (
 				<Image
 					src="/Vetor/faixa-categorias.svg"
-					alt={i === 0 ? "RPG, TCG, board games e torneios" : ""}
+					alt={i === 0 ? 'RPG, TCG, board games e torneios' : ''}
 					width={654}
 					height={44}
 					loading="eager"
-					aria-hidden={i > 0 ? "true" : undefined}
+					aria-hidden={i > 0 ? 'true' : undefined}
 				/>
 			))}
 		</div>
@@ -30,7 +30,35 @@ const items = Array.from({ length: 6 });
 			))}
 		</div>
 	</div>
+	<button
+		type="button"
+		class="marquee-toggle"
+		id="marquee-toggle-btn"
+		aria-pressed="false"
+		aria-label="Pausar faixa em movimento"
+		title="Pausar animação"
+	>
+		<span class="pause-icon" aria-hidden="true">❚❚</span>
+		<span class="play-icon" aria-hidden="true">▶</span>
+	</button>
 </section>
+
+<script>
+	const marquee = document.getElementById('categories-marquee');
+	const toggleBtn = document.getElementById('marquee-toggle-btn');
+
+	if (marquee && toggleBtn) {
+		toggleBtn.addEventListener('click', () => {
+			const isPaused = marquee.classList.toggle('is-paused');
+			toggleBtn.setAttribute('aria-pressed', isPaused ? 'true' : 'false');
+			toggleBtn.setAttribute(
+				'aria-label',
+				isPaused ? 'Retomar faixa em movimento' : 'Pausar faixa em movimento',
+			);
+			toggleBtn.setAttribute('title', isPaused ? 'Retomar animação' : 'Pausar animação');
+		});
+	}
+</script>
 
 <style>
 	.marquee {
@@ -41,6 +69,7 @@ const items = Array.from({ length: 6 });
 		transform: rotate(-1.5deg) scale(1.03);
 		user-select: none;
 	}
+
 	.marquee-track {
 		display: flex;
 		width: max-content;
@@ -49,16 +78,85 @@ const items = Array.from({ length: 6 });
 			animation: slide 120s linear infinite;
 		}
 	}
+
+	.marquee:hover .marquee-track,
+	.marquee:focus-within .marquee-track,
+	.marquee.is-paused .marquee-track {
+		animation-play-state: paused;
+	}
+
 	.marquee-group {
 		display: flex;
 		align-items: center;
 		flex-shrink: 0;
 	}
+
 	.marquee-group img {
 		display: block;
 		width: 654px;
 		height: 44px;
 		flex: none;
 	}
-	@keyframes slide { to { transform: translateX(-50%); } }
+
+	.marquee-toggle {
+		position: absolute;
+		top: 50%;
+		right: max(1.5rem, 3vw);
+		transform: translateY(-50%);
+		z-index: 2;
+		display: inline-grid;
+		place-items: center;
+		min-inline-size: 2rem;
+		min-block-size: 2rem;
+		padding: 0 0.5rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-pill);
+		background: var(--ink-2);
+		color: var(--yellow);
+		font-family: var(--font-body);
+		font-size: 0.75rem;
+		font-weight: 700;
+		line-height: 1;
+		cursor: pointer;
+		opacity: 0;
+		transition:
+			opacity var(--duration-fast) var(--ease-out),
+			background-color var(--duration-fast) var(--ease-out),
+			color var(--duration-fast) var(--ease-out);
+	}
+
+	.marquee:hover .marquee-toggle,
+	.marquee:focus-within .marquee-toggle,
+	.marquee.is-paused .marquee-toggle {
+		opacity: 1;
+	}
+
+	@media (hover: none), (prefers-reduced-motion: reduce) {
+		.marquee-toggle {
+			display: none;
+		}
+	}
+
+	.marquee-toggle:hover {
+		background: var(--yellow);
+		color: var(--ink);
+	}
+
+	.marquee-toggle .play-icon {
+		display: none;
+	}
+
+	.marquee.is-paused .marquee-toggle .pause-icon {
+		display: none;
+	}
+
+	.marquee.is-paused .marquee-toggle .play-icon {
+		display: inline;
+	}
+
+	@keyframes slide {
+		to {
+			transform: translateX(-50%);
+		}
+	}
 </style>

@@ -6,37 +6,141 @@ const { location, contact } = siteData;
 ---
 
 <footer class="site-footer">
-	<div class="footer-brand"><Image class="brand-logo brand-logo-header" src="/Vetor/jokenpo-logo-letras-pretas.svg" alt="Jokenpo" width={150} height={33} loading="lazy" /></div>
+	<div class="footer-brand">
+		<a href="/" aria-label="Jokenpo início">
+			<Image
+				class="brand-logo brand-logo-header"
+				src="/Vetor/jokenpo-logo-letras-pretas.svg"
+				alt="Jokenpo"
+				width={150}
+				height={33}
+				loading="lazy"
+			/>
+		</a>
+	</div>
 	<div class="footer-details">
-		<p><strong>Jokenpo</strong> · Feito para quem gosta de jogar</p>
-		<p>{location.venue}<br />{location.street}<br />{location.neighborhood}</p>
-		<p><a href={`mailto:${contact.email}`}>{contact.email}</a>{contact.cnpj && <><br />CNPJ: {contact.cnpj}</>}</p>
-		<p>© 2026 Jokenpo</p>
+		<p class="footer-tagline"><strong>Jokenpo</strong> · Feito para quem gosta de jogar</p>
+		<p>{location.venue} · {location.street} · {location.neighborhood}</p>
+		<p class="footer-meta">
+			<a href={`mailto:${contact.email}`}>{contact.email}</a>
+			{contact.cnpj && <span> · CNPJ: {contact.cnpj}</span>}
+		</p>
+		<p class="footer-copy">© 2026 Jokenpo</p>
 	</div>
-	<div class="footer-links">
-		<a href={contact.communityWhatsapp} target="_blank" rel="noreferrer">WhatsApp</a>
-		<a href={contact.instagram} target="_blank" rel="noreferrer">Instagram</a>
-		<a href={`mailto:${contact.email}`}>E-mail</a>
-	</div>
+	<ul class="footer-links" aria-label="Links de contato e redes sociais">
+		<li><a href={contact.communityWhatsapp} target="_blank" rel="noreferrer">WhatsApp</a></li>
+		<li><a href={contact.instagram} target="_blank" rel="noreferrer">Instagram</a></li>
+		<li><a href={`mailto:${contact.email}`}>E-mail</a></li>
+	</ul>
 </footer>
 
 <style>
-	.site-footer { display: grid; grid-template-columns: 180px 1fr auto; align-items: start; gap: 42px; max-width: 1176px; margin: auto; padding: 30px 42px 45px; border-top: 1px solid var(--ink-3); color: var(--mist); font-size: 11px; }
-	.footer-brand { display: flex; align-items: center; }
-	.brand-logo { display: block; height: auto; }
-	.brand-logo-header { filter: invert(1); }
-	.footer-brand .brand-logo { width: 125px; }
-	.footer-details { display: grid; gap: 8px; line-height: 1.5; }
-	.footer-details p { margin: 0; }
-	.footer-details strong { color: var(--white); }
-	.footer-details a { color: var(--mist); }
-	.footer-details a:hover { color: var(--yellow); }
-	.footer-links { display: flex; justify-self: end; gap: 18px; padding-top: 2px; }
-	.site-footer a { color: var(--yellow); font-weight: 700; }
+	.site-footer {
+		display: grid;
+		grid-template-columns: 180px 1fr auto;
+		align-items: start;
+		gap: 2.5rem;
+		max-width: 1176px;
+		margin-inline: auto;
+		padding: 2.5rem clamp(1.5rem, 4vw, 2.625rem) 3.25rem;
+		border-top: 2px solid var(--ink-3);
+		color: var(--mist);
+		font-size: 0.8125rem;
+	}
+
+	.footer-brand {
+		display: flex;
+		align-items: center;
+	}
+
+	.footer-brand a {
+		display: inline-flex;
+		padding: 0.25rem;
+		border-radius: 8px;
+	}
+
+	.brand-logo {
+		display: block;
+		width: 132px;
+		height: auto;
+	}
+
+	.brand-logo-header {
+		filter: invert(1);
+	}
+
+	.footer-details {
+		display: grid;
+		gap: 0.5rem;
+		line-height: 1.55;
+	}
+
+	.footer-details p {
+		margin: 0;
+	}
+
+	.footer-tagline strong {
+		color: var(--white);
+		font-size: 0.875rem;
+	}
+
+	.footer-meta {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.footer-details a {
+		color: var(--mist);
+		text-decoration: underline;
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 3px;
+		transition: color var(--duration-fast) var(--ease-out);
+	}
+
+	.footer-details a:hover {
+		color: var(--yellow);
+	}
+
+	.footer-links {
+		display: flex;
+		flex-wrap: wrap;
+		justify-self: end;
+		gap: 0.5rem 1.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.footer-links a {
+		display: inline-flex;
+		align-items: center;
+		min-block-size: 2.25rem;
+		padding: 0.25rem 0.5rem;
+		border-radius: 8px;
+		color: var(--yellow);
+		font-size: 0.875rem;
+		font-weight: 700;
+		transition: color var(--duration-fast) var(--ease-out);
+	}
+
+	.footer-links a:hover {
+		color: var(--cyan);
+	}
 
 	@media (max-width: 800px) {
-		.site-footer { grid-template-columns: 1fr; gap: 18px; padding: 30px 24px 35px; text-align: center; }
-		.footer-brand, .footer-links { justify-self: center; }
-		.footer-details { justify-items: center; }
+		.site-footer {
+			grid-template-columns: 1fr;
+			gap: 1.25rem;
+			padding: 2rem 1.5rem 2.5rem;
+			text-align: center;
+		}
+
+		.footer-brand,
+		.footer-links {
+			justify-self: center;
+		}
+
+		.footer-details {
+			justify-items: center;
+		}
 	}
 </style>

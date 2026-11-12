@@ -19,44 +19,170 @@ const about = (siteData as Record<string, any>).about ?? {
 	<div class="about-copy">
 		<p class="eyebrow">{about.eyebrow}</p>
 		<h2 id="about-title">{about.titleLine1}<br /><span>{about.highlight}</span></h2>
-		<p>{about.description}</p>
-		<div class="tcg-list">
-			{about.tcgs.map((tcg: string) => <span>{tcg}</span>)}
-		</div>
-		<a class="button button-pink" href="#agenda">Ver torneios <ArrowIcon direction="right" size={16} /></a>
+		<p class="about-description">{about.description}</p>
+		<ul class="tcg-list" aria-label="Card games disponíveis">
+			{about.tcgs.map((tcg: string) => <li>{tcg}</li>)}
+		</ul>
+		<a class="button button-yellow about-cta" href="#agenda">
+			<span>Ver torneios</span>
+			<ArrowIcon direction="right" size={16} />
+		</a>
 	</div>
 	<div class="about-note">
-		<span class="quote-mark">“</span>
+		<span class="quote-mark" aria-hidden="true">“</span>
 		<p>{about.noteLine1}<br /><strong>{about.noteHighlight}</strong></p>
-		<span class="quote-author">{about.noteAuthor}</span>
+		<a
+			class="quote-author"
+			href={siteData.contact.instagram}
+			target="_blank"
+			rel="noreferrer"
+		>
+			{about.noteAuthor}
+		</a>
 	</div>
 </section>
 
 <style>
-	.about-section { position: relative; display: flex; min-height: 610px; align-items: center; justify-content: space-between; overflow: hidden; padding: 100px max(42px, calc((100% - 1176px) / 2)); background: var(--pink); color: var(--ink); }
-	.about-copy { position: relative; z-index: 1; max-width: 640px; }
-	.about-copy .eyebrow { color: var(--ink); }
-	.about-copy h2 {
-		margin-bottom: 27px;
-		font-size: clamp(2rem, 0.5rem + 5vw, 4.25rem);
+	.about-section {
+		position: relative;
+		display: flex;
+		min-height: 600px;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2.5rem;
+		overflow: hidden;
+		padding: clamp(5rem, 8vw, 6.5rem) max(2.625rem, calc((100% - 1176px) / 2));
+		background: var(--pink);
+		border-block: 3px solid var(--ink);
+		color: var(--ink);
 	}
+
+	.about-copy {
+		position: relative;
+		z-index: 1;
+		max-width: 39rem;
+	}
+
+	.about-copy .eyebrow {
+		color: var(--ink);
+	}
+
+	.about-copy h2 {
+		margin-bottom: 1.5rem;
+		font-size: clamp(2.15rem, 0.5rem + 5vw, 4.25rem);
+	}
+
 	.about-copy h2 span {
 		color: var(--white);
-		white-space: nowrap;
 	}
-	.about-copy > p:not(.eyebrow) { max-width: 420px; margin-bottom: 30px; font-size: 15px; font-weight: 600; line-height: 1.7; }
-	.tcg-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 28px; }
-	.tcg-list span { display: flex; min-height: 36px; align-items: center; justify-content: center; padding: 8px 6px; border: 2px solid var(--ink); border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-align: center; }
-	.about-note { position: relative; z-index: 1; width: 290px; padding: 25px; border: 3px solid var(--ink); background: var(--white); box-shadow: 10px 10px 0 var(--ink); transform: rotate(-7deg); }
-	.quote-mark { color: var(--cyan); font-family: Georgia, serif; font-size: 67px; line-height: .5; }
-	.about-note p { margin: 22px 0 34px; font-family: 'Archivo Black', sans-serif; font-size: 21px; line-height: .95; }
-	.about-note p strong { color: var(--pink); }
-	.quote-author { font-size: 11px; font-weight: 700; }
+
+	.about-description {
+		max-width: 48ch;
+		margin-bottom: 1.875rem;
+		color: var(--ink-on-color);
+		font-size: 1rem;
+		font-weight: 600;
+		line-height: 1.65;
+	}
+
+	.tcg-list {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.625rem;
+		margin: 0 0 2rem;
+		padding: 0;
+		list-style: none;
+	}
+
+	.tcg-list li {
+		display: flex;
+		min-block-size: 2.5rem;
+		align-items: center;
+		justify-content: center;
+		padding: 0.5rem 0.625rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-pill);
+		background: oklch(1 0 0 / 0.16);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-align: center;
+	}
+
+	.about-cta {
+		box-shadow: 6px 6px 0 var(--ink);
+	}
+
+	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.about-cta:hover {
+			box-shadow: 8px 8px 0 var(--ink);
+		}
+	}
+
+	.about-note {
+		position: relative;
+		z-index: 1;
+		flex-shrink: 0;
+		width: min(100%, 19rem);
+		padding: 1.75rem;
+		border: 3px solid var(--ink);
+		border-radius: var(--radius-card);
+		background: var(--surface-warm);
+		box-shadow: 12px 12px 0 var(--ink);
+		transform: rotate(-6deg);
+	}
+
+	.quote-mark {
+		display: block;
+		color: var(--cyan);
+		font-family: var(--font-display);
+		font-size: 3.75rem;
+		line-height: 0.65;
+	}
+
+	.about-note p {
+		margin: 1rem 0 1.75rem;
+		font-family: var(--font-display);
+		font-size: 1.375rem;
+		line-height: 0.98;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+	}
+
+	.about-note p strong {
+		color: var(--pink);
+	}
+
+	.quote-author {
+		display: inline-block;
+		font-size: 0.8125rem;
+		font-weight: 700;
+		color: var(--ink);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
+	}
+
+	.quote-author:hover {
+		color: var(--pink);
+	}
 
 	@media (max-width: 800px) {
-		.about-copy h2 span { white-space: normal; }
-		.tcg-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 360px; }
-		.about-section { display: block; min-height: 690px; padding: 88px 24px; }
-		.about-note { width: min(100%, 290px); margin: 56px auto 0; }
+		.tcg-list {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			max-width: 24rem;
+		}
+
+		.about-section {
+			flex-direction: column;
+			align-items: flex-start;
+			min-height: auto;
+			padding: 4rem 1.5rem;
+			gap: 2rem;
+		}
+
+		.about-note {
+			display: none;
+		}
 	}
 </style>
