@@ -5,7 +5,7 @@ import ArrowIcon from './ArrowIcon.astro';
 <section class="about-section" id="sobre" aria-labelledby="about-title">
 	<div class="about-copy">
 		<p class="eyebrow">CARD GAMES</p>
-		<h2 id="about-title">TCG, MESA<br /><span>E COMUNIDADE</span></h2>
+		<h2 id="about-title">TCG, MESA<br /><span>E&nbsp;COMUNIDADE</span></h2>
 		<p>Temos produtos e cartas de Magic, Pokémon, Yu-Gi-Oh! e One Piece, além de espaço para sentar, jogar com calma e encontrar a sua turma.</p>
 		<div class="tcg-list">
 			<span>MAGIC</span><span>POKÉMON</span><span>YU-GI-OH!</span><span>ONE PIECE</span>
@@ -21,10 +21,16 @@ import ArrowIcon from './ArrowIcon.astro';
 
 <style>
 	.about-section { position: relative; display: flex; min-height: 610px; align-items: center; justify-content: space-between; overflow: hidden; padding: 100px max(42px, calc((100% - 1176px) / 2)); background: var(--pink); color: var(--ink); }
-	.about-copy { position: relative; z-index: 1; max-width: 520px; }
+	.about-copy { position: relative; z-index: 1; max-width: 640px; }
 	.about-copy .eyebrow { color: var(--ink); }
-	.about-copy h2 { margin-bottom: 27px; }
-	.about-copy h2 span { color: var(--white); }
+	.about-copy h2 {
+		margin-bottom: 27px;
+		font-size: clamp(2rem, 0.5rem + 5vw, 4.25rem);
+	}
+	.about-copy h2 span {
+		color: var(--white);
+		white-space: nowrap;
+	}
 	.about-copy > p:not(.eyebrow) { max-width: 420px; margin-bottom: 30px; font-size: 15px; font-weight: 600; line-height: 1.7; }
 	.tcg-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 28px; }
 	.tcg-list span { display: flex; min-height: 36px; align-items: center; justify-content: center; padding: 8px 6px; border: 2px solid var(--ink); border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-align: center; }
@@ -35,6 +41,7 @@ import ArrowIcon from './ArrowIcon.astro';
 	.quote-author { font-size: 11px; font-weight: 700; }
 
 	@media (max-width: 800px) {
+		.about-copy h2 span { white-space: normal; }
 		.tcg-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 360px; }
 		.about-section { display: block; min-height: 690px; padding: 88px 24px; }
 		.about-note { width: min(100%, 290px); margin: 56px auto 0; }
