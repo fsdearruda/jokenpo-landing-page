@@ -2,6 +2,8 @@
 import siteData from '../data/site.json';
 import ArrowIcon from './ArrowIcon.astro';
 import SectionHeading from './SectionHeading.astro';
+
+const whatsappDigits = siteData.contact.whatsapp.replace(/\D/g, '');
 ---
 
 <section class="section extras-section" aria-labelledby="extras-title">
@@ -14,7 +16,7 @@ import SectionHeading from './SectionHeading.astro';
 					{extra.number === '02' && (
 						<a
 							class="card-link"
-							href="https://wa.me/5584987655623?text=Ol%C3%A1!%20Gostaria%20de%20saber%20sobre%20reserva%20de%20mesa%20na%20Jokenp%C3%B4"
+							href={`https://wa.me/${whatsappDigits}?text=Ol%C3%A1!%20Gostaria%20de%20saber%20sobre%20reserva%20de%20mesa%20na%20Jokenp%C3%B4`}
 							target="_blank"
 							rel="noreferrer"
 							aria-label="Reservar mesa pelo WhatsApp"

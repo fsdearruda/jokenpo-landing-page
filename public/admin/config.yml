@@ -5,185 +5,410 @@ backend:
   auth_endpoint: oauth
   base_url: https://dashboard.jokenpo.cards
   site_domain: dashboard.jokenpo.cards
+  commit_messages:
+    create: 'chore(cms): criar {{collection}} "{{slug}}"'
+    update: 'chore(cms): atualizar {{collection}} "{{slug}}"'
+    delete: 'chore(cms): remover {{collection}} "{{slug}}"'
+    uploadMedia: 'chore(cms): enviar mídia "{{path}}"'
+    deleteMedia: 'chore(cms): remover mídia "{{path}}"'
 
+locale: pt
+site_url: https://jokenpo.cards
+display_url: https://jokenpo.cards
+logo_url: /Vetor/jokenpo-logo-letras-pretas.svg
+show_preview_links: true
 local_backend: true
 media_folder: public/uploads
-public_folder: /uploads
+public_folder: ""
+editor:
+  preview: true
 
 collections:
-  - name: site
-    label: Configurações da landing page
-    description: Conteúdo operacional exibido na página principal.
+  - name: store_info
+    label: "1. Loja, Contatos e Horários"
+    description: "Informações institucionais, links de WhatsApp/Instagram, endereço e horário de funcionamento."
     files:
-      - name: site
-        label: Informações gerais
+      - name: general
+        label: "Dados da Loja, Contatos e Horários"
         file: src/data/site.json
         format: json
         fields:
-          - label: Nome
+          - label: Nome da Loja
             name: name
             widget: string
-          - label: Nome curto
+            hint: "Nome principal usado nos títulos e no Google (ex.: Jokenpo)."
+          - label: Nome Curto
             name: shortName
             widget: string
-          - label: Título da página
+            required: false
+            hint: "Versão curta do nome da marca."
+          - label: Título da Página (SEO)
             name: title
             widget: string
-          - label: Meta description
+            hint: "Aparece na aba do navegador e no resultado de busca do Google."
+          - label: Descrição para Google e WhatsApp (Meta Description)
             name: description
             widget: text
-          - label: Hero
-            name: hero
-            widget: object
-            fields:
-              - { label: Eyebrow, name: eyebrow, widget: string }
-              - { label: Primeira linha, name: titleLine1, widget: string }
-              - { label: Segunda linha, name: titleLine2, widget: string }
-              - { label: Terceira linha, name: titleLine3, widget: string }
-              - { label: Descrição, name: description, widget: text }
-              - { label: Cor do botão da comunidade, name: communityButtonColor, widget: color, default: "#14532d", required: false }
-          - label: Contatos
+            hint: "Resumo convidativo de 1 a 2 frases exibido no Google e ao compartilhar o link no WhatsApp."
+          - label: Canais de Contato
             name: contact
             widget: object
+            collapsed: false
             fields:
-              - { label: Instagram, name: instagram, widget: string }
-              - { label: Comunidade WhatsApp, name: communityWhatsapp, widget: string }
-              - { label: WhatsApp direto, name: whatsapp, widget: string }
-              - { label: E-mail, name: email, widget: string }
-              - { label: CNPJ, name: cnpj, widget: string, required: false }
-          - label: Localização
+              - label: Link do Instagram
+                name: instagram
+                widget: string
+                hint: "URL completa do perfil (ex.: https://instagram.com/jokenpoficial)."
+                pattern: ['^https?://.+', 'Informe uma URL válida começando com https://']
+              - label: Link da Comunidade no WhatsApp
+                name: communityWhatsapp
+                widget: string
+                hint: "Link de convite do grupo/comunidade (ex.: https://chat.whatsapp.com/...)."
+                pattern: ['^https?://.+', 'Informe um link válido começando com https://']
+              - label: WhatsApp de Atendimento / Reservas
+                name: whatsapp
+                widget: string
+                hint: "Número com código do país e DDD (ex.: +5584987655623). Usado nos botões de reserva de mesa e dúvidas."
+                pattern: ['^\+?[0-9\s()-]{10,20}$', 'Use o formato com DDI e DDD, ex.: +5584987655623']
+              - label: E-mail de Contato
+                name: email
+                widget: string
+                hint: "Ex.: contato@jokenpo.cards"
+              - label: CNPJ
+                name: cnpj
+                widget: string
+                required: false
+                hint: "Exibido no rodapé da página (ex.: 63.151.829/0001-05)."
+          - label: Endereço e Mapa
             name: location
             widget: object
+            collapsed: false
             fields:
-              - { label: Local, name: venue, widget: string }
-              - { label: Endereço, name: street, widget: string }
-              - { label: Bairro e cidade, name: neighborhood, widget: string }
-              - { label: CEP, name: postalCode, widget: string }
-              - { label: Link do Maps, name: mapsUrl, widget: string }
-              - { label: URL do mapa incorporado, name: embedUrl, widget: string }
-          - label: Horários
+              - label: Galeria / Shopping e Loja
+                name: venue
+                widget: string
+                hint: "Ex.: Shopping New Way Center, loja 24"
+              - label: Rua / Avenida e Número
+                name: street
+                widget: string
+                hint: "Ex.: Av. Dr. João Medeiros Filho, 5421"
+              - label: Bairro e Cidade
+                name: neighborhood
+                widget: string
+                hint: "Ex.: Pajuçara · Natal/RN"
+              - label: CEP
+                name: postalCode
+                widget: string
+                hint: "Ex.: 59122-518"
+              - label: Link para Abrir no Google Maps
+                name: mapsUrl
+                widget: string
+                hint: "Link curto do Google Maps para o botão 'Abrir no mapa'."
+              - label: URL do Mapa Incorporado (Iframe)
+                name: embedUrl
+                widget: string
+                hint: "URL de embed do Google Maps (terminando com &output=embed)."
+          - label: Horários de Funcionamento
             name: hours
             widget: list
+            summary: "{{fields.day}} — {{fields.open}}"
+            hint: "Horários exibidos na seção 'Onde Estamos' e enviados automaticamente para o Google Maps/SEO."
             fields:
-              - { label: Dia exibido, name: day, widget: string }
-              - label: Dias para SEO
-                name: schemaDays
-                widget: list
-                field: { label: Dia, name: day, widget: string }
-              - { label: Horário exibido, name: open, widget: string }
-              - { label: Abertura, name: opens, widget: string, required: false }
-              - { label: Fechamento, name: closes, widget: string, required: false }
-              - { label: Fechado, name: closed, widget: boolean, required: false, default: false }
-          - label: Tabela e Passes de Boardgame
+              - label: Dias (Texto exibido)
+                name: day
+                widget: string
+                hint: "Use abreviações em caixa alta, ex.: SEG — SÁB ou DOM"
+              - label: Horário (Texto exibido)
+                name: open
+                widget: string
+                hint: "Ex.: 14h às 22h ou Fechado"
+              - label: Loja fechada neste dia?
+                name: closed
+                widget: boolean
+                required: false
+                default: false
+                hint: "Marque como verdadeiro se a loja não abre neste dia (ex.: Domingo)."
+              - label: Hora de Abertura (Formato 24h para o Google)
+                name: opens
+                widget: string
+                required: false
+                hint: "Ex.: 14:00 (deixe em branco se fechado)."
+                pattern: ['^([01]\d|2[0-3]):[0-5]\d$', 'Use o formato 24h HH:MM, ex.: 14:00']
+              - label: Hora de Fechamento (Formato 24h para o Google)
+                name: closes
+                widget: string
+                required: false
+                hint: "Ex.: 22:00 (deixe em branco se fechado)."
+                pattern: ['^([01]\d|2[0-3]):[0-5]\d$', 'Use o formato 24h HH:MM, ex.: 22:00']
+
+  - name: agenda_events
+    label: "2. Agenda Semanal e Torneios"
+    description: "Programação semanal de torneios de TCG e jogatina aberta."
+    files:
+      - name: agenda_file
+        label: "Programação da Semana"
+        file: src/data/site.json
+        format: json
+        fields:
+          - label: Eventos da Semana
+            name: agenda
+            widget: list
+            summary: "{{fields.day}} · {{fields.name}} — {{fields.detail}}"
+            hint: "Clique em um dia para editar o torneio, horário, valor de inscrição e vagas."
+            fields:
+              - label: Dia da Semana
+                name: day
+                widget: select
+                options:
+                  - { label: "Segunda-feira (SEG)", value: "SEG" }
+                  - { label: "Terça-feira (TER)", value: "TER" }
+                  - { label: "Quarta-feira (QUA)", value: "QUA" }
+                  - { label: "Quinta-feira (QUI)", value: "QUI" }
+                  - { label: "Sexta-feira (SEX)", value: "SEX" }
+                  - { label: "Sábado (SÁB)", value: "SÁB" }
+                  - { label: "Domingo (DOM)", value: "DOM" }
+              - label: Nome do Evento / Torneio
+                name: name
+                widget: string
+                hint: "Ex.: Semanal Pokémon, Commander Day, Dia do Boardgame"
+              - label: Horário, Preço e Vagas
+                name: detail
+                widget: string
+                hint: "Separe com ponto médio (·). Ex.: 18h30 · R$ 20 · 12 vagas"
+              - label: Cor do Card
+                name: color
+                widget: select
+                options:
+                  - { label: "Amarelo (#FFD400 — Destaque / Pokémon / Quinta)", value: "yellow" }
+                  - { label: "Ciano (#00C8FF — Magic / One Piece)", value: "cyan" }
+                  - { label: "Rosa (#FF3EA5 — Yu-Gi-Oh! / Sábado)", value: "pink" }
+
+  - name: boardgames_catalog
+    label: "3. Acervo de Boardgames e Passes"
+    description: "Tabela de passes da ludoteca e estante de jogos de tabuleiro."
+    files:
+      - name: boardgames_file
+        label: "Passes e Catálogo de Jogos"
+        file: src/data/site.json
+        format: json
+        fields:
+          - label: Tabela de Passes e Preços
             name: boardgamePasses
             widget: object
+            collapsed: true
+            hint: "Valores e horários dos passes de jogos de tabuleiro exibidos acima da estante."
             fields:
               - label: Passe da Tarde (Seg, Ter, Qua, Sex)
                 name: afternoon
                 widget: object
                 fields:
-                  - { label: Título, name: title, widget: string }
-                  - { label: Dias, name: days, widget: string }
-                  - { label: Horário, name: hours, widget: string }
-                  - { label: Observação, name: note, widget: string }
-                  - label: Categorias e Preços
+                  - { label: Título do Card, name: title, widget: string }
+                  - { label: Dias, name: days, widget: string, hint: "Ex.: SEG, TER, QUA E SEX" }
+                  - { label: Horário, name: hours, widget: string, hint: "Ex.: 14h às 18h" }
+                  - { label: Observação no Rodapé, name: note, widget: string, hint: "Ex.: por pessoa" }
+                  - label: Categorias e Preços do Passe da Tarde
                     name: tiers
                     widget: list
+                    summary: "{{fields.name}} — {{fields.price}} ({{fields.description}})"
                     fields:
-                      - { label: Identificador, name: id, widget: string }
-                      - { label: Nome da Categoria, name: name, widget: string }
-                      - { label: Preço, name: price, widget: string }
-                      - { label: Descrição, name: description, widget: string }
-                      - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
-                      - { label: Ícone, name: icon, widget: string }
-              - label: Dia do Boardgame (Quinta)
+                      - { label: "Identificador (leves, medios, grandes)", name: id, widget: select, options: [leves, medios, grandes] }
+                      - { label: "Nome da Categoria", name: name, widget: string }
+                      - { label: "Preço (ex.: R$ 10)", name: price, widget: string }
+                      - { label: "Descrição curta", name: description, widget: string }
+                      - label: Cor da Categoria
+                        name: color
+                        widget: select
+                        options:
+                          - { label: "Ciano (Leves)", value: "cyan" }
+                          - { label: "Amarelo (Médios)", value: "yellow" }
+                          - { label: "Rosa (Grandes)", value: "pink" }
+                      - { label: "Símbolo / Ícone", name: icon, widget: string, default: "✦" }
+              - label: Quinta-feira (Dia do Boardgame)
                 name: thursday
                 widget: object
                 fields:
                   - { label: Título, name: title, widget: string }
-                  - { label: Dias/Horário, name: schedule, widget: string }
-                  - { label: Preço, name: price, widget: string }
-                  - { label: Observação, name: note, widget: string }
-                  - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
-              - label: Passe de Sábado
+                  - { label: Dia e Período, name: schedule, widget: string, hint: "Ex.: QUINTA · ALL DAY" }
+                  - { label: Preço, name: price, widget: string, hint: "Ex.: R$ 20" }
+                  - { label: Observação, name: note, widget: string, hint: "Ex.: por pessoa · o dia todo" }
+                  - label: Cor do Card
+                    name: color
+                    widget: select
+                    options:
+                      - { label: "Amarelo (#FFD400)", value: "yellow" }
+                      - { label: "Ciano (#00C8FF)", value: "cyan" }
+                      - { label: "Rosa (#FF3EA5)", value: "pink" }
+              - label: Sábado (Passe de Sábado)
                 name: saturday
                 widget: object
                 fields:
                   - { label: Título, name: title, widget: string }
-                  - { label: Dias/Horário, name: schedule, widget: string }
-                  - { label: Preço, name: price, widget: string }
-                  - { label: Observação, name: note, widget: string }
-                  - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
-              - label: Pegue e Jogue (Por hora)
+                  - { label: Dia e Período, name: schedule, widget: string, hint: "Ex.: SÁBADO · ALL DAY" }
+                  - { label: Preço, name: price, widget: string, hint: "Ex.: R$ 30" }
+                  - { label: Observação, name: note, widget: string, hint: "Ex.: por pessoa · o dia todo" }
+                  - label: Cor do Card
+                    name: color
+                    widget: select
+                    options:
+                      - { label: "Rosa (#FF3EA5)", value: "pink" }
+                      - { label: "Amarelo (#FFD400)", value: "yellow" }
+                      - { label: "Ciano (#00C8FF)", value: "cyan" }
+              - label: Pegue e Jogue (Aluguel por Hora)
                 name: hourly
                 widget: object
                 fields:
                   - { label: Título, name: title, widget: string }
-                  - { label: Dias/Horário, name: schedule, widget: string }
-                  - { label: Preços por hora (ex. 10 · 13 · 15), name: price, widget: string }
-                  - { label: Observação, name: note, widget: string }
-                  - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
-          - label: Categorias de jogos
-            name: boardgameCategories
-            widget: list
-            fields:
-              - { label: Identificador, name: id, widget: string }
-              - { label: Nome, name: name, widget: string }
-              - { label: Preço, name: price, widget: string }
-              - { label: Descrição, name: description, widget: string }
-              - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
-              - { label: Ícone, name: icon, widget: string }
-          - label: Catálogo de Jogos da Loja
+                  - { label: Dias e Horário, name: schedule, widget: string, hint: "Ex.: SEG, TER, QUA E SEX · 18H30 ÀS 22H" }
+                  - { label: Preços por Hora, name: price, widget: string, hint: "Ex.: 10 · 13 · 15" }
+                  - { label: Observação, name: note, widget: string, hint: "Ex.: aluguel de jogo por hora" }
+                  - label: Cor do Card
+                    name: color
+                    widget: select
+                    options:
+                      - { label: "Ciano (#00C8FF)", value: "cyan" }
+                      - { label: "Amarelo (#FFD400)", value: "yellow" }
+                      - { label: "Rosa (#FF3EA5)", value: "pink" }
+          - label: Estante de Jogos (Catálogo da Loja)
             name: boardgames
             widget: list
-            summary: "{{fields.name}} ({{fields.categoryName}} - {{fields.price}})"
+            summary: "{{fields.name}} — [{{fields.category}}] · {{fields.players}} ({{fields.publisher}})"
+            hint: "Adicione, reordene ou edite os jogos disponíveis no acervo. O preço e o selo da categoria são preenchidos automaticamente a partir da categoria escolhida."
             fields:
-              - { label: Identificador, name: id, widget: string }
-              - { label: Nome do Jogo, name: name, widget: string }
-              - { label: Categoria, name: category, widget: select, options: [leves, medios, grandes] }
-              - { label: Rótulo da Categoria, name: categoryName, widget: string }
-              - { label: Preço do Passe, name: price, widget: string }
-              - { label: Editora Oficial, name: publisher, widget: string }
-              - { label: Tag / Estilo, name: tag, widget: string }
-              - { label: Jogadores, name: players, widget: string }
-              - { label: Arquivo de Imagem, name: image, widget: string }
-          - label: Agenda semanal
-            name: agenda
-            widget: list
+              - label: Nome do Jogo
+                name: name
+                widget: string
+                hint: "Ex.: Catan, Ticket to Ride, Coup"
+              - label: Identificador (Slug único)
+                name: id
+                widget: string
+                hint: "Nome curto sem espaços nem acentos (ex.: ticket-to-ride)."
+                pattern: ['^[a-z0-9-]+$', 'Use apenas letras minúsculas, números e hífens (ex.: ticket-to-ride)']
+              - label: Categoria do Jogo
+                name: category
+                widget: select
+                hint: "Define automaticamente a cor do card, o filtro na estante e o preço do passe."
+                options:
+                  - { label: "Leves — Ciano (R$ 10 · Partidas rápidas)", value: "leves" }
+                  - { label: "Médios — Amarelo (R$ 13 · Blefe, cartas e cooperativos)", value: "medios" }
+                  - { label: "Grandes — Rosa (R$ 15 · Estratégia e partidas longas)", value: "grandes" }
+              - label: Foto da Caixa (Capa)
+                name: image
+                widget: image
+                choose_url: true
+                hint: "Envie uma foto quadrada da caixa ou escolha uma imagem já enviada."
+              - label: Quantidade de Jogadores
+                name: players
+                widget: string
+                hint: "Ex.: 2–6 jogadores ou 3–4 jogadores"
+              - label: Estilo / Mecânica Principal
+                name: tag
+                widget: string
+                hint: "Frase curta sobre o estilo do jogo (ex.: Blefe e dedução, Construção de rotas)."
+              - label: Editora
+                name: publisher
+                widget: string
+                hint: "Ex.: Galápagos, PaperGames, Devir Brasil"
+
+  - name: page_sections
+    label: "4. Textos das Seções e FAQ"
+    description: "Textos de abertura (Hero), Como Funciona, Card Games (Sobre), Serviços Extras e Perguntas Frequentes."
+    files:
+      - name: sections_file
+        label: "Dobras da Página e Perguntas Frequentes"
+        file: src/data/site.json
+        format: json
+        fields:
+          - label: Dobra Principal (Hero — Topo da Página)
+            name: hero
+            widget: object
+            collapsed: false
             fields:
-              - { label: Dia, name: day, widget: string }
-              - { label: Evento, name: name, widget: string }
-              - { label: Detalhes, name: detail, widget: string }
-              - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
-          - label: Cards de serviços
-            name: extras
-            widget: list
-            fields:
-              - { label: Número, name: number, widget: string }
-              - { label: Título, name: title, widget: string }
-              - { label: Descrição, name: description, widget: text }
-              - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+              - label: Kicker / Linha Acima do Título (Eyebrow)
+                name: eyebrow
+                widget: string
+                hint: "Ex.: CARD GAMES · BOARDGAMES · TORNEIOS"
+              - label: Título — Linha 1 (Branco)
+                name: titleLine1
+                widget: string
+                hint: "Sempre em CAIXA ALTA (ex.: VEM)"
+              - label: Título — Linha 2 (Destaque em Amarelo)
+                name: titleLine2
+                widget: string
+                hint: "Sempre em CAIXA ALTA (ex.: JOGAR)"
+              - label: Título — Linha 3 (Branco)
+                name: titleLine3
+                widget: string
+                hint: "Sempre em CAIXA ALTA (ex.: COM A GENTE)"
+              - label: Texto de Apresentação
+                name: description
+                widget: text
+                hint: "A palavra 'Natal' recebe automaticamente um link para o mapa da loja."
+              - label: Cor do Botão da Comunidade
+                name: communityButtonColor
+                widget: color
+                default: "#14532d"
+                required: false
           - label: Como Funciona (Passo a Passo)
             name: howItWorks
             widget: object
+            collapsed: true
             fields:
-              - { label: Eyebrow, name: eyebrow, widget: string }
-              - { label: Título Linha 1, name: title, widget: string }
-              - { label: Título Destaque, name: highlight, widget: string }
-              - { label: Texto Introdutório, name: lead, widget: text }
-              - label: Passos
+              - { label: Kicker (Eyebrow), name: eyebrow, widget: string }
+              - { label: Título — Parte 1, name: title, widget: string }
+              - { label: Título — Destaque, name: highlight, widget: string }
+              - { label: Subtítulo Introdutório, name: lead, widget: text }
+              - label: Passos (Cards 01, 02, 03)
                 name: steps
                 widget: list
-                summary: "{{fields.number}} - {{fields.title}}"
+                summary: "{{fields.number}} — {{fields.title}}"
                 fields:
-                  - { label: Número (ex. 01), name: number, widget: string }
-                  - { label: Título do Passo, name: title, widget: string }
-                  - { label: Descrição, name: description, widget: text }
-                  - { label: Cor, name: color, widget: select, options: [cyan, yellow, pink] }
+                  - { label: "Número (ex.: 01)", name: number, widget: string }
+                  - { label: "Título do Passo", name: title, widget: string }
+                  - { label: "Descrição", name: description, widget: text }
+                  - label: Cor do Card
+                    name: color
+                    widget: select
+                    options:
+                      - { label: "Ciano (#00C8FF)", value: "cyan" }
+                      - { label: "Amarelo (#FFD400)", value: "yellow" }
+                      - { label: "Rosa (#FF3EA5)", value: "pink" }
+          - label: Seção Card Games e Comunidade (Sobre)
+            name: about
+            widget: object
+            collapsed: true
+            fields:
+              - { label: "Kicker (Eyebrow)", name: eyebrow, widget: string, default: "CARD GAMES" }
+              - { label: "Título — Linha 1", name: titleLine1, widget: string, default: "TCG, MESA" }
+              - { label: "Título — Destaque em Branco", name: highlight, widget: string, default: "E COMUNIDADE" }
+              - { label: "Parágrafo Descritivo", name: description, widget: text }
+              - label: Pílulas de Card Games (TCGs)
+                name: tcgs
+                widget: list
+                field: { label: "Nome do TCG", name: tcg, widget: string }
+              - { label: "Post-it — Linha 1", name: noteLine1, widget: string, default: "UM LUGAR PRA" }
+              - { label: "Post-it — Destaque em Rosa", name: noteHighlight, widget: string, default: "JOGAR COM CALMA." }
+              - { label: "Assinatura do Post-it", name: noteAuthor, widget: string, default: "@jokenpoficial" }
+          - label: Serviços e Estrutura da Loja (Cards 01, 02, 03)
+            name: extras
+            widget: list
+            summary: "{{fields.number}} — {{fields.title}}"
+            hint: "O card número 02 exibe automaticamente o botão de 'Reservar' direto para o WhatsApp da loja."
+            fields:
+              - { label: "Número (ex.: 01)", name: number, widget: string }
+              - { label: "Título do Serviço", name: title, widget: string }
+              - { label: "Descrição", name: description, widget: text }
+              - label: Cor do Card
+                name: color
+                widget: select
+                options:
+                  - { label: "Ciano (#00C8FF)", value: "cyan" }
+                  - { label: "Amarelo (#FFD400)", value: "yellow" }
+                  - { label: "Rosa (#FF3EA5)", value: "pink" }
           - label: Perguntas Frequentes (FAQ)
             name: faq
             widget: list
             summary: "{{fields.question}}"
+            hint: "Cada pergunta adicionada aqui também é incluída automaticamente no Schema.org (FAQPage) para aparecer no Google."
             fields:
               - { label: Pergunta, name: question, widget: string }
               - { label: Resposta, name: answer, widget: text }

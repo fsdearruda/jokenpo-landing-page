@@ -364,6 +364,21 @@
     "mapsUrl": "https://maps.app.goo.gl/nM1G9WJ6T7ZbAi3t9",
     "embedUrl": "https://www.google.com/maps?q=Jokenpo+Shopping+New+Way+Center+Natal&output=embed"
   },
+  "about": {
+    "eyebrow": "CARD GAMES",
+    "titleLine1": "TCG, MESA",
+    "highlight": "E COMUNIDADE",
+    "description": "Temos produtos e cartas de Magic, Pokémon, Yu-Gi-Oh! e One Piece, além de espaço para sentar, jogar com calma e encontrar a sua turma.",
+    "tcgs": [
+      "MAGIC",
+      "POKÉMON",
+      "YU-GI-OH!",
+      "ONE PIECE"
+    ],
+    "noteLine1": "UM LUGAR PRA",
+    "noteHighlight": "JOGAR COM CALMA.",
+    "noteAuthor": "@jokenpoficial"
+  },
   "title": "Jokenpo — Card games, boardgames e torneios em Natal",
   "hero": {
     "eyebrow": "CARD GAMES · BOARDGAMES · TORNEIOS",

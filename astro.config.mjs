@@ -12,6 +12,7 @@ export default defineConfig({
 	adapter: vercel(),
 	integrations: [
 		decapCmsOauth({
+			adminDisabled: true,
 			oauthDisabled: !process.env.OAUTH_GITHUB_CLIENT_ID || !process.env.OAUTH_GITHUB_CLIENT_SECRET,
 		}),
 	],

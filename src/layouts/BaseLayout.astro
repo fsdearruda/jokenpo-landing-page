@@ -21,6 +21,34 @@ const parseTournamentPrice = (detail: string) => {
 	return match ? match[1] : undefined;
 };
 
+const inferSchemaDays = (dayText: string, explicitDays?: string[]): string[] => {
+	if (explicitDays && explicitDays.length > 0) return explicitDays;
+	const normalized = dayText
+		.toUpperCase()
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '');
+
+	if (normalized.includes('SEG') && normalized.includes('SAB')) {
+		return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+	}
+	if (normalized.includes('SEG') && normalized.includes('SEX')) {
+		return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+	}
+
+	const map: Array<[string, string]> = [
+		['SEG', 'Monday'],
+		['TER', 'Tuesday'],
+		['QUA', 'Wednesday'],
+		['QUI', 'Thursday'],
+		['SEX', 'Friday'],
+		['SAB', 'Saturday'],
+		['DOM', 'Sunday'],
+	];
+
+	const matched = map.filter(([abbr]) => normalized.includes(abbr)).map(([, schemaDay]) => schemaDay);
+	return matched.length > 0 ? matched : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+};
+
 const structuredData = [
 	{
 		'@context': 'https://schema.org',
@@ -49,7 +77,7 @@ const structuredData = [
 			.filter((hours) => !hours.closed && hours.opens && hours.closes)
 			.map((hours) => ({
 				'@type': 'OpeningHoursSpecification',
-				dayOfWeek: hours.schemaDays,
+				dayOfWeek: inferSchemaDays(hours.day, hours.schemaDays),
 				opens: hours.opens,
 				closes: hours.closes,
 			})),

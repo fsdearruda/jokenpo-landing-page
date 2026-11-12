@@ -3,6 +3,7 @@ import siteData from '../data/site.json';
 import SectionHeading from './SectionHeading.astro';
 
 const { faq, contact } = siteData;
+const whatsappDigits = contact.whatsapp.replace(/\D/g, '');
 const colors = ['cyan', 'yellow', 'pink'];
 ---
 
@@ -39,7 +40,7 @@ const colors = ['cyan', 'yellow', 'pink'];
 	<p class="faq-footer-note">
 		Ficou com mais alguma dúvida?{' '}
 		<a
-			href="https://wa.me/5584987655623?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20Jokenp%C3%B4"
+			href={`https://wa.me/${whatsappDigits}?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20Jokenp%C3%B4`}
 			target="_blank"
 			rel="noreferrer"
 		>Chama a gente no WhatsApp</a>{' '}

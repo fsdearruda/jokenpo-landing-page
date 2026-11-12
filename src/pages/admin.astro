@@ -1,0 +1,490 @@
+---
+export const prerender = true;
+
+const cmsScriptSrc = 'https://unpkg.com/decap-cms@^3.16.3/dist/decap-cms.js';
+---
+
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="robots" content="noindex" />
+		<link rel="icon" type="image/svg+xml" href="/Vetor/coelho.svg" />
+		<link href="/admin/config.yml" type="text/yaml" rel="cms-config-url" />
+		<title>Jokenpô — Painel de Conteúdo (CMS)</title>
+		<style>
+			/* Barra de atalho rápida no topo do CMS */
+			.jp-cms-topbar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 8px 18px;
+				background: #0e0e10;
+				border-bottom: 2px solid #ffd400;
+				color: #ffffff;
+				font-family: system-ui, -apple-system, sans-serif;
+				font-size: 12px;
+			}
+			.jp-cms-topbar-brand {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				font-weight: 700;
+				letter-spacing: 0.5px;
+			}
+			.jp-cms-topbar-badge {
+				padding: 2px 8px;
+				border-radius: 999px;
+				background: #ffd400;
+				color: #0e0e10;
+				font-size: 10px;
+				font-weight: 800;
+				text-transform: uppercase;
+			}
+			.jp-cms-topbar-links {
+				display: flex;
+				align-items: center;
+				gap: 14px;
+			}
+			.jp-cms-topbar-links a {
+				color: #00c8ff;
+				text-decoration: none;
+				font-weight: 600;
+			}
+			.jp-cms-topbar-links a:hover {
+				color: #ffd400;
+				text-decoration: underline;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="jp-cms-topbar" role="region" aria-label="Atalhos da Jokenpô">
+			<div class="jp-cms-topbar-brand">
+				<span class="jp-cms-topbar-badge">Jokenpô CMS</span>
+				<span>Gerenciador da Landing Page</span>
+			</div>
+			<div class="jp-cms-topbar-links">
+				<a href="/" target="_blank" rel="noreferrer">Abrir site público ↗</a>
+			</div>
+		</div>
+
+		<!-- Script principal do Decap CMS -->
+		<script is:inline src={cmsScriptSrc}></script>
+
+		<!-- Registro de estilos, idioma PT-BR e templates de Live Preview da Jokenpô -->
+		<script is:inline>
+			(function initJokenpoCmsPreview() {
+				if (!window.CMS || !window.createClass || !window.h) {
+					return;
+				}
+
+				var CMS = window.CMS;
+				var createClass = window.createClass;
+				var h = window.h;
+
+				// Fontes e estilos da identidade Arcade 2.0 no iframe de preview
+				CMS.registerPreviewStyle(
+					'https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:wght@400;600;700&display=swap',
+				);
+				CMS.registerPreviewStyle('/admin/preview.css');
+
+				var CATEGORY_META = {
+					leves: { label: 'Leves · R$ 10', color: 'leves' },
+					medios: { label: 'Médios · R$ 13', color: 'medios' },
+					grandes: { label: 'Grandes · R$ 15', color: 'grandes' },
+				};
+
+				function toJS(immutableVal) {
+					if (!immutableVal) return {};
+					return typeof immutableVal.toJS === 'function' ? immutableVal.toJS() : immutableVal;
+				}
+
+				// 1. Preview: Dados da Loja, Contatos e Horários
+				var StoreInfoPreview = createClass({
+					render: function () {
+						var data = toJS(this.props.entry.getIn(['data']));
+						var contact = data.contact || {};
+						var location = data.location || {};
+						var hours = Array.isArray(data.hours) ? data.hours : [];
+
+						return h('div', { className: 'jp-preview-root' }, [
+							h('div', { className: 'jp-preview-header' }, [
+								h('span', { className: 'jp-preview-badge' }, 'Pré-visualização · Loja & Contatos'),
+							]),
+							h('div', { className: 'jp-preview-section' }, [
+								h('p', { className: 'jp-eyebrow yellow' }, 'SEO & COMPARTILHAMENTO (GOOGLE / WHATSAPP)'),
+								h('h2', { className: 'jp-display-title' }, data.title || data.name || 'Jokenpo'),
+								h('p', { className: 'jp-lead' }, data.description || ''),
+								h('div', { className: 'jp-kv-list' }, [
+									h('div', { className: 'jp-kv-row' }, [
+										h('span', { className: 'jp-kv-label' }, 'ENDEREÇO'),
+										h(
+											'span',
+											{ className: 'jp-kv-val' },
+											[location.venue, location.street, location.neighborhood, location.postalCode]
+												.filter(Boolean)
+												.join(' · '),
+										),
+									]),
+									h('div', { className: 'jp-kv-row' }, [
+										h('span', { className: 'jp-kv-label' }, 'CANAIS DE CONTATO'),
+										h(
+											'span',
+											{ className: 'jp-kv-val' },
+											'WhatsApp: ' +
+												(contact.whatsapp || '—') +
+												' | E-mail: ' +
+												(contact.email || '—') +
+												(contact.cnpj ? ' | CNPJ: ' + contact.cnpj : ''),
+										),
+									]),
+								]),
+							]),
+							h('div', { className: 'jp-preview-section' }, [
+								h('p', { className: 'jp-eyebrow' }, 'HORÁRIOS DE FUNCIONAMENTO'),
+								h(
+									'div',
+									{ className: 'jp-grid-2' },
+									hours.map(function (hr, idx) {
+										return h(
+											'div',
+											{ key: idx, className: 'jp-card-arcade ' + (hr.closed ? 'pink' : 'yellow') },
+											[
+												h('span', { className: 'jp-card-kicker' }, hr.day || 'DIA'),
+												h('h3', { className: 'jp-card-title' }, hr.open || ''),
+												!hr.closed && hr.opens && hr.closes
+													? h(
+															'p',
+															{ className: 'jp-card-detail' },
+															'SEO Schema: ' + hr.opens + ' às ' + hr.closes,
+														)
+													: null,
+											],
+										);
+									}),
+								),
+							]),
+						]);
+					},
+				});
+
+				// 2. Preview: Agenda Semanal e Torneios
+				var AgendaPreview = createClass({
+					render: function () {
+						var data = toJS(this.props.entry.getIn(['data']));
+						var agenda = Array.isArray(data.agenda) ? data.agenda : [];
+
+						return h('div', { className: 'jp-preview-root' }, [
+							h('div', { className: 'jp-preview-header' }, [
+								h('span', { className: 'jp-preview-badge' }, 'Pré-visualização · Agenda Semanal'),
+							]),
+							h('div', { className: 'jp-preview-section' }, [
+								h('p', { className: 'jp-eyebrow' }, 'TODA SEMANA'),
+								h('h2', { className: 'jp-display-title' }, [
+									'A AGENDA ',
+									h('span', { className: 'yellow' }, 'DA GALERA'),
+								]),
+								h(
+									'div',
+									{ className: 'jp-grid-3' },
+									agenda.map(function (ev, idx) {
+										var color = ev.color || 'yellow';
+										return h('article', { key: idx, className: 'jp-card-arcade ' + color }, [
+											h('span', { className: 'jp-card-kicker' }, ev.day || 'DIA'),
+											h('h3', { className: 'jp-card-title' }, ev.name || 'Evento'),
+											h('p', { className: 'jp-card-detail' }, ev.detail || ''),
+										]);
+									}),
+								),
+							]),
+						]);
+					},
+				});
+
+				function resolveGameImageUrl(rawImg, getAsset) {
+					if (!rawImg) return '';
+					var str = String(rawImg).trim();
+					if (!str) return '';
+
+					// Se já for blob: ou data: ou URL absoluta externa
+					if (str.indexOf('blob:') === 0 || str.indexOf('data:') === 0 || /^https?:\/\//i.test(str)) {
+						return str;
+					}
+
+					// Extrai apenas o nome do arquivo (ex.: "uno.jpg" de "/uploads/uno.jpg" ou "uno.jpg")
+					var filename = str.split('/').pop();
+
+					// 1. Tenta via getAsset do Decap CMS (necessário quando o usuário acabou de fazer upload de um arquivo ainda em memória/blob)
+					if (typeof getAsset === 'function') {
+						try {
+							var assetObj = getAsset(str) || getAsset(filename);
+							if (assetObj) {
+								var assetUrl = assetObj.url || assetObj.toString();
+								if (assetUrl && assetUrl.indexOf('blob:') === 0) {
+									return assetUrl;
+								}
+							}
+						} catch (_err) {
+							// Ignora falha do getAsset e usa caminho estático
+						}
+					}
+
+					// 2. Caminho absoluto direto na origem atual (public/uploads/<filename> servido em /uploads/<filename>)
+					var origin = window.location && window.location.origin ? window.location.origin : '';
+					if (str.indexOf('/uploads/') === 0) {
+						return origin + str;
+					}
+					return origin + '/uploads/' + filename;
+				}
+
+				// Corrige automaticamente miniaturas do widget de imagem na coluna esquerda do formulário
+				// caso o Decap CMS gere src relativo sem /uploads/ ou caso a API do GitHub ainda não tenha o arquivo
+				document.addEventListener(
+					'error',
+					function (event) {
+						var target = event.target;
+						if (!target || target.tagName !== 'IMG') return;
+						var currentSrc = target.getAttribute('src') || '';
+						if (!currentSrc || currentSrc.indexOf('blob:') === 0 || currentSrc.indexOf('data:') === 0) {
+							return;
+						}
+						var filename = currentSrc.split('?')[0].split('/').pop();
+						if (!filename || !/\.(jpg|jpeg|png|webp|avif|svg)$/i.test(filename)) return;
+
+						var step = Number(target.dataset.jpFallbackStep || '0');
+						if (step === 0) {
+							target.dataset.jpFallbackStep = '1';
+							target.src = '/uploads/' + filename;
+						} else if (step === 1) {
+							target.dataset.jpFallbackStep = '2';
+							target.src =
+								'https://raw.githubusercontent.com/fsdearruda/jokenpo-landing-page/main/src/assets/games/' +
+								filename;
+						}
+					},
+					true,
+				);
+
+				// 3. Preview: Catálogo de Boardgames e Passes
+				var BoardgamesPreview = createClass({
+					render: function () {
+						var getAsset = this.props.getAsset;
+						var data = toJS(this.props.entry.getIn(['data']));
+						var passes = data.boardgamePasses || {};
+						var games = Array.isArray(data.boardgames) ? data.boardgames : [];
+
+						return h('div', { className: 'jp-preview-root' }, [
+							h('div', { className: 'jp-preview-header' }, [
+								h(
+									'span',
+									{ className: 'jp-preview-badge' },
+									'Pré-visualização · Passes & Estante (' + games.length + ' jogos)',
+								),
+							]),
+							passes.afternoon
+								? h('div', { className: 'jp-preview-section' }, [
+										h('p', { className: 'jp-eyebrow' }, 'TABELA DOS BOARDGAMES'),
+										h('div', { className: 'jp-grid-3' }, [
+											passes.thursday
+												? h('div', { className: 'jp-card-arcade yellow' }, [
+														h('span', { className: 'jp-card-kicker' }, passes.thursday.schedule),
+														h('h3', { className: 'jp-card-title' }, passes.thursday.title),
+														h(
+															'p',
+															{ className: 'jp-card-detail' },
+															passes.thursday.price + ' · ' + passes.thursday.note,
+														),
+													])
+												: null,
+											passes.saturday
+												? h('div', { className: 'jp-card-arcade pink' }, [
+														h('span', { className: 'jp-card-kicker' }, passes.saturday.schedule),
+														h('h3', { className: 'jp-card-title' }, passes.saturday.title),
+														h(
+															'p',
+															{ className: 'jp-card-detail' },
+															passes.saturday.price + ' · ' + passes.saturday.note,
+														),
+													])
+												: null,
+											passes.hourly
+												? h('div', { className: 'jp-card-arcade cyan' }, [
+														h('span', { className: 'jp-card-kicker' }, passes.hourly.schedule),
+														h('h3', { className: 'jp-card-title' }, passes.hourly.title),
+														h(
+															'p',
+															{ className: 'jp-card-detail' },
+															'R$ ' + passes.hourly.price + ' / hora',
+														),
+													])
+												: null,
+										]),
+									])
+								: null,
+							h('div', { className: 'jp-preview-section' }, [
+								h('p', { className: 'jp-eyebrow yellow' }, 'ACERVO DA LOJA'),
+								h('h2', { className: 'jp-display-title' }, [
+									'ESTANTE DE ',
+									h('span', { className: 'yellow' }, 'JOGOS'),
+								]),
+								h(
+									'div',
+									{ className: 'jp-grid-3' },
+									games.map(function (game, idx) {
+										var catKey = game.category || 'leves';
+										var meta = CATEGORY_META[catKey] || CATEGORY_META.leves;
+										var resolvedImg = resolveGameImageUrl(game.image, getAsset);
+										var filename = game.image ? String(game.image).split('/').pop() : '';
+										var githubRawFallback =
+											'https://raw.githubusercontent.com/fsdearruda/jokenpo-landing-page/main/src/assets/games/' +
+											filename;
+
+										return h('article', { key: idx, className: 'jp-game-card ' + meta.color }, [
+											h('div', { className: 'jp-game-cover-wrap' }, [
+												resolvedImg
+													? h('img', {
+															className: 'jp-game-cover',
+															src: resolvedImg,
+															alt: game.name || '',
+															onError: function (e) {
+																if (
+																	filename &&
+																	e.target &&
+																	e.target.src !== githubRawFallback &&
+																	!e.target.dataset.retried
+																) {
+																	e.target.dataset.retried = 'true';
+																	e.target.src = githubRawFallback;
+																}
+															},
+														})
+													: null,
+												h('span', { className: 'jp-game-badge ' + meta.color }, meta.label),
+											]),
+											h('div', { className: 'jp-game-body' }, [
+												h('span', { className: 'jp-game-pub' }, game.publisher || 'Editora'),
+												h('h4', { className: 'jp-game-name' }, game.name || 'Novo Jogo'),
+												h('p', { className: 'jp-game-meta' }, [
+													h('span', null, (game.players || '') + ' · '),
+													h('strong', { className: meta.color }, game.tag || ''),
+												]),
+											]),
+										]);
+									}),
+								),
+							]),
+						]);
+					},
+				});
+
+				// 4. Preview: Dobras da Página (Hero, Como Funciona, Sobre, Serviços e FAQ)
+				var PageSectionsPreview = createClass({
+					render: function () {
+						var data = toJS(this.props.entry.getIn(['data']));
+						var hero = data.hero || {};
+						var howItWorks = data.howItWorks || {};
+						var steps = Array.isArray(howItWorks.steps) ? howItWorks.steps : [];
+						var about = data.about || {};
+						var tcgs = Array.isArray(about.tcgs) ? about.tcgs : [];
+						var extras = Array.isArray(data.extras) ? data.extras : [];
+						var faq = Array.isArray(data.faq) ? data.faq : [];
+
+						return h('div', { className: 'jp-preview-root' }, [
+							h('div', { className: 'jp-preview-header' }, [
+								h('span', { className: 'jp-preview-badge' }, 'Pré-visualização · Textos & FAQ'),
+							]),
+							// Hero
+							h('div', { className: 'jp-preview-section' }, [
+								h('p', { className: 'jp-eyebrow pink' }, hero.eyebrow || 'HERO'),
+								h('h1', { className: 'jp-display-title' }, [
+									hero.titleLine1 || 'VEM',
+									h('br'),
+									h('span', { className: 'yellow' }, hero.titleLine2 || 'JOGAR'),
+									h('br'),
+									hero.titleLine3 || 'COM A GENTE',
+								]),
+								h('p', { className: 'jp-lead' }, hero.description || ''),
+							]),
+							// Como Funciona
+							h('div', { className: 'jp-preview-section' }, [
+								h('p', { className: 'jp-eyebrow' }, howItWorks.eyebrow || 'COMO FUNCIONA'),
+								h('h2', { className: 'jp-display-title' }, [
+									(howItWorks.title || 'PASSO A PASSO') + ' ',
+									h('span', { className: 'yellow' }, howItWorks.highlight || 'PRA JOGAR'),
+								]),
+								h('p', { className: 'jp-lead' }, howItWorks.lead || ''),
+								h(
+									'div',
+									{ className: 'jp-grid-3' },
+									steps.map(function (st, idx) {
+										return h(
+											'div',
+											{ key: idx, className: 'jp-card-arcade ' + (st.color || 'cyan') },
+											[
+												h('span', { className: 'jp-card-kicker' }, st.number || '0' + (idx + 1)),
+												h('h3', { className: 'jp-card-title' }, st.title || ''),
+												h('p', { className: 'jp-card-detail' }, st.description || ''),
+											],
+										);
+									}),
+								),
+							]),
+							// Sobre (Card Games)
+							h('div', { className: 'jp-preview-section', style: { background: '#ff3ea5', color: '#0e0e10' } }, [
+								h('p', { className: 'jp-eyebrow', style: { color: '#0e0e10' } }, about.eyebrow || 'CARD GAMES'),
+								h(
+									'h2',
+									{ className: 'jp-display-title', style: { color: '#0e0e10' } },
+									(about.titleLine1 || 'TCG, MESA') + ' ' + (about.highlight || 'E COMUNIDADE'),
+								),
+								h('p', { className: 'jp-lead', style: { color: '#0e0e10' } }, about.description || ''),
+								h(
+									'div',
+									{ className: 'jp-pill-row' },
+									tcgs.map(function (tcg, idx) {
+										return h('span', { key: idx, className: 'jp-pill' }, tcg);
+									}),
+								),
+							]),
+							// Extras
+							h('div', { className: 'jp-preview-section' }, [
+								h('p', { className: 'jp-eyebrow yellow' }, 'SERVIÇOS EXTRAS'),
+								h(
+									'div',
+									{ className: 'jp-grid-3' },
+									extras.map(function (ex, idx) {
+										return h(
+											'div',
+											{ key: idx, className: 'jp-card-arcade ' + (ex.color || 'cyan') },
+											[
+												h('span', { className: 'jp-card-kicker' }, ex.number || ''),
+												h('h3', { className: 'jp-card-title' }, ex.title || ''),
+												h('p', { className: 'jp-card-detail' }, ex.description || ''),
+											],
+										);
+									}),
+								),
+							]),
+							// FAQ
+							h('div', { className: 'jp-preview-section' }, [
+								h('p', { className: 'jp-eyebrow yellow' }, 'PERGUNTAS FREQUENTES (' + faq.length + ')'),
+								faq.map(function (item, idx) {
+									return h('div', { key: idx, className: 'jp-faq-item' }, [
+										h('h4', { className: 'jp-faq-q' }, '0' + (idx + 1) + '. ' + (item.question || '')),
+										h('p', { className: 'jp-faq-a' }, item.answer || ''),
+									]);
+								}),
+							]),
+						]);
+					},
+				});
+
+				CMS.registerPreviewTemplate('general', StoreInfoPreview);
+				CMS.registerPreviewTemplate('agenda_file', AgendaPreview);
+				CMS.registerPreviewTemplate('boardgames_file', BoardgamesPreview);
+				CMS.registerPreviewTemplate('sections_file', PageSectionsPreview);
+			})();
+		</script>
+	</body>
+</html>

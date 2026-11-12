@@ -36,8 +36,38 @@ const imageMap: Record<string, ImageMetadata> = {
 	'zombicide.jpg': zombicideImg,
 };
 
+const assetGlob = import.meta.glob<{ default: ImageMetadata }>('../assets/games/*.{jpg,jpeg,png,webp,avif,svg}', {
+	eager: true,
+});
+
+const dynamicImageMap: Record<string, ImageMetadata> = {
+	...imageMap,
+};
+
+for (const [filePath, mod] of Object.entries(assetGlob)) {
+	const filename = filePath.split('/').pop();
+	if (filename && mod.default) {
+		dynamicImageMap[filename] = mod.default;
+		dynamicImageMap[`/uploads/${filename}`] = mod.default;
+	}
+}
+
 const passes = siteData.boardgamePasses;
-const games = siteData.boardgames;
+const categoryLookup = Object.fromEntries(
+	(siteData.boardgameCategories ?? passes.afternoon.tiers).map((cat) => [
+		cat.id,
+		{ name: cat.name, price: cat.price, color: cat.color },
+	]),
+);
+
+const games = siteData.boardgames.map((game) => {
+	const catInfo = categoryLookup[game.category];
+	return {
+		...game,
+		categoryName: catInfo?.name || game.categoryName || game.category,
+		price: catInfo?.price || game.price || '',
+	};
+});
 
 const counts = {
 	all: games.length,
@@ -159,15 +189,27 @@ const counts = {
 					aria-label={`${game.name}, categoria ${game.categoryName}`}
 				>
 					<div class="game-cover-wrap">
-						<Image
-							src={imageMap[game.image]}
-							alt={`Capa da caixa do jogo ${game.name}`}
-							width={280}
-							height={280}
-							class="game-cover"
-							loading="lazy"
-							decoding="async"
-						/>
+						{dynamicImageMap[game.image] ? (
+							<Image
+								src={dynamicImageMap[game.image]}
+								alt={`Capa da caixa do jogo ${game.name}`}
+								width={280}
+								height={280}
+								class="game-cover"
+								loading="lazy"
+								decoding="async"
+							/>
+						) : (
+							<img
+								src={game.image.startsWith('/') || game.image.startsWith('http') ? game.image : `/uploads/${game.image}`}
+								alt={`Capa da caixa do jogo ${game.name}`}
+								width="280"
+								height="280"
+								class="game-cover"
+								loading="lazy"
+								decoding="async"
+							/>
+						)}
 						<span class={`game-badge ${game.category}`}>
 							{game.categoryName}
 						</span>
