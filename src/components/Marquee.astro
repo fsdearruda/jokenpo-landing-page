@@ -26,6 +26,7 @@ const items = Array.from({ length: 6 });
 					width={654}
 					height={44}
 					loading="eager"
+					aria-hidden="true"
 				/>
 			))}
 		</div>
@@ -106,9 +107,9 @@ const items = Array.from({ length: 6 });
 		z-index: 2;
 		display: inline-grid;
 		place-items: center;
-		min-inline-size: 2rem;
-		min-block-size: 2rem;
-		padding: 0 0.5rem;
+		min-inline-size: 2.75rem;
+		min-block-size: 2.25rem;
+		padding: 0 0.75rem;
 		border: 2px solid var(--ink);
 		border-radius: var(--radius-pill);
 		background: var(--ink-2);

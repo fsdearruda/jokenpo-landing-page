@@ -27,7 +27,7 @@ const whatsappDigits = siteData.contact.whatsapp.replace(/\D/g, '');
 							class="card-link"
 							href={`https://wa.me/${whatsappDigits}?text=Ol%C3%A1!%20Gostaria%20de%20saber%20sobre%20reserva%20de%20mesa%20na%20Jokenp%C3%B4`}
 							target="_blank"
-							rel="noreferrer"
+							rel="noopener noreferrer"
 							aria-label="Reservar mesa pelo WhatsApp"
 						>
 							<span>Reservar</span>
@@ -101,8 +101,10 @@ const whatsappDigits = siteData.contact.whatsapp.replace(/\D/g, '');
 		display: inline-flex;
 		align-items: center;
 		padding: 0.25rem 0.6875rem;
+		border: 1.5px solid oklch(0.16 0.006 285 / 0.28);
 		border-radius: var(--radius-pill);
-		background: oklch(0.16 0.006 285 / 0.12);
+		background: oklch(1 0 0 / 0.24);
+		color: var(--ink);
 		font-size: 0.75rem;
 		font-weight: 700;
 		letter-spacing: 0.16em;

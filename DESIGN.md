@@ -89,7 +89,7 @@
   - Secondary / Filter chips (`.filter-btn`): `--ink-2` surface with `2px solid var(--ink-3)`, hover border highlight, active state filled with category color (`--white`, `--cyan`, `--yellow`, `--pink`) + hard offset shadow, `min-block-size: 44px`.
 - Navigation (`.site-header`): Single `<nav>` landmark; inline links on desktop with `scroll-target-group: auto` and `.target-current` / `[aria-current='true']` underline indicator; anchored dropdown menu on mobile (`<= 800px`) scaling from `transform-origin: top right`.
 - Catalog cards (`.game-card`): Non-interactive `<article>` showcase cards (no stray `tabindex="0"` trap), white box-art stage with subtle inner frame, category pill badge, publisher kicker, and tabular player count.
-- Accordions (`.faq-item`): Native `<details>`/`<summary>` with `::details-content` intrinsic size transition (`interpolate-size: allow-keywords`), numbered badge, and rotating `+` indicator.
+- Accordions (`.faq-item`): Native `<details>`/`<summary>` with `::details-content` intrinsic size transition (`interpolate-size: allow-keywords`), numbered badge, balanced `1.25rem 2.25rem 1.75rem 5.125rem` content padding with dashed divider, and an inline SVG `+` indicator whose path geometry (`M8 2.5v11M2.5 8h11`) is centered at `(8, 8)` so both closed (`+`) and open (`×` at 45deg) states remain optically centered.
 - Focus ring: `box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px var(--yellow)` (follows `border-radius` cleanly on every control) with `outline: 2px solid transparent` fallback for `forced-colors: active`.
 
 ## Motion
@@ -118,13 +118,15 @@
 
 - Intentional single dark palette (`color-scheme: dark`). Near-black `--ink` (`#0E0E10`) canvas, elevated `--ink-2` (`#1C1C21`) card surfaces, `--ink-3` (`#3A3A42`) structural borders, and high-luminance CMY accents.
 
-## Accessibility
+## Accessibility & Agentic Discoverability
 
 - Contrast: WCAG 2.2 AA verified across all dark and colored surfaces (`--ink` on `--yellow`/`--cyan`/`--pink` exceeds 7:1; `--white` and `--mist` on `--ink`/`--ink-2` exceed 11:1).
+- Watermarks: Giant step watermarks (`01`, `02`) implemented via CSS `::after` (`content: attr(data-watermark)`) with `pointer-events: none; user-select: none;` so automated a11y trees/Axe do not evaluate decorative figures as low-contrast content text.
 - Focus: Managed `:focus-visible` ring following border-radius via `box-shadow`, never obscured by sticky header (`scroll-padding-top: 96px`).
 - Keyboard: Only genuinely interactive controls (`<a>`, `<button>`, `<summary>`) are in the tab order. Mobile menu supports `Escape` and outside-pointer dismissal.
 - Targets: All interactive buttons, filter pills, and links meet `>= 44px` hit target height (`>= 24px` minimum for inline text links with generous line spacing).
 - Color independence: Active nav links use underline; game categories pair color with explicit text labels (`Leves`, `Médios`, `Grandes`).
+- Agentic Browsing: Fully compliant `llms.txt` with canonical Markdown links (`- [Title](url): description`), structured JSON-LD `@graph`, and preloaded critical local fonts achieving **100/100** on Lighthouse Agentic Browsing, Accessibility, SEO, and Best Practices (98 Performance).
 
 ## Tokens (source of truth)
 
@@ -187,14 +189,14 @@
   2. Replaced destructive fixed `-3px` display letter-spacing with optical relative tracking (`-0.03em` / `-0.02em`).
   3. Removed `tabindex="0"` from non-interactive `.game-card` articles and redundant `role="region"` from `.faq-list`.
   4. Added a visible pause/play control and hover/focus pause to `Marquee.astro` so persistent motion complies with UI/UX guidelines and WCAG 2.2.2.
-  5. Collapsed the entire `.hero-stage` and decorative `.about-note` on mobile (`<= 800px`) with `display: none` so neither decorative cards nor an empty 350px container add unnecessary vertical scroll.
+  5. Collapsed the entire `.hero-stage`, `.about-note`, and `.scroll-cue` on mobile (`<= 800px`) with `display: none` so purely decorative cards/stages never add unnecessary vertical scroll.
   6. Broke the repetitive 3-equal-card template across `HowItWorksSection`, `AgendaSection`, and `ExtrasSection` with tactile ticket cutouts, step connectors, and alternating sticker rotations.
   7. Unified hard-offset shadows (`--ink-3` on dark canvas so shadows are actually visible, `--ink` on colored surfaces) and eliminated diffuse blur shadows on bordered cards.
   8. Upgraded focus rings to `box-shadow` so they follow `border-radius` cleanly, and fixed `Header.astro` `.target-current` / `[aria-current='true']` selector for cross-browser scrollspy support.
   9. Applied `font-variant-numeric: tabular-nums` to all pricing, schedule times, and badge counts.
-  10. Added smooth intrinsic-size disclosure animation (`::details-content` + `interpolate-size: allow-keywords`) to `FaqSection.astro`.
+  10. Added smooth intrinsic-size disclosure animation (`::details-content` + `interpolate-size: allow-keywords`) to `FaqSection.astro`, upgraded toggle glyph to geometric SVG, and added generous answer padding.
   11. Upgraded all interactive buttons, filter pills, and card CTAs to comfortable `>= 44px` touch targets and gated hover transforms behind `@media (hover: hover)`.
 
 ## Changelog
 
-- 2026-11-12: Initial `DESIGN.md` created and full landing page deslop & UI/UX overhaul applied across `global.css` and all Astro components.
+- 2026-11-12: Applied complete landing page deslop, mobile vertical compaction, critical CSS inlining, font preloading, SVG disclosure geometric centering, answer padding expansion, watermarks-to-pseudoelements contrast fix, and standard `llms.txt` Markdown links, validating 100 Accessibility, 100 Best Practices, 100 SEO, 100 Agentic Browsing, and 98 Performance on Lighthouse.

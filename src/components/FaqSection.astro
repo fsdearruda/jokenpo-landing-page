@@ -27,7 +27,19 @@ const colors = ['cyan', 'yellow', 'pink'];
 					<summary class="faq-summary">
 						<span class="faq-num" aria-hidden="true">{num}</span>
 						<span class="faq-question-text">{item.question}</span>
-						<span class="faq-toggle-icon" aria-hidden="true">+</span>
+						<span class="faq-toggle-icon" aria-hidden="true">
+							<svg
+								viewBox="0 0 16 16"
+								width="14"
+								height="14"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2.75"
+								stroke-linecap="round"
+							>
+								<path d="M8 2.5v11M2.5 8h11" />
+							</svg>
+						</span>
 					</summary>
 					<div class="faq-content">
 						<p>{item.answer}</p>
@@ -42,12 +54,12 @@ const colors = ['cyan', 'yellow', 'pink'];
 		<a
 			href={`https://wa.me/${whatsappDigits}?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20Jokenp%C3%B4`}
 			target="_blank"
-			rel="noreferrer"
+			rel="noopener noreferrer"
 		>
 			Chama a gente no WhatsApp
 		</a>{' '}
 		ou entre na{' '}
-		<a href={contact.communityWhatsapp} target="_blank" rel="noreferrer">
+		<a href={contact.communityWhatsapp} target="_blank" rel="noopener noreferrer">
 			comunidade
 		</a>.
 	</p>
@@ -182,14 +194,17 @@ const colors = ['cyan', 'yellow', 'pink'];
 		height: 2rem;
 		border-radius: 50%;
 		background: var(--ink);
-		font-family: var(--font-display);
-		font-size: 1.375rem;
-		line-height: 1;
 		color: var(--mist);
 		transition:
 			transform var(--duration-normal) var(--ease-out),
 			color var(--duration-fast) var(--ease-out),
 			background-color var(--duration-fast) var(--ease-out);
+	}
+
+	.faq-toggle-icon svg {
+		display: block;
+		width: 0.875rem;
+		height: 0.875rem;
 	}
 
 	.faq-summary:hover .faq-toggle-icon {
@@ -203,7 +218,8 @@ const colors = ['cyan', 'yellow', 'pink'];
 	}
 
 	.faq-content {
-		padding: 0 1.625rem 1.5rem 4.75rem;
+		padding: 1.25rem 2.25rem 1.75rem 5.125rem;
+		border-top: 2px dashed oklch(1 0 0 / 0.08);
 		color: var(--mist);
 		font-size: 0.9375rem;
 		font-weight: 600;
@@ -242,7 +258,7 @@ const colors = ['cyan', 'yellow', 'pink'];
 		}
 
 		.faq-content {
-			padding: 0 1.25rem 1.25rem 1.25rem;
+			padding: 1rem 1.25rem 1.5rem 1.25rem;
 			font-size: 0.875rem;
 		}
 	}

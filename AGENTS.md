@@ -8,6 +8,8 @@ Before changing code:
 4. Read `docs/brand-content.md` for public business information.
 5. Treat `src/data/site.json` as the source of truth for landing-page content.
 6. For any UI changes, apply **deslop** (`frontend-design-deslop`) to prevent generic AI UI patterns.
+7. Maintain `src/pages/llms.txt.ts` strictly compliant with `llmstxt.org` using Markdown links (`- [Title](url): description`) to pass automated Agentic Browsing audits.
+8. Maintain 95+ scores across Performance, Accessibility, Best Practices, and SEO in Lighthouse audits.
 
 Keep changes focused. Do not edit generated files in `dist/`, `.vercel/` or
 `.astro/`. Run `pnpm check` and `pnpm build` after code changes. Report changed

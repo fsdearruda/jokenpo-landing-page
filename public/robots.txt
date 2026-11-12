@@ -1,3 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /oauth
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+
 Sitemap: https://jokenpo.cards/sitemap.xml

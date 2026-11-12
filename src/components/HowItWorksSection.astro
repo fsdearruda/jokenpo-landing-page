@@ -19,9 +19,8 @@ const { howItWorks } = siteData;
 	<ol class="steps-grid">
 		{howItWorks.steps.map((step) => (
 			<li class={`step-card step-${step.color}`}>
-				<div class="step-header">
+				<div class="step-header" data-watermark={step.number}>
 					<span class="step-badge">PASSO {step.number}</span>
-					<span class="step-watermark" aria-hidden="true">{step.number}</span>
 				</div>
 				<h3 class="step-title">{step.title}</h3>
 				<p class="step-desc">{step.description}</p>
@@ -114,7 +113,8 @@ const { howItWorks } = siteData;
 		font-variant-numeric: tabular-nums;
 	}
 
-	.step-watermark {
+	.step-header::after {
+		content: attr(data-watermark);
 		position: absolute;
 		top: -0.5rem;
 		right: 0.75rem;

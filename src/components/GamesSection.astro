@@ -315,6 +315,8 @@ const counts = {
 		}
 
 		let visibleCount = 0;
+		const cardsToAnimate: HTMLElement[] = [];
+
 		gameCards.forEach((card) => {
 			const cat = card.dataset.category;
 			const isMatch = currentFilter === 'all' || cat === currentFilter;
@@ -325,16 +327,14 @@ const counts = {
 			} else {
 				const matchIndex = matching.indexOf(card);
 				const isVisible = isExpanded || !needsExpand || matchIndex < initialLimit;
-				const wasHidden = card.classList.contains('hidden');
 
 				card.classList.toggle('hidden', !isVisible);
 
 				if (isVisible) {
 					card.style.setProperty('--stagger-index', visibleCount.toString());
-					if (triggerAnimation && (wasHidden || matchIndex >= initialLimit || triggerAnimation)) {
+					if (triggerAnimation) {
 						card.classList.remove('animate-reveal');
-						void card.offsetWidth;
-						card.classList.add('animate-reveal');
+						cardsToAnimate.push(card);
 					}
 					visibleCount++;
 				} else {
@@ -342,6 +342,12 @@ const counts = {
 				}
 			}
 		});
+
+		if (cardsToAnimate.length > 0) {
+			requestAnimationFrame(() => {
+				cardsToAnimate.forEach((card) => card.classList.add('animate-reveal'));
+			});
+		}
 
 		if (filterStatus) {
 			if (announceText) {
@@ -354,17 +360,37 @@ const counts = {
 		}
 	}
 
-	filterButtons.forEach((btn) => {
+	const filterBtnList = Array.from(filterButtons);
+
+	filterBtnList.forEach((btn, index) => {
 		btn.addEventListener('click', () => {
 			currentFilter = btn.dataset.filter || 'all';
 
-			filterButtons.forEach((b) => {
+			filterBtnList.forEach((b) => {
 				const isCurrent = b === btn;
 				b.classList.toggle('active', isCurrent);
 				b.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
 			});
 
 			updateDisplay();
+		});
+
+		btn.addEventListener('keydown', (event) => {
+			let targetIndex = -1;
+			if (event.key === 'ArrowRight') {
+				targetIndex = (index + 1) % filterBtnList.length;
+			} else if (event.key === 'ArrowLeft') {
+				targetIndex = (index - 1 + filterBtnList.length) % filterBtnList.length;
+			} else if (event.key === 'Home') {
+				targetIndex = 0;
+			} else if (event.key === 'End') {
+				targetIndex = filterBtnList.length - 1;
+			}
+
+			if (targetIndex !== -1) {
+				event.preventDefault();
+				filterBtnList[targetIndex]?.focus();
+			}
 		});
 	});
 
@@ -575,8 +601,10 @@ const counts = {
 		display: inline-flex;
 		align-self: flex-start;
 		padding: 0.25rem 0.6875rem;
+		border: 1.5px solid oklch(0.16 0.006 285 / 0.28);
 		border-radius: var(--radius-pill);
-		background: oklch(0.16 0.006 285 / 0.12);
+		background: oklch(1 0 0 / 0.24);
+		color: var(--ink);
 		font-size: 0.75rem;
 		font-weight: 700;
 		letter-spacing: 0.14em;
@@ -773,7 +801,6 @@ const counts = {
 	.badge-count {
 		font-size: 0.75rem;
 		font-weight: 700;
-		opacity: 0.85;
 		font-variant-numeric: tabular-nums;
 	}
 
@@ -796,6 +823,8 @@ const counts = {
 	}
 
 	.game-card {
+		content-visibility: auto;
+		contain-intrinsic-size: auto 360px;
 		background: var(--ink-2);
 		border: 2px solid var(--ink-3);
 		border-radius: var(--radius-card);

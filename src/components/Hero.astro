@@ -28,7 +28,7 @@ const heroDescriptionHtml = hero.description.replace(
 					style={`--community-btn-bg: ${communityBtnColor};`}
 					href={contact.communityWhatsapp}
 					target="_blank"
-					rel="noreferrer"
+					rel="noopener noreferrer"
 				>
 					<svg
 						class="whatsapp-icon"
@@ -47,10 +47,26 @@ const heroDescriptionHtml = hero.description.replace(
 
 		<div class="hero-stage" aria-hidden="true">
 			<div class="burst burst-one">
-				<Image src="/Vetor/brilho-rosa.svg" alt="" width={47} height={47} loading="eager" />
+				<Image
+					src="/Vetor/brilho-rosa.svg"
+					alt=""
+					width={47}
+					height={47}
+					loading="lazy"
+					fetchpriority="low"
+					aria-hidden="true"
+				/>
 			</div>
 			<div class="burst burst-two">
-				<Image src="/Vetor/brilho-preto.svg" alt="" width={32} height={32} loading="eager" />
+				<Image
+					src="/Vetor/brilho-preto.svg"
+					alt=""
+					width={32}
+					height={32}
+					loading="lazy"
+					fetchpriority="low"
+					aria-hidden="true"
+				/>
 			</div>
 			<div class="card-back card-back-main">
 				<div class="card-inner">
@@ -69,7 +85,9 @@ const heroDescriptionHtml = hero.description.replace(
 				alt=""
 				width={112}
 				height={126}
-				loading="eager"
+				loading="lazy"
+				fetchpriority="low"
+				aria-hidden="true"
 			/>
 			<div class="die">
 				<svg class="die-svg" viewBox="0 0 100 100" fill="none" aria-hidden="true">
@@ -584,28 +602,19 @@ const heroDescriptionHtml = hero.description.replace(
 		}
 
 		/* Esconde as cartas e elementos decorativos no mobile para evitar scroll vertical excessivo */
-		.hero-stage {
+		.hero-stage,
+		.scroll-cue {
 			display: none;
 		}
 
 		.hero-bottom-bar {
-			flex-direction: column-reverse;
-			align-items: stretch;
-			gap: 1rem;
+			justify-content: flex-start;
 			padding-top: 0.25rem;
 		}
 
 		.hero-note {
-			align-self: flex-end;
-		}
-
-		.scroll-cue {
-			align-self: center;
-			align-items: center;
-		}
-
-		:global(.scroll-cue .scroll-arrow) {
-			margin-left: 0;
+			text-align: left;
+			transform: none;
 		}
 	}
 </style>
