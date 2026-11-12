@@ -53,10 +53,11 @@ evoluir. Aplicam-se a novas páginas, componentes, estilos e interações.
 
 ## Checklist antes de concluir
 
-- [ ] Navegação funciona com teclado, toque e mouse.
+- [ ] Navegação funciona com teclado, toque e mouse (consulte `frontend-a11y`).
 - [ ] Foco, hover e pressionamento são perceptíveis.
 - [ ] Movimento reduzido foi respeitado.
-- [ ] Contraste e alto contraste foram considerados.
-- [ ] Layout funciona com zoom e em 320px.
-- [ ] `alt`, nomes acessíveis e dimensões das imagens estão corretos.
+- [ ] Contraste e alto contraste foram considerados (audite com `wcag-audit-patterns`).
+- [ ] Layout funciona com zoom e em 320px sem quebras.
+- [ ] `alt`, nomes acessíveis e dimensões das imagens estão corretos (evite layout shifts com `core-web-vitals`).
+- [ ] **Garantir deslop (`frontend-design-deslop`)**: remover padrões e clichês visuais de IA (gradientes genéricos roxo/azul, cards flutuantes sem propósito, cantos excessivamente arredondados e sombras artificiais), preservando a identidade em `docs/style-guide.md` e revisando com `interface-review`.
 - [ ] `pnpm check` e `pnpm build` passam.

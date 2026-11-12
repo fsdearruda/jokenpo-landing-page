@@ -90,11 +90,14 @@ valores reais.
 ## Checklist para agentes de código
 
 1. Entender o pedido e localizar o arquivo responsável.
-2. Ler o contexto antes de editar; reutilizar padrões existentes.
-3. Fazer a menor alteração que resolve o problema.
-4. Rodar `pnpm check` e `pnpm build`.
-5. Informar arquivos alterados, validações executadas e pendências.
-6. Criar um commit descritivo quando solicitado.
+2. Identificar e consultar as **skills relevantes** do projeto em `.agents/skills/` (veja a matriz de gatilhos em `AGENTS.md`).
+3. Ler o contexto antes de editar; reutilizar padrões existentes.
+4. Fazer a menor alteração que resolve o problema.
+5. **Garantir o uso de deslop em UI**: consultar obrigatoriamente `frontend-design-deslop` ao criar ou alterar componentes visuais para eliminar clichês de IA (gradientes roxo/azul genéricos, cantos excessivamente arredondados, sombras artificiais) e preservar os tokens da marca (`docs/style-guide.md`).
+6. Rodar `pnpm check` e `pnpm build`.
+7. Informar arquivos alterados, validações executadas e pendências.
+8. Criar um commit descritivo quando solicitado.
 
 Para informações públicas da marca, consulte `docs/brand-content.md`. Para
-decisões visuais, consulte `docs/style-guide.md`.
+decisões visuais, consulte `docs/style-guide.md`. Para catálogo e gatilhos de skills,
+consulte `AGENTS.md`.
