@@ -1,0 +1,141 @@
+---
+const appKey = import.meta.env.PUBLIC_BLIP_APP_KEY?.trim() ?? '';
+const commonUrl = import.meta.env.PUBLIC_BLIP_COMMON_URL?.trim() ?? '';
+---
+
+{
+	appKey && (
+		<div
+			id="blip-chat-config"
+			data-app-key={appKey}
+			data-common-url={commonUrl || undefined}
+			hidden
+		/>
+	)
+}
+
+<script>
+	const configEl = document.getElementById('blip-chat-config');
+
+	if (configEl instanceof HTMLElement && !document.getElementById('blip-chat-container')) {
+		const appKey = configEl.dataset.appKey?.trim();
+
+		if (appKey) {
+			const commonUrl = configEl.dataset.commonUrl?.trim();
+			const chatIconSvg =
+				'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M4 5.5C4 4.12 5.12 3 6.5 3h11C18.88 3 20 4.12 20 5.5v8c0 1.38-1.12 2.5-2.5 2.5H10l-4.5 3.6c-.66.53-1.5.06-1.5-.78V5.5Z" fill="#0E0E10"/></svg>';
+			const buttonIcon = `data:image/svg+xml;utf8,${encodeURIComponent(chatIconSvg)}`;
+
+			const initBlipChat = async () => {
+				const { BlipChat } = await import('blip-chat-widget');
+				if (document.getElementById('blip-chat-container')) return;
+
+				const syncLauncherState = (isOpen: boolean) => {
+					const launcher = document.getElementById('blip-chat-open-iframe');
+					if (!launcher) return;
+					launcher.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+					launcher.setAttribute(
+						'aria-label',
+						isOpen ? 'Fechar chat de atendimento da Jokenpo' : 'Abrir chat de atendimento da Jokenpo',
+					);
+				};
+
+				const client = new BlipChat()
+					.withAppKey(appKey)
+					.withButton({ color: '#ffd400', icon: buttonIcon })
+					.withEventHandler(BlipChat.ENTER_EVENT, () => syncLauncherState(true))
+					.withEventHandler(BlipChat.LEAVE_EVENT, () => syncLauncherState(false));
+
+				if (commonUrl) {
+					client.withCustomCommonUrl(commonUrl);
+				}
+
+				client.build();
+
+				const launcher = document.getElementById('blip-chat-open-iframe');
+				if (launcher) {
+					launcher.setAttribute('role', 'button');
+					launcher.setAttribute('tabindex', '0');
+					syncLauncherState(launcher.classList.contains('opened'));
+
+					launcher.addEventListener('keydown', (event) => {
+						if (event.key === 'Enter' || event.key === ' ') {
+							event.preventDefault();
+							launcher.click();
+						}
+					});
+				}
+			};
+
+			if (document.readyState === 'complete') {
+				void initBlipChat();
+			} else {
+				window.addEventListener('load', () => void initBlipChat(), { once: true });
+			}
+		}
+	}
+</script>
+
+<style is:global>
+	#blip-chat-container #blip-chat-open-iframe {
+		border: 3px solid var(--ink);
+		box-shadow: 5px 5px 0 var(--ink), 0 12px 24px rgba(0, 0, 0, 0.35);
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease,
+			opacity 0.3s ease,
+			visibility 0.3s ease;
+	}
+
+	#blip-chat-container #blip-chat-open-iframe:hover {
+		transform: translate(-2px, -2px);
+		box-shadow: 7px 7px 0 var(--ink), 0 14px 28px rgba(0, 0, 0, 0.4);
+	}
+
+	#blip-chat-container #blip-chat-open-iframe:active {
+		transform: scale(0.95);
+	}
+
+	#blip-chat-container #blip-chat-open-iframe:focus-visible {
+		outline: 3px solid var(--yellow);
+		outline-offset: 4px;
+	}
+
+	#blip-chat-container #blip-chat-open-iframe #blip-chat-icon {
+		width: 28px;
+		height: 28px;
+		object-fit: contain;
+		border-radius: 0;
+	}
+
+	#blip-chat-container #blip-chat-open-iframe #blip-chat-close-icon g#Close {
+		fill: var(--ink);
+	}
+
+	#blip-chat-container #blip-chat-notifications {
+		background: var(--pink);
+		color: var(--ink);
+		font-weight: 700;
+		border: 2px solid var(--ink);
+	}
+
+	@media (max-width: 800px) {
+		#blip-chat-container #blip-chat-open-iframe {
+			right: 20px;
+			bottom: 20px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		#blip-chat-container #blip-chat-open-iframe {
+			transition: none;
+		}
+	}
+
+	@media (forced-colors: active) {
+		#blip-chat-container #blip-chat-open-iframe {
+			border: 2px solid ButtonText;
+			background: ButtonFace;
+		}
+	}
+</style>

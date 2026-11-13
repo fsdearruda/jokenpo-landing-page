@@ -48,7 +48,7 @@ pnpm build
 | `src/pages/index.astro` | Composição das seções da landing page |
 | `src/pages/404.astro` | Página de erro |
 | `src/layouts/BaseLayout.astro` | `<head>` (SEO, Open Graph, JSON-LD), cabeçalho, `<main>` e rodapé |
-| `src/components/` | Seções (`Hero`, `GamesSection`, `AgendaSection`…) e componentes reutilizáveis (`SectionHeading`, `ArrowIcon`) |
+| `src/components/` | Seções (`Hero`, `GamesSection`, `AgendaSection`…) e componentes reutilizáveis (`SectionHeading`, `ArrowIcon`, `BlipChatWidget`) |
 | `src/styles/fonts.css` | Declarações `@font-face` locais (`Poppins` e `Archivo Black` via Fontsource) |
 | `src/styles/global.css` | Tokens de cor, tipografia base e padrões compartilhados (botões, `.section`, `.eyebrow`) |
 | `src/data/site.json` | Conteúdo público usado pela página |
@@ -82,9 +82,14 @@ Variáveis usadas em produção:
 PUBLIC_SITE_URL=https://jokenpo.cards
 OAUTH_GITHUB_CLIENT_ID=...
 OAUTH_GITHUB_CLIENT_SECRET=...
+PUBLIC_BLIP_APP_KEY=...
+PUBLIC_BLIP_COMMON_URL=
 ```
 
-O OAuth fica desativado localmente sem essas credenciais. Nunca versione os
+O OAuth fica desativado localmente sem essas credenciais. O widget do Blip Chat
+também fica desativado enquanto `PUBLIC_BLIP_APP_KEY` estiver vazio; além de
+preencher a chave, libere o domínio (`localhost` e `jokenpo.cards`) em
+`Canais > Blip Chat > Configurações` no portal da Blip. Nunca versione os
 valores reais.
 
 ## Checklist para agentes de código
