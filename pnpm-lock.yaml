@@ -23,6 +23,9 @@ importers:
       astro-decap-cms-oauth:
         specifier: ^0.6.0
         version: 0.6.0(astro@7.4.8(@types/node@26.6.6)(@vercel/functions@3.11.0)(yaml@2.9.1))
+      blip-chat-widget:
+        specifier: ^1.14.0
+        version: 1.14.0
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.12
@@ -828,6 +831,12 @@ packages:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
 
+  babel-polyfill@6.26.0:
+    resolution: {integrity: sha512-F2rZGQnAdaHWQ8YAoeRbukc7HS9QgdgeyJ0rQDd485v9opwuPvjpPFcOOT/WmkKTdgy9ESgSPXDcTNpzrGr6iQ==}
+
+  babel-runtime@6.26.0:
+    resolution: {integrity: sha512-ITKNuq2wKlW1fJg9sSW52eepoYgZBggvOAHC0u/CYu/qxQ9EVzThCgR69BnSXLHjy2f7SY5zaQ4yt7H9ZVxY2g==}
+
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==}
 
@@ -837,6 +846,9 @@ packages:
 
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
+
+  blip-chat-widget@1.14.0:
+    resolution: {integrity: sha512-42ypCfuqjgGTMaFjA/JfZEKKGlOVqDFoBiJdGvGXTwwvTQvVIzTInWrCqy0KgfrARaBZbVBMsvlZSRCwjdb8uQ==}
 
   boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
@@ -895,6 +907,10 @@ packages:
   cookie@2.0.2:
     resolution: {integrity: sha512-SL0cVuEdETEp7pN0FuZb01toc3vnODEfVUCooxG1SJN0yIirh7JMb9X9bvfCFf0vzzbT68RdbKDHYTiWy7a7iw==}
     engines: {node: '>=22'}
+
+  core-js@2.6.12:
+    resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
+    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -1424,6 +1440,12 @@ packages:
   readdirp@5.1.1:
     resolution: {integrity: sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA==}
     engines: {node: '>= 20.19.0'}
+
+  regenerator-runtime@0.10.5:
+    resolution: {integrity: sha512-02YopEIhAgiBHWeoTiA8aitHDt8z6w+rQqNuIftlM+ZtvSl/brTouaU7DW6GO/cHtvxJvS4Hwv2ibKdxIRi24w==}
+
+  regenerator-runtime@0.11.1:
+    resolution: {integrity: sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==}
 
   regex-recursion@6.0.2:
     resolution: {integrity: sha512-0YCaSCq2VRIebiaUviZNs0cBz1kg5kVS2UKUfNIx8YVs1cN3AV7NTctO5FOKBA+UT2BPJIWZauYHPqJODG50cg==}
@@ -2720,6 +2742,17 @@ snapshots:
 
   axobject-query@4.1.0: {}
 
+  babel-polyfill@6.26.0:
+    dependencies:
+      babel-runtime: 6.26.0
+      core-js: 2.6.12
+      regenerator-runtime: 0.10.5
+
+  babel-runtime@6.26.0:
+    dependencies:
+      core-js: 2.6.12
+      regenerator-runtime: 0.11.1
+
   bail@2.0.2: {}
 
   balanced-match@4.0.4: {}
@@ -2727,6 +2760,10 @@ snapshots:
   bindings@1.5.0:
     dependencies:
       file-uri-to-path: 1.0.0
+
+  blip-chat-widget@1.14.0:
+    dependencies:
+      babel-polyfill: 6.26.0
 
   boolbase@1.0.0: {}
 
@@ -2767,6 +2804,8 @@ snapshots:
   cookie-es@1.2.3: {}
 
   cookie@2.0.2: {}
+
+  core-js@2.6.12: {}
 
   cross-spawn@7.0.6:
     dependencies:
@@ -3220,6 +3259,10 @@ snapshots:
   radix3@1.1.2: {}
 
   readdirp@5.1.1: {}
+
+  regenerator-runtime@0.10.5: {}
+
+  regenerator-runtime@0.11.1: {}
 
   regex-recursion@6.0.2:
     dependencies:
