@@ -27,6 +27,32 @@
     }
   ],
   "shortName": "Jokenpo",
+  "howItWorks": {
+    "eyebrow": "COMO FUNCIONA",
+    "title": "PASSO A PASSO",
+    "highlight": "PRA JOGAR",
+    "lead": "Traga sua galera ou venha sozinho para encontrar outros jogadores:",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Escolha o que jogar",
+        "description": "Pegue um jogo de tabuleiro da nossa estante ou traga seu deck para jogar nas mesas e torneios.",
+        "color": "cyan"
+      },
+      {
+        "number": "02",
+        "title": "Pague por hora ou passe",
+        "description": "Você escolhe se prefere alugar por hora à noite ou garantir o passe livre da tarde ou do dia inteiro.",
+        "color": "yellow"
+      },
+      {
+        "number": "03",
+        "title": "Sente e divirta-se",
+        "description": "Mesas prontas, ambiente climatizado e nossa equipe por perto para ajudar com as regras.",
+        "color": "pink"
+      }
+    ]
+  },
   "name": "Jokenpo",
   "agenda": [
     {
@@ -66,6 +92,21 @@
       "color": "pink"
     }
   ],
+  "about": {
+    "eyebrow": "CARD GAMES",
+    "titleLine1": "TCG, MESA",
+    "highlight": "E COMUNIDADE",
+    "description": "Temos produtos e cartas de Magic, Pokémon, Yu-Gi-Oh! e One Piece, além de espaço para sentar, jogar com calma e encontrar a sua turma.",
+    "tcgs": [
+      "MAGIC",
+      "POKÉMON",
+      "YU-GI-OH!",
+      "ONE PIECE"
+    ],
+    "noteLine1": "UM LUGAR PRA",
+    "noteHighlight": "JOGAR COM CALMA.",
+    "noteAuthor": "@jokenpoficial"
+  },
   "hours": [
     {
       "day": "SEG — SÁB",
@@ -88,6 +129,54 @@
       ],
       "open": "Fechado",
       "closed": true
+    }
+  ],
+  "boardgameCategories": [
+    {
+      "id": "leves",
+      "name": "Leves",
+      "price": "R$ 10",
+      "description": "Partidas rápidas",
+      "color": "cyan",
+      "icon": "✦"
+    },
+    {
+      "id": "medios",
+      "name": "Médios",
+      "price": "R$ 13",
+      "description": "Blefe, cartas e cooperativos",
+      "color": "yellow",
+      "icon": "◆"
+    },
+    {
+      "id": "grandes",
+      "name": "Grandes",
+      "price": "R$ 15",
+      "description": "Estratégia e partidas longas",
+      "color": "pink",
+      "icon": "●"
+    }
+  ],
+  "location": {
+    "venue": "Shopping New Way Center, loja 24",
+    "street": "Av. Dr. João Medeiros Filho, 5421",
+    "neighborhood": "Pajuçara · Natal/RN",
+    "postalCode": "59122-518",
+    "mapsUrl": "https://maps.app.goo.gl/nM1G9WJ6T7ZbAi3t9",
+    "embedUrl": "https://www.google.com/maps?q=Jokenpo+Shopping+New+Way+Center+Natal&output=embed"
+  },
+  "faq": [
+    {
+      "question": "Preciso saber jogar ou ir com grupo fechado?",
+      "answer": "Não precisa! Ajudamos você a escolher e entender as regras dos jogos de tabuleiro. Nos card games, você pode chegar para os torneios ou mesas livres e jogar com a galera da comunidade."
+    },
+    {
+      "question": "Posso levar meus próprios jogos ou baralhos?",
+      "answer": "Com certeza! Para card games, basta trazer seu deck para jogar ou participar dos torneios. Para jogos de tabuleiro do nosso acervo, funcionam os passes ou o aluguel por hora."
+    },
+    {
+      "question": "Como funciona a reserva de mesa para grupos e RPG?",
+      "answer": "Reservamos mesas em períodos de 3 horas para campanhas de RPG, aniversários ou grupos. É só chamar no WhatsApp com antecedência para garantir o horário."
     }
   ],
   "boardgamePasses": {
@@ -140,244 +229,10 @@
     "hourly": {
       "title": "Pegue e Jogue",
       "schedule": "SEG, TER, QUA E SEX · 18H30 ÀS 22H",
-      "price": "10 · 13 · 15",
+      "price": "12 · 15 · 20",
       "note": "aluguel de jogo por hora",
       "color": "cyan"
     }
-  },
-  "boardgameCategories": [
-    {
-      "id": "leves",
-      "name": "Leves",
-      "price": "R$ 10",
-      "description": "Partidas rápidas",
-      "color": "cyan",
-      "icon": "✦"
-    },
-    {
-      "id": "medios",
-      "name": "Médios",
-      "price": "R$ 13",
-      "description": "Blefe, cartas e cooperativos",
-      "color": "yellow",
-      "icon": "◆"
-    },
-    {
-      "id": "grandes",
-      "name": "Grandes",
-      "price": "R$ 15",
-      "description": "Estratégia e partidas longas",
-      "color": "pink",
-      "icon": "●"
-    }
-  ],
-  "boardgames": [
-    {
-      "id": "uno",
-      "name": "Uno: Show 'Em No Mercy",
-      "category": "leves",
-      "categoryName": "Leves",
-      "price": "R$ 10",
-      "publisher": "Mattel",
-      "tag": "Partidas rápidas",
-      "players": "2–10 jogadores",
-      "image": "uno.jpg"
-    },
-    {
-      "id": "taco",
-      "name": "Taco Gato Cabra Queijo Pizza",
-      "category": "leves",
-      "categoryName": "Leves",
-      "price": "R$ 10",
-      "publisher": "PaperGames",
-      "tag": "Agilidade e reflexo",
-      "players": "2–8 jogadores",
-      "image": "taco.jpg"
-    },
-    {
-      "id": "knock-knock-dungeon",
-      "name": "Knock Knock Dungeon",
-      "category": "leves",
-      "categoryName": "Leves",
-      "price": "R$ 10",
-      "publisher": "PaperGames",
-      "tag": "Cooperativo e tempo real",
-      "players": "1–4 jogadores",
-      "image": "knock-knock-dungeon.png"
-    },
-    {
-      "id": "nem-a-pato",
-      "name": "Nem a Pato!",
-      "category": "leves",
-      "categoryName": "Leves",
-      "price": "R$ 10",
-      "publisher": "Grok Games",
-      "tag": "Trivia e blefe",
-      "players": "2–10 jogadores",
-      "image": "nem-a-pato.png"
-    },
-    {
-      "id": "nao-testamos-esse-troco",
-      "name": "Não Testamos Esse Troço",
-      "category": "leves",
-      "categoryName": "Leves",
-      "price": "R$ 10",
-      "publisher": "Buró Brasil",
-      "tag": "Caos e risadas",
-      "players": "2–17 jogadores",
-      "image": "nao-testamos-esse-troco.jpg"
-    },
-    {
-      "id": "nao-pode-2",
-      "name": "Não Pode 2",
-      "category": "leves",
-      "categoryName": "Leves",
-      "price": "R$ 10",
-      "publisher": "Party Games",
-      "tag": "Palavras proibidas",
-      "players": "2–12 jogadores",
-      "image": "nao-pode-2.png"
-    },
-    {
-      "id": "bang",
-      "name": "Bang! Dice Game",
-      "category": "medios",
-      "categoryName": "Médios",
-      "price": "R$ 13",
-      "publisher": "Galápagos / dV Giochi",
-      "tag": "Faroeste e papéis secretos",
-      "players": "3–8 jogadores",
-      "image": "bang.jpg"
-    },
-    {
-      "id": "coup",
-      "name": "Coup",
-      "category": "medios",
-      "categoryName": "Médios",
-      "price": "R$ 13",
-      "publisher": "Grok Games",
-      "tag": "Blefe e dedução",
-      "players": "2–6 jogadores",
-      "image": "coup.png"
-    },
-    {
-      "id": "sky-team",
-      "name": "Sky Team",
-      "category": "medios",
-      "categoryName": "Médios",
-      "price": "R$ 13",
-      "publisher": "Galápagos / Le Scorpion Masqué",
-      "tag": "Cooperativo tenso para 2",
-      "players": "2 jogadores",
-      "image": "sky-team.jpg"
-    },
-    {
-      "id": "exploding-kittens",
-      "name": "Exploding Kittens: Para a Galera",
-      "category": "medios",
-      "categoryName": "Médios",
-      "price": "R$ 13",
-      "publisher": "Galápagos / Exploding Kittens",
-      "tag": "Roleta-russa felina",
-      "players": "2–10 jogadores",
-      "image": "exploding-kittens.jpg"
-    },
-    {
-      "id": "catan",
-      "name": "Catan",
-      "category": "grandes",
-      "categoryName": "Grandes",
-      "price": "R$ 15",
-      "publisher": "Devir Brasil",
-      "tag": "Estratégia e negociação",
-      "players": "3–4 jogadores",
-      "image": "catan.png"
-    },
-    {
-      "id": "ticket-to-ride",
-      "name": "Ticket to Ride",
-      "category": "grandes",
-      "categoryName": "Grandes",
-      "price": "R$ 15",
-      "publisher": "Galápagos / Days of Wonder",
-      "tag": "Construção de rotas",
-      "players": "2–5 jogadores",
-      "image": "ticket-to-ride.jpg"
-    },
-    {
-      "id": "zombicide",
-      "name": "Zombicide",
-      "category": "grandes",
-      "categoryName": "Grandes",
-      "price": "R$ 15",
-      "publisher": "Galápagos / CMON",
-      "tag": "Sobrevivência cooperativa",
-      "players": "1–6 jogadores",
-      "image": "zombicide.jpg"
-    }
-  ],
-  "howItWorks": {
-    "eyebrow": "COMO FUNCIONA",
-    "title": "PASSO A PASSO",
-    "highlight": "PRA JOGAR",
-    "lead": "Traga sua galera ou venha sozinho para encontrar outros jogadores:",
-    "steps": [
-      {
-        "number": "01",
-        "title": "Escolha o que jogar",
-        "description": "Pegue um jogo de tabuleiro da nossa estante ou traga seu deck para jogar nas mesas e torneios.",
-        "color": "cyan"
-      },
-      {
-        "number": "02",
-        "title": "Pague por hora ou passe",
-        "description": "Você escolhe se prefere alugar por hora à noite ou garantir o passe livre da tarde ou do dia inteiro.",
-        "color": "yellow"
-      },
-      {
-        "number": "03",
-        "title": "Sente e divirta-se",
-        "description": "Mesas prontas, ambiente climatizado e nossa equipe por perto para ajudar com as regras.",
-        "color": "pink"
-      }
-    ]
-  },
-  "faq": [
-    {
-      "question": "Preciso saber jogar ou ir com grupo fechado?",
-      "answer": "Não precisa! Ajudamos você a escolher e entender as regras dos jogos de tabuleiro. Nos card games, você pode chegar para os torneios ou mesas livres e jogar com a galera da comunidade."
-    },
-    {
-      "question": "Posso levar meus próprios jogos ou baralhos?",
-      "answer": "Com certeza! Para card games, basta trazer seu deck para jogar ou participar dos torneios. Para jogos de tabuleiro do nosso acervo, funcionam os passes ou o aluguel por hora."
-    },
-    {
-      "question": "Como funciona a reserva de mesa para grupos e RPG?",
-      "answer": "Reservamos mesas em períodos de 3 horas para campanhas de RPG, aniversários ou grupos. É só chamar no WhatsApp com antecedência para garantir o horário."
-    }
-  ],
-  "location": {
-    "venue": "Shopping New Way Center, loja 24",
-    "street": "Av. Dr. João Medeiros Filho, 5421",
-    "neighborhood": "Pajuçara · Natal/RN",
-    "postalCode": "59122-518",
-    "mapsUrl": "https://maps.app.goo.gl/nM1G9WJ6T7ZbAi3t9",
-    "embedUrl": "https://www.google.com/maps?q=Jokenpo+Shopping+New+Way+Center+Natal&output=embed"
-  },
-  "about": {
-    "eyebrow": "CARD GAMES",
-    "titleLine1": "TCG, MESA",
-    "highlight": "E COMUNIDADE",
-    "description": "Temos produtos e cartas de Magic, Pokémon, Yu-Gi-Oh! e One Piece, além de espaço para sentar, jogar com calma e encontrar a sua turma.",
-    "tcgs": [
-      "MAGIC",
-      "POKÉMON",
-      "YU-GI-OH!",
-      "ONE PIECE"
-    ],
-    "noteLine1": "UM LUGAR PRA",
-    "noteHighlight": "JOGAR COM CALMA.",
-    "noteAuthor": "@jokenpoficial"
   },
   "title": "Jokenpo — Card games, boardgames e torneios em Natal",
   "hero": {
@@ -388,5 +243,150 @@
     "description": "Um espaço aconchegante para a comunidade geek de Natal: Magic, Pokémon, Yu-Gi-Oh!, One Piece, jogos de tabuleiro e torneios toda semana.",
     "communityButtonColor": "#14532d"
   },
+  "boardgames": [
+    {
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "name": "Uno: Show 'Em No Mercy",
+      "players": "2–10 jogadores",
+      "tag": "Partidas rápidas",
+      "id": "uno",
+      "image": "uno.jpg",
+      "publisher": "Mattel",
+      "category": "leves"
+    },
+    {
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "name": "Taco Gato Cabra Queijo Pizza",
+      "players": "2–8 jogadores",
+      "tag": "Agilidade e reflexo",
+      "id": "taco",
+      "image": "taco.jpg",
+      "publisher": "PaperGames",
+      "category": "leves"
+    },
+    {
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "name": "Knock Knock Dungeon",
+      "players": "1–4 jogadores",
+      "tag": "Cooperativo e tempo real",
+      "id": "knock-knock-dungeon",
+      "image": "knock-knock-dungeon.png",
+      "publisher": "PaperGames",
+      "category": "leves"
+    },
+    {
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "name": "Nem a Pato!",
+      "players": "2–10 jogadores",
+      "tag": "Trivia e blefe",
+      "id": "nem-a-pato",
+      "image": "nem-a-pato.png",
+      "publisher": "Grok Games",
+      "category": "leves"
+    },
+    {
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "name": "Não Testamos Esse Troço",
+      "players": "2–17 jogadores",
+      "tag": "Caos e risadas",
+      "id": "nao-testamos-esse-troco",
+      "image": "nao-testamos-esse-troco.jpg",
+      "publisher": "Buró Brasil",
+      "category": "leves"
+    },
+    {
+      "categoryName": "Leves",
+      "price": "R$ 10",
+      "name": "Não Pode 2",
+      "players": "2–12 jogadores",
+      "tag": "Palavras proibidas",
+      "id": "nao-pode-2",
+      "image": "nao-pode-2.png",
+      "publisher": "Party Games",
+      "category": "leves"
+    },
+    {
+      "categoryName": "Médios",
+      "price": "R$ 13",
+      "name": "Bang! Dice Game",
+      "players": "3–8 jogadores",
+      "tag": "Faroeste e papéis secretos",
+      "id": "bang",
+      "image": "bang.jpg",
+      "publisher": "Galápagos / dV Giochi",
+      "category": "medios"
+    },
+    {
+      "categoryName": "Médios",
+      "price": "R$ 13",
+      "name": "Coup",
+      "players": "2–6 jogadores",
+      "tag": "Blefe e dedução",
+      "id": "coup",
+      "image": "coup.png",
+      "publisher": "Grok Games",
+      "category": "medios"
+    },
+    {
+      "categoryName": "Médios",
+      "price": "R$ 13",
+      "name": "Sky Team",
+      "players": "2 jogadores",
+      "tag": "Cooperativo tenso para 2",
+      "id": "sky-team",
+      "image": "sky-team.jpg",
+      "publisher": "Galápagos / Le Scorpion Masqué",
+      "category": "medios"
+    },
+    {
+      "categoryName": "Médios",
+      "price": "R$ 13",
+      "name": "Exploding Kittens: Para a Galera",
+      "players": "2–10 jogadores",
+      "tag": "Roleta-russa felina",
+      "id": "exploding-kittens",
+      "image": "exploding-kittens.jpg",
+      "publisher": "Galápagos / Exploding Kittens",
+      "category": "medios"
+    },
+    {
+      "categoryName": "Grandes",
+      "price": "R$ 15",
+      "name": "Catan",
+      "players": "3–4 jogadores",
+      "tag": "Estratégia e negociação",
+      "id": "catan",
+      "image": "catan.png",
+      "publisher": "Devir Brasil",
+      "category": "grandes"
+    },
+    {
+      "categoryName": "Grandes",
+      "price": "R$ 15",
+      "name": "Ticket to Ride",
+      "players": "2–5 jogadores",
+      "tag": "Construção de rotas",
+      "id": "ticket-to-ride",
+      "image": "ticket-to-ride.jpg",
+      "publisher": "Galápagos / Days of Wonder",
+      "category": "grandes"
+    },
+    {
+      "categoryName": "Grandes",
+      "price": "R$ 15",
+      "name": "Zombicide",
+      "players": "1–6 jogadores",
+      "tag": "Sobrevivência cooperativa",
+      "id": "zombicide",
+      "image": "zombicide.jpg",
+      "publisher": "Galápagos / CMON",
+      "category": "grandes"
+    }
+  ],
   "description": "Jokenpo: card games, jogos de tabuleiro, espaço para jogar e torneios na Zona Norte de Natal. Vem jogar com a gente!"
 }
