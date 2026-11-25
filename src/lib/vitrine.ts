@@ -34,7 +34,8 @@ export async function carregarVitrine(): Promise<Vitrine> {
 
 	try {
 		const [catalogo, vistaEm] = await Promise.all([pdv.listarCatalogo(), ultimoContatoDaLoja()]);
-		if (!catalogo) return { families: buildFamilies, fonte: 'build', lojaVistaEm: null };
+		// Loja ainda não sincronizou nenhuma vez: mostra o catálogo do build (pedido pelo WhatsApp)
+		if (!catalogo || !vistaEm) return { families: buildFamilies, fonte: 'build', lojaVistaEm: null };
 		const porId = new Map(catalogo.map((p) => [p.produtoId, p]));
 		const usados = new Set<string>();
 

@@ -116,14 +116,26 @@ foto completa. Sem resposta do site, as tentativas vão espaçando de 15 s até 
   O IP não é guardado, só um hash com `PDV_SYNC_TOKEN`. Se o limite falhar, a venda não é bloqueada.
   Valem também 5 unidades por item e 20 produtos por pedido.
 
-## 8. Para ir para produção
+## 8. Produção
 
-1. Vercel → Storage → criar um Postgres Neon (região `sa-east-1`), o que preenche `DATABASE_URL`.
-2. Rodar `pnpm db:migrate` com essa `DATABASE_URL`.
-3. Gerar um segredo (`openssl rand -base64 32`) e colocar em `PDV_SYNC_TOKEN` na Vercel
-   e em `SITE_SYNC_TOKEN` no `.env` do PC da loja, junto com `SITE_SYNC_URL="https://jokenpo.cards"`.
-4. `PUBLIC_PDV_MODE=live` na Vercel (Production e Preview com bancos separados).
-5. No PDV: aplicar a migração (`scripts\loja\atualizar.cmd`) e marcar os produtos em Cadastros → Site.
+Feito em 25/11/2026:
+
+- Postgres Neon `jokenpo-pdv-ponte` (plano gratuito, `sa-east-1`), criado pela integração da Vercel.
+  `DATABASE_URL` e afins estão ligados ao projeto em Production, Preview e Development.
+- Migrações `001` e `002` aplicadas.
+- `PDV_SYNC_TOKEN` em Production e Preview. Cópia local para levar ao PC da loja: `~/.config/jokenpo/site-sync-token`.
+- `PUBLIC_PDV_MODE=live` só em Preview.
+- Funções da Vercel em `gru1` (`vercel.json`), ao lado do banco.
+
+Falta, nesta ordem:
+
+1. Fazer merge das duas branches. No PC da loja, rodar `scripts\loja\atualizar.cmd`, que aplica a migração do PDV.
+2. No `.env` do PC da loja: `SITE_SYNC_URL="https://jokenpo.cards"` e `SITE_SYNC_TOKEN` com o valor do token.
+   Reiniciar e marcar os produtos em Cadastros → Site.
+3. Conferir na aba Pedidos o selo "Site sincronizado".
+4. Só então `vercel env add PUBLIC_PDV_MODE production` com `live` e fazer um novo deploy.
+   Até a primeira sincronização da loja, a vitrine usa o catálogo do build com pedido pelo WhatsApp,
+   então ligar antes não quebra a página, mas também não mostra o catálogo do PDV.
 
 ## 9. Testado em desenvolvimento
 

@@ -18,8 +18,13 @@ const pageUrl = `${siteUrl}/produtos`;
 const whatsappNumber = siteData.contact.whatsapp.replace(/\D/g, '');
 const catalogDate = catalog.extractedAt.split('-').reverse().join('/');
 const totalProducts = families.reduce((sum, family) => sum + family.variants.length, 0);
+/**
+ * Modo efetivo da página: com o PDV real fora do ar (ou antes da primeira sincronização da
+ * loja), a vitrine volta ao catálogo do build com pedido pelo WhatsApp.
+ */
+const effectiveMode = pdvMode === 'live' && fonte !== 'pdv' ? 'off' : pdvMode;
 /** Com o PDV (real ou simulado), o pedido é criado no site e a loja confirma o estoque. */
-const orderApi = pdvMode !== 'off';
+const orderApi = effectiveMode !== 'off';
 
 const stockLevel = (stock: number) => (stock <= 0 ? 'out' : stock <= LOW_STOCK_THRESHOLD ? 'low' : 'ok');
 const stockText = { out: 'Esgotado', low: 'Últimas unidades', ok: 'Em estoque' } as const;
@@ -68,7 +73,7 @@ const jsonLd = [
 >
 	<div
 		class="shop"
-		data-pdv-mode={pdvMode}
+		data-pdv-mode={effectiveMode}
 		data-order-api={orderApi ? 'true' : undefined}
 		data-whatsapp={whatsappNumber}
 		data-max-qty={MAX_QUANTIDADE_POR_ITEM}
@@ -191,6 +196,15 @@ const jsonLd = [
 							</section>
 						);
 					})
+				}
+				{
+					families.length === 0 && (
+						<p class="catalog-empty">
+							Nenhum produto no site agora. Chama a gente no{' '}
+							<a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">WhatsApp<span class="sr-only"> (abre em nova aba)</span></a>{' '}
+							que a gente te conta o que tem na loja.
+						</p>
+					)
 				}
 				<p class="catalog-note">
 					{
@@ -1726,6 +1740,19 @@ const jsonLd = [
 		text-decoration: underline;
 		text-underline-offset: 3px;
 		cursor: pointer;
+	}
+
+	.catalog-empty {
+		margin: 2rem 0;
+		padding: 1.25rem;
+		border: 2px dashed var(--ink-3);
+		border-radius: 14px;
+		font-weight: 600;
+	}
+
+	.catalog-empty a {
+		color: var(--yellow);
+		text-underline-offset: 3px;
 	}
 
 	/* Pedido pelo site */
