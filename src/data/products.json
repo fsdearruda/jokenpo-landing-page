@@ -1,0 +1,142 @@
+{
+	"source": "Dump do PDV (banco comanda), tabelas Produto e Categoria",
+	"extractedAt": "2026-11-24",
+	"families": [
+		{
+			"slug": "shield-100",
+			"type": "shield",
+			"name": "Shield",
+			"category": "Shields",
+			"subtitle": "Pacote com 100 unidades",
+			"description": "Protetor de cartas pra deixar o deck pronto pras partidas e torneios.",
+			"variantLabel": "Cor",
+			"variants": [
+				{
+					"id": "cmw3sqns70020m2skmfqpsers",
+					"sku": "ACS-SHIELD-PRETO-100",
+					"label": "Preto",
+					"title": "Shield preto · 100 un",
+					"pdvName": "Shield preto (100 un)",
+					"priceCents": 2500,
+					"stock": 10,
+					"swatch": "black"
+				},
+				{
+					"id": "cmwqrejad00y7vk1wokbbcr18",
+					"sku": null,
+					"label": "Roxo",
+					"title": "Shield roxo · 100 un",
+					"pdvName": "Shield roxo (100 un)",
+					"priceCents": 2500,
+					"stock": 6,
+					"swatch": "purple"
+				}
+			]
+		},
+		{
+			"slug": "shield-personalizada",
+			"type": "shield",
+			"name": "Shield personalizada",
+			"category": "Shields personalizados",
+			"subtitle": "Com estampa",
+			"description": "Protetor de cartas com estampa. Escolha o tamanho do pacote.",
+			"variantLabel": "Pacote",
+			"variants": [
+				{
+					"id": "cmw3sqnsf0027m2sk2oje2cfl",
+					"sku": "ACS-SLEEVE-ANIME-50",
+					"label": "50 un",
+					"title": "Shield personalizada · 50 un",
+					"pdvName": "Shield Personalizada (50 un)",
+					"priceCents": 5990,
+					"stock": 2
+				},
+				{
+					"id": "cmw3sqnsk002em2skbd0smdbj",
+					"sku": "ACS-SLEEVE-ANIME-60",
+					"label": "60 un",
+					"title": "Shield personalizada · 60 un",
+					"pdvName": "Shield Personalizada (60 un)",
+					"priceCents": 6990,
+					"stock": 2
+				}
+			]
+		},
+		{
+			"slug": "deck-box",
+			"type": "deckbox",
+			"name": "Deck box",
+			"category": "Deck boxes",
+			"subtitle": "Caixa para guardar o deck",
+			"description": "Leve o deck protegido na mochila. Três modelos no balcão.",
+			"variantLabel": "Modelo",
+			"variants": [
+				{
+					"id": "cmw3sqnrr001mm2skldx9zpc7",
+					"sku": "ACS-DECKBOX-SIMPLES",
+					"label": "Simples",
+					"title": "Deck box simples",
+					"pdvName": "Deck box simples",
+					"priceCents": 6990,
+					"stock": 2
+				},
+				{
+					"id": "cmw3sqnrz001tm2sk9mafrrox",
+					"sku": "ACS-CAIXA-ARMAZENAMENTO",
+					"label": "Completa",
+					"title": "Deck box completa",
+					"pdvName": "Deck box dupla",
+					"priceCents": 14990,
+					"stock": 2
+				},
+				{
+					"id": "cmw3sqnrl001fm2skua6y1bvc",
+					"sku": "ACS-DECKBOX-RYSHEPRO",
+					"label": "Toploader",
+					"title": "Deck box toploader",
+					"pdvName": "Deck box Toploader",
+					"priceCents": 15990,
+					"stock": 2
+				}
+			]
+		},
+		{
+			"slug": "triple-pack-pokemon",
+			"type": "triple",
+			"name": "Triple pack Pokémon",
+			"category": "Triple packs Pokémon",
+			"subtitle": "Três boosters lacrados",
+			"description": "Blister com três boosters de Pokémon TCG. Escolha a coleção.",
+			"variantLabel": "Coleção",
+			"variants": [
+				{
+					"id": "cmw6nyuhx000yvkh07ar246t0",
+					"sku": "PKM-ESCURIDAO-ABSOLUTA-TRIPLO",
+					"label": "Escuridão Absoluta",
+					"title": "Triple pack Escuridão Absoluta",
+					"pdvName": "Pokémon – Escuridão Absoluta – Triplo pack",
+					"priceCents": 3990,
+					"stock": 8
+				},
+				{
+					"id": "cmw3sqnqt000nm2sku2nww3pg",
+					"sku": "PKM-FOGO-FANTASMAGORICO-TRIPLO",
+					"label": "Fogo Fantasmagórico",
+					"title": "Triple pack Fogo Fantasmagórico",
+					"pdvName": "Pokémon – Fogo Fantasmagórico – Triplo pack",
+					"priceCents": 3990,
+					"stock": 23
+				},
+				{
+					"id": "cmw3sqnql000gm2skhva10l9c",
+					"sku": "PKM-REINADO-DELTA-TRIPLO",
+					"label": "Reinado Delta",
+					"title": "Triple pack Reinado Delta",
+					"pdvName": "Pokémon – Reinado Delta – Triplo pack",
+					"priceCents": 4500,
+					"stock": 36
+				}
+			]
+		}
+	]
+}
