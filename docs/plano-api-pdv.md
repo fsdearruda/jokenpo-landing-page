@@ -120,12 +120,21 @@ foto completa. Sem resposta do site, as tentativas vão espaçando de 15 s até 
 
 Feito em 25/11/2026:
 
-- Postgres Neon `jokenpo-pdv-ponte` (plano gratuito, `sa-east-1`), criado pela integração da Vercel.
-  `DATABASE_URL` e afins estão ligados ao projeto em Production, Preview e Development.
-- Migrações `001` e `002` aplicadas.
-- `PDV_SYNC_TOKEN` em Production e Preview. Cópia local para levar ao PC da loja: `~/.config/jokenpo/site-sync-token`.
-- `PUBLIC_PDV_MODE=live` só em Preview.
-- Funções da Vercel em `gru1` (`vercel.json`), ao lado do banco.
+| | Production | Preview e Development |
+|---|---|---|
+| Postgres Neon (plano gratuito, `sa-east-1`) | `jokenpo-pdv-ponte` | `jokenpo-pdv-ponte-preview` |
+| `DATABASE_URL` e afins | ligados pela integração da Vercel | ligados pela integração da Vercel |
+| Migrações `001` e `002` | aplicadas | aplicadas |
+| `PDV_SYNC_TOKEN` | cópia local em `~/.config/jokenpo/site-sync-token` (vai para o PC da loja) | outro valor: `~/.config/jokenpo/site-sync-token-preview` |
+| `PUBLIC_PDV_MODE` | não definido (fica para o passo 4) | `live` (só Preview) |
+
+Os bancos e os tokens são separados. Um preview nunca vê nem altera pedidos e estoque de
+produção, e o token do PC da loja não vale num preview. `vercel env pull` em desenvolvimento
+aponta para o banco de preview. Funções da Vercel em `gru1` (`vercel.json`), ao lado dos bancos.
+
+Para testar um preview com dados, rode o PDV de testes com `SITE_SYNC_URL` igual à URL do
+preview e `SITE_SYNC_TOKEN` com o token de preview. Se o preview tiver proteção de deploy,
+inclua o cabeçalho de bypass da Vercel.
 
 Falta, nesta ordem:
 
