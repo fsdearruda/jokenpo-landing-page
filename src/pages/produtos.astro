@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
 import siteData from '../data/site.json';
 import { LOW_STOCK_THRESHOLD, catalog, families, formatPrice, productTypes } from '../lib/catalog';
 import { pdvMode } from '../lib/pdv';
@@ -151,11 +152,11 @@ const jsonLd = [
 															</button>
 															<div class="card-qty" data-role="qty" role="group" aria-label={`${variant.title} na sacola`} hidden>
 																<button type="button" class="step-btn" data-step="-1" aria-label={`Tirar uma unidade de ${variant.title}`}>
-																	<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10" /></svg>
+																	<Icon name="lucide:minus" size={16} weight={3} />
 																</button>
 																<span class="card-qty-value" data-role="qty-value">1 na sacola</span>
 																<button type="button" class="step-btn" data-step="1" aria-label={`Adicionar mais uma unidade de ${variant.title}`}>
-																	<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10" /></svg>
+																	<Icon name="lucide:plus" size={16} weight={3} />
 																</button>
 															</div>
 														</div>
@@ -179,7 +180,7 @@ const jsonLd = [
 					<div class="cart-head">
 						<h2 id="cart-heading" class="cart-heading" tabindex="-1">Sua sacola <span class="cart-count" data-role="cart-count"></span></h2>
 						<button type="button" class="cart-close" data-role="cart-close" aria-label="Fechar sacola">
-							<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+							<Icon name="lucide:x" size={18} weight={3} />
 						</button>
 					</div>
 
@@ -189,6 +190,21 @@ const jsonLd = [
 							<p>Toque em <strong>Adicionar</strong> num produto e ele aparece aqui.</p>
 						</div>
 						<ul class="cart-list" data-role="cart-list" role="list"></ul>
+						<template data-role="line-template">
+							<li class="cart-line">
+								<div class="line-info">
+									<span class="line-name"></span>
+									<span class="line-unit"></span>
+								</div>
+								<div class="line-qty" role="group">
+									<button type="button" class="step-btn" data-step="-1"><Icon name="lucide:minus" size={16} weight={3} /></button>
+									<span class="line-qty-value"></span>
+									<button type="button" class="step-btn" data-step="1"><Icon name="lucide:plus" size={16} weight={3} /></button>
+								</div>
+								<span class="line-price"></span>
+								<button type="button" class="line-remove">Remover</button>
+							</li>
+						</template>
 					</div>
 
 					<div class="cart-foot" data-role="cart-foot" hidden>
@@ -203,6 +219,7 @@ const jsonLd = [
 							target="_blank"
 							rel="noopener noreferrer"
 						>
+							<Icon name="simple-icons:whatsapp" class="whatsapp-icon" size={20} />
 							Enviar pedido no WhatsApp
 							<span class="sr-only">(abre o WhatsApp em nova aba)</span>
 						</a>
@@ -221,7 +238,10 @@ const jsonLd = [
 		</div>
 
 		<button type="button" class="cart-bar" data-role="cart-bar" aria-controls="sacola" aria-expanded="false" hidden>
-			<span class="cart-bar-count" data-role="bar-count">0</span>
+			<span class="cart-bar-count">
+				<Icon name="lucide:shopping-bag" size={16} weight={3} />
+				<span data-role="bar-count">0</span>
+			</span>
 			<span class="cart-bar-label">Ver sacola</span>
 			<strong class="cart-bar-total" data-role="bar-total">R$ 0</strong>
 		</button>
@@ -254,6 +274,7 @@ const jsonLd = [
 		const cartEmpty = $('[data-role="cart-empty"]');
 		const cartFoot = $('[data-role="cart-foot"]');
 		const bar = $<HTMLButtonElement>('[data-role="cart-bar"]');
+		const lineTpl = $<HTMLTemplateElement>('[data-role="line-template"]');
 		const backdrop = $('[data-role="cart-backdrop"]');
 		const announce = $('[data-role="announce"]');
 		const drawerQuery = window.matchMedia('(max-width: 1023px)');
@@ -361,21 +382,8 @@ const jsonLd = [
 		/* Sacola */
 		const lineTemplate = (line: Line) => {
 			const { title, price } = info(line.id);
-			const li = document.createElement('li');
-			li.className = 'cart-line';
+			const li = lineTpl.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
 			li.dataset.id = line.id;
-			li.innerHTML = `
-				<div class="line-info">
-					<span class="line-name"></span>
-					<span class="line-unit"></span>
-				</div>
-				<div class="line-qty" role="group">
-					<button type="button" class="step-btn" data-step="-1"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10" /></svg></button>
-					<span class="line-qty-value"></span>
-					<button type="button" class="step-btn" data-step="1"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10" /></svg></button>
-				</div>
-				<span class="line-price"></span>
-				<button type="button" class="line-remove">Remover</button>`;
 			li.querySelector('.line-name')!.textContent = title;
 			li.querySelector('.line-unit')!.textContent = `${formatPrice(price)} cada`;
 			li.querySelector('.line-qty')!.setAttribute('aria-label', `Quantidade de ${title}`);
@@ -1077,15 +1085,6 @@ const jsonLd = [
 		}
 	}
 
-	:global(.shop .step-btn svg),
-	.cart-close svg {
-		width: 1rem;
-		height: 1rem;
-		fill: none;
-		stroke: currentColor;
-		stroke-width: 2.25;
-		stroke-linecap: round;
-	}
 
 	.catalog-note {
 		margin: 0;
@@ -1465,8 +1464,10 @@ const jsonLd = [
 		}
 
 		.cart-bar-count {
-			display: grid;
-			place-items: center;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.3rem;
 			min-inline-size: 2.25rem;
 			block-size: 2.25rem;
 			padding: 0 0.5rem;
