@@ -1,5 +1,9 @@
 ---
 import { Image } from 'astro:assets';
+
+const isHome = Astro.url.pathname === '/';
+const sectionHref = (id: string) => (isHome ? `#${id}` : `/#${id}`);
+const isProducts = Astro.url.pathname.replace(/\/$/, '') === '/produtos';
 ---
 
 <header class="site-header">
@@ -30,11 +34,12 @@ import { Image } from 'astro:assets';
 				<span>Menu</span>
 			</button>
 			<ul id="site-menu" class="site-menu">
-				<li><a href="#como-funciona">Como funciona</a></li>
-				<li><a href="#jogar">Jogos</a></li>
-				<li><a href="#agenda">Agenda</a></li>
-				<li><a href="#duvidas">Dúvidas</a></li>
-				<li><a href="#visite">Visite</a></li>
+				<li><a href={sectionHref('como-funciona')}>Como funciona</a></li>
+				<li><a href={sectionHref('jogar')}>Jogos</a></li>
+				<li><a href={sectionHref('agenda')}>Agenda</a></li>
+				<li><a href="/produtos" aria-current={isProducts ? 'page' : undefined}>Produtos</a></li>
+				<li><a href={sectionHref('duvidas')}>Dúvidas</a></li>
+				<li><a href={sectionHref('visite')}>Visite</a></li>
 			</ul>
 		</nav>
 	</div>
@@ -45,6 +50,7 @@ import { Image } from 'astro:assets';
 	const siteMenu = document.querySelector<HTMLUListElement>('#site-menu');
 	const menuButton = document.querySelector<HTMLButtonElement>('#menu-toggle-btn');
 	const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.site-menu a[href^="#"]')];
+	const allMenuLinks = [...document.querySelectorAll<HTMLAnchorElement>('.site-menu a')];
 
 	if (siteHeader) {
 		const updateScrolledState = () => {
@@ -92,7 +98,7 @@ import { Image } from 'astro:assets';
 			}
 		});
 
-		navLinks.forEach((link) => {
+		allMenuLinks.forEach((link) => {
 			link.addEventListener('click', () => {
 				setMenuOpen(false);
 			});
@@ -316,11 +322,21 @@ import { Image } from 'astro:assets';
 	}
 
 	.site-menu a.target-current,
-	.site-menu a[aria-current='true'] {
+	.site-menu a[aria-current='true'],
+	.site-menu a[aria-current='page'] {
 		color: var(--yellow);
 		text-decoration: underline;
 		text-decoration-thickness: 2px;
 		text-underline-offset: 6px;
+	}
+
+	@media (min-width: 801px) and (max-width: 1040px) {
+		.site-menu {
+			gap: 0.5rem;
+		}
+		.site-menu a {
+			padding-inline: 0.375rem;
+		}
 	}
 
 	/* Mobile dropdown menu (<= 800px) */
@@ -392,7 +408,8 @@ import { Image } from 'astro:assets';
 		}
 
 		.site-menu a.target-current,
-		.site-menu a[aria-current='true'] {
+		.site-menu a[aria-current='true'],
+		.site-menu a[aria-current='page'] {
 			background: var(--yellow);
 			color: var(--ink);
 			text-decoration: none;
