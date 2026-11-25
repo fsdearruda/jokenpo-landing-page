@@ -1,24 +1,23 @@
 import type { APIContext } from 'astro';
+import { cloudPdv } from './cloud';
 import { mockPdv } from './mock';
 import { PdvError, type PdvClient } from './types';
 
 export * from './types';
 
 /**
- * `mock`: as rotas `/api/pdv/*` respondem com o PDV simulado em memória e a
- *   vitrine busca o estoque ao vivo nele.
- * `off`: rotas desligadas (503) e a vitrine usa o estoque extraído no build.
- *
- * Nos dois casos o pedido do cliente sai pelo WhatsApp da loja. Padrão:
- * `mock` no `astro dev` e `off` no build de produção, porque o estado do
- * mock não é compartilhado entre instâncias da Vercel.
+ * `live`: a vitrine e as rotas `/api/pdv/*` usam o PDV real, pela ponte no Postgres
+ *   (`DATABASE_URL`). O PC da loja sincroniza pelas rotas `/api/pdv-sync/*`.
+ * `mock`: PDV simulado em memória (padrão no `astro dev`).
+ * `off`: rotas desligadas (503) e a vitrine usa o estoque extraído no build, com o
+ *   pedido só pelo WhatsApp (padrão no build sem configuração).
  */
-export type PdvMode = 'mock' | 'off';
+export type PdvMode = 'live' | 'mock' | 'off';
 
 export const pdvMode: PdvMode =
-	(import.meta.env.PUBLIC_PDV_MODE as PdvMode | undefined) ?? (import.meta.env.DEV ? 'mock' : 'off');
+	(import.meta.env.PUBLIC_PDV_MODE as PdvMode | undefined) || (import.meta.env.DEV ? 'mock' : 'off');
 
-export const getPdv = (): PdvClient | null => (pdvMode === 'mock' ? mockPdv : null);
+export const getPdv = (): PdvClient | null => (pdvMode === 'live' ? cloudPdv : pdvMode === 'mock' ? mockPdv : null);
 
 export const json = (body: unknown, status = 200) =>
 	new Response(JSON.stringify(body), {
@@ -46,9 +45,9 @@ export const handle = async (operation: (pdv: PdvClient) => Promise<unknown>) =>
 };
 
 /**
- * Rotas de balcão (confirmar e cancelar) simulam o que o PDV ou o webhook de
- * pagamento fariam. Exigem `Authorization: Bearer <PDV_MOCK_ADMIN_TOKEN>`;
- * sem token configurado, só funcionam no `astro dev`.
+ * Rotas de balcão do mock (confirmar e cancelar) simulam o que a loja faria no PDV.
+ * Exigem `Authorization: Bearer <PDV_MOCK_ADMIN_TOKEN>`; sem token configurado, só
+ * funcionam no `astro dev`. No modo `live` isso é feito no PDV e as rotas respondem 405.
  */
 export const isBackOffice = ({ request }: APIContext) => {
 	const token = import.meta.env.PDV_MOCK_ADMIN_TOKEN;

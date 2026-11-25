@@ -1,13 +1,27 @@
 import type { APIRoute } from 'astro';
-import { handle, json, readJson, type CriarPedidoInput } from '../../../../lib/pdv';
+import { getPdv, handle, json, readJson, type CriarPedidoInput } from '../../../../lib/pdv';
+import { dentroDoLimite } from '../../../../lib/pdv/limite';
 
 export const prerender = false;
 
 /**
- * POST /api/pdv/pedidos — cria uma reserva para retirada na loja.
+ * POST /api/pdv/pedidos — cria um pedido para retirada na loja. Nasce aguardando a
+ * confirmação do estoque pelo PC da loja; depois o pagamento é combinado no WhatsApp.
  * Corpo: `{ itens: [{ produtoId, quantidade }], nomeContato, telefoneContato }`.
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+	if (getPdv()) {
+		let ip: string | undefined;
+		try {
+			ip = clientAddress;
+		} catch {
+			/* adaptador sem IP do cliente */
+		}
+		const permitido = await dentroDoLimite(ip).catch(() => true); // limite fora do ar não bloqueia venda
+		if (!permitido) {
+			return json({ erro: { codigo: 'MUITAS_TENTATIVAS', mensagem: 'Muitos pedidos seguidos. Espera uns minutos ou chama a gente no WhatsApp.' } }, 429);
+		}
+	}
 	if (!request.headers.get('content-type')?.includes('application/json')) {
 		return json({ erro: { codigo: 'FORMATO_INVALIDO', mensagem: 'Envie JSON.' } }, 415);
 	}

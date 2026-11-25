@@ -1,5 +1,8 @@
 # Plano: pagamento online com Checkout Bricks (Mercado Pago)
 
+> **Descartado em 25/11/2026.** O pagamento dos pedidos do site é combinado pelo WhatsApp e registrado no PDV
+> (ver [plano-api-pdv.md](plano-api-pdv.md)). Mantido só como referência.
+
 Status: **proposta**, ainda sem implementação. Escrito em 24/11/2026 a partir do
 estado de `/produtos` em 24/11/2026. Atualização: a vitrine agora envia o
 pedido pelo WhatsApp da loja, sem número de reserva nem coleta de dados no

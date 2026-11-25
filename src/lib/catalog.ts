@@ -1,6 +1,7 @@
 import products from '../data/products.json';
 
-export type ProductType = 'shield' | 'deckbox' | 'triple';
+export type ProductType = 'shield' | 'deckbox' | 'triple' | 'generic';
+export type Tone = 'cyan' | 'yellow' | 'pink';
 
 export interface ProductVariant {
 	/** `Produto.id` no PDV. */
@@ -27,13 +28,18 @@ export interface ProductFamily {
 	description: string;
 	variantLabel: string;
 	variants: ProductVariant[];
+	/** Cor da seção; sem isto vem do tipo. Usado nas seções montadas a partir das categorias do PDV. */
+	tone?: Tone;
 }
 
-export const productTypes: Record<ProductType, { label: string; plural: string; color: 'cyan' | 'yellow' | 'pink' }> = {
+export const productTypes: Record<ProductType, { label: string; plural: string; color: Tone }> = {
 	shield: { label: 'Shield', plural: 'Shields', color: 'cyan' },
 	deckbox: { label: 'Deck box', plural: 'Deck boxes', color: 'yellow' },
 	triple: { label: 'Triple pack', plural: 'Triple packs', color: 'pink' },
+	generic: { label: 'Produto', plural: 'Produtos', color: 'cyan' },
 };
+
+export const toneOf = (family: ProductFamily): Tone => family.tone ?? productTypes[family.type].color;
 
 export const catalog = products as { source: string; extractedAt: string; families: ProductFamily[] };
 

@@ -2,17 +2,24 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import siteData from '../data/site.json';
-import { LOW_STOCK_THRESHOLD, catalog, families, formatPrice, productTypes } from '../lib/catalog';
-import { pdvMode } from '../lib/pdv';
-import { MAX_QUANTIDADE_POR_ITEM } from '../lib/pdv/mock';
+import { LOW_STOCK_THRESHOLD, catalog, formatPrice, toneOf } from '../lib/catalog';
+import { MAX_QUANTIDADE_POR_ITEM, pdvMode } from '../lib/pdv';
+import { carregarVitrine } from '../lib/vitrine';
 
+// Estática por padrão. No modo `live`, o astro.config.mjs a torna sob demanda (com cache
+// curto na CDN) para mostrar o catálogo escolhido no PDV.
 export const prerender = true;
+
+const { families, fonte } = await carregarVitrine();
+if (pdvMode === 'live') Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
 const pageUrl = `${siteUrl}/produtos`;
 const whatsappNumber = siteData.contact.whatsapp.replace(/\D/g, '');
 const catalogDate = catalog.extractedAt.split('-').reverse().join('/');
 const totalProducts = families.reduce((sum, family) => sum + family.variants.length, 0);
+/** Com o PDV (real ou simulado), o pedido é criado no site e a loja confirma o estoque. */
+const orderApi = pdvMode !== 'off';
 
 const stockLevel = (stock: number) => (stock <= 0 ? 'out' : stock <= LOW_STOCK_THRESHOLD ? 'low' : 'ok');
 const stockText = { out: 'Esgotado', low: 'Últimas unidades', ok: 'Em estoque' } as const;
@@ -62,6 +69,7 @@ const jsonLd = [
 	<div
 		class="shop"
 		data-pdv-mode={pdvMode}
+		data-order-api={orderApi ? 'true' : undefined}
 		data-whatsapp={whatsappNumber}
 		data-max-qty={MAX_QUANTIDADE_POR_ITEM}
 		data-low-stock={LOW_STOCK_THRESHOLD}
@@ -70,17 +78,31 @@ const jsonLd = [
 			<div class="shop-catalog">
 				<header class="shop-intro">
 					<div>
-						<p class="eyebrow">PRODUTOS · PEDIDO PELO WHATSAPP</p>
+						<p class="eyebrow">{orderApi ? 'PRODUTOS · RETIRADA NA LOJA' : 'PRODUTOS · PEDIDO PELO WHATSAPP'}</p>
 						<h1>TUDO PRO <span>SEU DECK</span></h1>
 						<p class="shop-lead">
-							Shields, deck boxes e triple packs de Pokémon com preço de balcão. Monte a sacola, mande pelo WhatsApp e passe na loja pra buscar.
+							{
+								orderApi
+									? 'Shields, deck boxes, triple packs e mais, com preço de balcão. Monte a sacola, faça o pedido e a gente separa pra você buscar.'
+									: 'Shields, deck boxes e triple packs de Pokémon com preço de balcão. Monte a sacola, mande pelo WhatsApp e passe na loja pra buscar.'
+							}
 						</p>
 					</div>
-					<ul class="shop-perks" role="list">
-						<li><strong>Sem cadastro</strong><span>O pedido vai pronto pro nosso WhatsApp</span></li>
-						<li><strong>A gente separa</strong><span>Confirmamos o estoque na conversa</span></li>
-						<li><strong>Paga na retirada</strong><span>No balcão da loja 24</span></li>
-					</ul>
+					{
+						orderApi ? (
+							<ul class="shop-perks" role="list">
+								<li><strong>Sem cadastro</strong><span>Só seu nome e WhatsApp</span></li>
+								<li><strong>A gente separa</strong><span>A loja confere o estoque e guarda pra você</span></li>
+								<li><strong>48 h pra pagar</strong><span>Pix pelo WhatsApp e retirada na loja 24</span></li>
+							</ul>
+						) : (
+							<ul class="shop-perks" role="list">
+								<li><strong>Sem cadastro</strong><span>O pedido vai pronto pro nosso WhatsApp</span></li>
+								<li><strong>A gente separa</strong><span>Confirmamos o estoque na conversa</span></li>
+								<li><strong>Paga na retirada</strong><span>No balcão da loja 24</span></li>
+							</ul>
+						)
+					}
 				</header>
 				<div class="filter-wrap">
 					<div class="filter-toolbar" role="toolbar" aria-label="Filtrar produtos por categoria">
@@ -91,7 +113,7 @@ const jsonLd = [
 							families.map((family) => (
 								<button
 									type="button"
-									class={`filter-btn tone-${productTypes[family.type].color}`}
+									class={`filter-btn tone-${toneOf(family)}`}
 									data-filter={family.slug}
 									aria-pressed="false"
 								>
@@ -105,7 +127,7 @@ const jsonLd = [
 
 				{
 					families.map((family) => {
-						const tone = productTypes[family.type].color;
+						const tone = toneOf(family);
 						return (
 							<section class="category" id={family.slug} data-category={family.slug} aria-labelledby={`${family.slug}-title`}>
 								<div class="category-head">
@@ -115,7 +137,7 @@ const jsonLd = [
 									<p class="category-count">
 										{family.variants.length} {family.variants.length === 1 ? 'produto' : 'produtos'}
 									</p>
-									<p class="category-desc">{family.description}</p>
+									{family.description && <p class="category-desc">{family.description}</p>}
 								</div>
 								<ul class="product-grid" role="list">
 									{family.variants.map((variant, index) => {
@@ -171,7 +193,11 @@ const jsonLd = [
 					})
 				}
 				<p class="catalog-note">
-					Preços e estoque do PDV da loja em {catalogDate}. A disponibilidade é confirmada na hora da reserva.
+					{
+						fonte === 'pdv'
+							? 'Preço e estoque direto do sistema da loja. A loja confirma a disponibilidade quando recebe o pedido.'
+							: `Preços e estoque do PDV da loja em ${catalogDate}. A disponibilidade é confirmada na hora do pedido.`
+					}
 				</p>
 			</div>
 
@@ -185,6 +211,28 @@ const jsonLd = [
 					</div>
 
 					<div class="cart-scroll">
+						{
+							orderApi && (
+								<section class="order-status" data-role="order-status" aria-labelledby="order-title" hidden>
+									<p class="order-kicker">Seu pedido</p>
+									<h3 class="order-title" id="order-title" tabindex="-1">Pedido #<span data-role="order-number"></span></h3>
+									<p class="order-state" data-role="order-state" data-state="AGUARDANDO_CONFIRMACAO" role="status"></p>
+									<ul class="order-items" data-role="order-items" role="list"></ul>
+									<a
+										class="button button-pink cart-cta"
+										data-role="order-whatsapp"
+										href={`https://wa.me/${whatsappNumber}`}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<Icon name="simple-icons:whatsapp" class="whatsapp-icon" size={20} />
+										<span data-role="order-whatsapp-label">Combinar o pagamento</span>
+										<span class="sr-only">(abre o WhatsApp em nova aba)</span>
+									</a>
+									<button type="button" class="cart-clear" data-role="order-dismiss">Fechar e fazer outro pedido</button>
+								</section>
+							)
+						}
 						<div class="cart-empty" data-role="cart-empty">
 							<p class="cart-empty-title">Tá vazia por enquanto</p>
 							<p>Toque em <strong>Adicionar</strong> num produto e ele aparece aqui.</p>
@@ -212,26 +260,55 @@ const jsonLd = [
 							<span>Total <small data-role="cart-items"></small></span>
 							<strong data-role="cart-total">R$ 0</strong>
 						</p>
-						<a
-							class="button button-pink cart-cta"
-							data-role="whatsapp-link"
-							href={`https://wa.me/${whatsappNumber}`}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							<Icon name="simple-icons:whatsapp" class="whatsapp-icon" size={20} />
-							Enviar pedido no WhatsApp
-							<span class="sr-only">(abre o WhatsApp em nova aba)</span>
-						</a>
-						<p class="cart-hint">A conversa abre com o pedido escrito. É só tocar em enviar.</p>
-						<details class="cart-preview">
-							<summary>Ver a mensagem</summary>
-							<pre data-role="message"></pre>
-						</details>
-						<div class="cart-sent" data-role="cart-sent" role="status" hidden>
-							<p>Mandou a mensagem? A loja confirma o estoque e avisa quando estiver separado.</p>
-							<button type="button" class="cart-clear" data-role="cart-clear">Esvaziar sacola</button>
-						</div>
+						{
+							orderApi ? (
+								<form class="order-form" data-role="order-form" novalidate>
+									<div class="field">
+										<label for="order-name">Seu nome</label>
+										<input id="order-name" name="nome" type="text" autocomplete="name" maxlength="80" required />
+									</div>
+									<div class="field">
+										<label for="order-phone">WhatsApp com DDD</label>
+										<input
+											id="order-phone"
+											name="telefone"
+											type="tel"
+											inputmode="tel"
+											autocomplete="tel-national"
+											placeholder="(84) 9 0000-0000"
+											maxlength="20"
+											required
+										/>
+									</div>
+									<p class="order-error" data-role="order-error" role="alert" hidden></p>
+									<button type="submit" class="button button-pink cart-cta" data-role="order-submit">Fazer pedido</button>
+									<p class="cart-hint">A loja confere o estoque e você paga por Pix no WhatsApp em até 48 h. Retirada na loja 24.</p>
+								</form>
+							) : (
+								<>
+									<a
+										class="button button-pink cart-cta"
+										data-role="whatsapp-link"
+										href={`https://wa.me/${whatsappNumber}`}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<Icon name="simple-icons:whatsapp" class="whatsapp-icon" size={20} />
+										Enviar pedido no WhatsApp
+										<span class="sr-only">(abre o WhatsApp em nova aba)</span>
+									</a>
+									<p class="cart-hint">A conversa abre com o pedido escrito. É só tocar em enviar.</p>
+									<details class="cart-preview">
+										<summary>Ver a mensagem</summary>
+										<pre data-role="message"></pre>
+									</details>
+									<div class="cart-sent" data-role="cart-sent" role="status" hidden>
+										<p>Mandou a mensagem? A loja confirma o estoque e avisa quando estiver separado.</p>
+										<button type="button" class="cart-clear" data-role="cart-clear">Esvaziar sacola</button>
+									</div>
+								</>
+							)
+						}
 					</div>
 				</div>
 			</aside>
@@ -254,6 +331,16 @@ const jsonLd = [
 	import { formatPrice } from '../lib/catalog';
 
 	type Line = { id: string; qty: number };
+	type OrderStatus = 'AGUARDANDO_CONFIRMACAO' | 'PAGAMENTO_PENDENTE' | 'PAGO' | 'ENTREGUE' | 'RECUSADO' | 'CANCELADO' | 'EXPIRADO';
+	type SavedOrder = {
+		id: string;
+		numero: number;
+		status: OrderStatus;
+		itens: { descricao: string; quantidade: number }[];
+		totalCentavos: number;
+		validoAte: string | null;
+		motivo: string | null;
+	};
 
 	const root = document.querySelector<HTMLElement>('.shop');
 	if (root) {
@@ -263,6 +350,8 @@ const jsonLd = [
 		const maxQty = Number(root.dataset.maxQty) || 5;
 		const lowStock = Number(root.dataset.lowStock) || 3;
 		const STORAGE_KEY = 'jokenpo:sacola';
+		const ORDER_KEY = 'jokenpo:pedido';
+		const optional = <T extends Element = HTMLElement>(selector: string) => root.querySelector<T>(selector);
 
 		const cards = new Map(
 			[...root.querySelectorAll<HTMLElement>('.product-card')].map((card) => [card.dataset.id!, card]),
@@ -334,7 +423,8 @@ const jsonLd = [
 			const before = cart.get(id)?.qty ?? 0;
 			if (next === 0) cart.delete(id);
 			else cart.set(id, { id, qty: next });
-			$('[data-role="cart-sent"]').hidden = true;
+			const sent = optional('[data-role="cart-sent"]');
+			if (sent) sent.hidden = true;
 			render();
 			save();
 			if (next === before && qty > before) announce.textContent = `Limite de ${plural(next, 'unidade', 'unidades')} de ${title}.`;
@@ -440,7 +530,7 @@ const jsonLd = [
 			const { items, cents } = totals();
 			const empty = cart.size === 0;
 			cartList.replaceChildren(...[...cart.values()].map(lineTemplate));
-			cartEmpty.hidden = !empty;
+			cartEmpty.hidden = !empty || Boolean(order); // com pedido aberto, o painel do pedido ocupa o lugar
 			cartFoot.hidden = empty;
 			$('[data-role="cart-count"]').textContent = empty ? '' : `(${items})`;
 			$('[data-role="cart-total"]').textContent = formatPrice(cents);
@@ -448,12 +538,23 @@ const jsonLd = [
 			$('[data-role="bar-count"]').textContent = String(items);
 			$('[data-role="bar-total"]').textContent = formatPrice(cents);
 			bar.setAttribute('aria-label', `Ver sacola: ${plural(items, 'item', 'itens')}, ${formatPrice(cents)}`);
-			bar.hidden = empty;
+			bar.hidden = empty && !order;
+			if (empty && order) {
+				$('[data-role="bar-count"]').textContent = `#${order.numero}`;
+				$('[data-role="bar-total"]').textContent = formatPrice(order.totalCentavos);
+				bar.querySelector('.cart-bar-label')!.textContent = 'Ver pedido';
+				bar.setAttribute('aria-label', `Ver pedido número ${order.numero}`);
+			} else {
+				bar.querySelector('.cart-bar-label')!.textContent = 'Ver sacola';
+			}
 			cards.forEach(syncCard);
-			const text = orderMessage(cents);
-			$('[data-role="message"]').textContent = text;
-			$<HTMLAnchorElement>('[data-role="whatsapp-link"]').href =
-				`https://wa.me/${root!.dataset.whatsapp}?text=${encodeURIComponent(text)}`;
+			const message = optional('[data-role="message"]');
+			const link = optional<HTMLAnchorElement>('[data-role="whatsapp-link"]');
+			if (message && link) {
+				const text = orderMessage(cents);
+				message.textContent = text;
+				link.href = `https://wa.me/${root!.dataset.whatsapp}?text=${encodeURIComponent(text)}`;
+			}
 		}
 
 		/* Gaveta no celular, coluna fixa no desktop */
@@ -519,11 +620,20 @@ const jsonLd = [
 			try {
 				const response = await fetch('/api/pdv/estoque', { headers: { accept: 'application/json' } });
 				if (!response.ok) return;
-				const items = (await response.json()) as { produtoId: string; disponivel: number }[];
-				items.forEach(({ produtoId, disponivel }) => {
+				const items = (await response.json()) as { produtoId: string; disponivel: number; precoCentavos?: number }[];
+				const seen = new Set<string>();
+				items.forEach(({ produtoId, disponivel, precoCentavos }) => {
 					const card = cards.get(produtoId);
-					if (card) card.dataset.stock = String(disponivel);
+					if (!card) return;
+					seen.add(produtoId);
+					card.dataset.stock = String(disponivel);
+					if (precoCentavos && precoCentavos !== Number(card.dataset.price)) {
+						card.dataset.price = String(precoCentavos);
+						$('.card-price', card).textContent = formatPrice(precoCentavos);
+					}
 				});
+				// Produto que saiu do catálogo no PDV fica como esgotado até a página recarregar
+				if (mode === 'live') cards.forEach((card, id) => !seen.has(id) && (card.dataset.stock = '0'));
 				cart.forEach((line) => {
 					const max = limit(line.id);
 					if (max === 0) cart.delete(line.id);
@@ -536,11 +646,11 @@ const jsonLd = [
 			}
 		};
 
-		/* Envio pelo WhatsApp: a sacola fica até o cliente esvaziar, caso precise reenviar. */
-		$('[data-role="whatsapp-link"]').addEventListener('click', () => {
+		/* Envio pelo WhatsApp (modo sem PDV): a sacola fica até o cliente esvaziar, caso precise reenviar. */
+		optional('[data-role="whatsapp-link"]')?.addEventListener('click', () => {
 			$('[data-role="cart-sent"]').hidden = false;
 		});
-		$('[data-role="cart-clear"]').addEventListener('click', () => {
+		optional('[data-role="cart-clear"]')?.addEventListener('click', () => {
 			cart.clear();
 			save();
 			render();
@@ -549,8 +659,206 @@ const jsonLd = [
 			$('#cart-heading').focus();
 		});
 
-		// Com o PDV simulado ligado, a vitrine mostra o estoque ao vivo.
-		if (mode === 'mock') {
+		/* Pedido pelo site (modo com PDV): a loja confirma o estoque e o pagamento é combinado no WhatsApp. */
+		const ORDER_TEXT: Record<OrderStatus, (o: SavedOrder) => string> = {
+			AGUARDANDO_CONFIRMACAO: () =>
+				'Recebido! A loja confere o estoque assim que o sistema da loja estiver ligado e as unidades ficam guardadas pra você enquanto isso.',
+			PAGAMENTO_PENDENTE: (o) =>
+				`Separado! Pague por Pix no WhatsApp até ${deadline(o.validoAte)}. Depois disso as unidades voltam pra loja.`,
+			PAGO: () => 'Pagamento recebido. É só passar na loja 24 pra retirar.',
+			ENTREGUE: () => 'Entregue. Bom jogo!',
+			RECUSADO: () => 'Esse não deu: algum item acabou antes de a loja confirmar. Chama a gente no WhatsApp que a gente vê uma alternativa.',
+			CANCELADO: (o) => `A loja cancelou este pedido${o.motivo ? ` (${o.motivo})` : ''}.`,
+			EXPIRADO: () => 'O prazo de 48 h pra pagar acabou e as unidades voltaram pra loja. Se ainda quiser, é só pedir de novo.',
+		};
+		const FINAL: OrderStatus[] = ['ENTREGUE', 'RECUSADO', 'CANCELADO', 'EXPIRADO'];
+		let order: SavedOrder | null = null;
+		let pollTimer: number | undefined;
+
+		function deadline(iso: string | null) {
+			if (!iso) return 'o prazo combinado';
+			return new Intl.DateTimeFormat('pt-BR', {
+				weekday: 'long',
+				day: '2-digit',
+				month: '2-digit',
+				hour: '2-digit',
+				minute: '2-digit',
+				timeZone: 'America/Fortaleza',
+			}).format(new Date(iso));
+		}
+
+		const saveOrder = () => {
+			try {
+				if (order) localStorage.setItem(ORDER_KEY, JSON.stringify(order));
+				else localStorage.removeItem(ORDER_KEY);
+			} catch {
+				/* Armazenamento bloqueado: o pedido continua valendo, só não reaparece ao recarregar. */
+			}
+		};
+
+		function renderOrder() {
+			const panel = optional('[data-role="order-status"]');
+			if (!panel) return;
+			panel.hidden = !order;
+			if (!order) return;
+			$('[data-role="order-number"]', panel).textContent = String(order.numero);
+			const state = $('[data-role="order-state"]', panel);
+			state.dataset.state = order.status;
+			state.textContent = ORDER_TEXT[order.status](order);
+			$('[data-role="order-items"]', panel).replaceChildren(
+				...order.itens.map((item) => {
+					const li = document.createElement('li');
+					li.textContent = `${item.quantidade}x ${item.descricao}`;
+					return li;
+				}),
+				Object.assign(document.createElement('li'), { className: 'order-total', textContent: `Total ${formatPrice(order.totalCentavos)}` }),
+			);
+			const text =
+				order.status === 'RECUSADO'
+					? `Oi, Jokenpo! O pedido #${order.numero} do site não tinha estoque. Tem alguma alternativa?`
+					: `Oi, Jokenpo! Fiz o pedido #${order.numero} no site (total ${formatPrice(order.totalCentavos)}). Como faço o pagamento?`;
+			const whatsapp = $<HTMLAnchorElement>('[data-role="order-whatsapp"]', panel);
+			whatsapp.href = `https://wa.me/${root!.dataset.whatsapp}?text=${encodeURIComponent(text)}`;
+			whatsapp.hidden = order.status === 'PAGO' || order.status === 'ENTREGUE';
+			$('[data-role="order-whatsapp-label"]', panel).textContent =
+				order.status === 'RECUSADO' ? 'Falar com a loja' : 'Combinar o pagamento';
+			$('[data-role="order-dismiss"]', panel).textContent = FINAL.includes(order.status) ? 'Fechar' : 'Fechar e fazer outro pedido';
+		}
+
+		async function pollOrder() {
+			window.clearTimeout(pollTimer);
+			if (!order || FINAL.includes(order.status)) return;
+			if (document.visibilityState === 'visible') {
+				try {
+					const response = await fetch(`/api/pdv/pedidos/${order.id}`, { headers: { accept: 'application/json' } });
+					if (response.status === 404) {
+						order = null;
+					} else if (response.ok) {
+						const data = (await response.json()) as SavedOrder;
+						const changed = data.status !== order.status;
+						order = { ...order, status: data.status, validoAte: data.validoAte, motivo: data.motivo };
+						if (changed) announce.textContent = `Pedido ${order.numero}: ${ORDER_TEXT[order.status](order)}`;
+					}
+					saveOrder();
+					renderOrder();
+					render();
+				} catch {
+					/* Sem rede: tenta de novo no próximo ciclo. */
+				}
+			}
+			pollTimer = window.setTimeout(pollOrder, 20_000);
+		}
+		document.addEventListener('visibilitychange', () => {
+			if (document.visibilityState === 'visible') void pollOrder();
+		});
+
+		const orderForm = optional<HTMLFormElement>('[data-role="order-form"]');
+		if (orderForm) {
+			const errorEl = $('[data-role="order-error"]', orderForm);
+			const submit = $<HTMLButtonElement>('[data-role="order-submit"]', orderForm);
+			const nameInput = $<HTMLInputElement>('#order-name', orderForm);
+			const phoneInput = $<HTMLInputElement>('#order-phone', orderForm);
+			const showError = (message: string, field?: HTMLInputElement) => {
+				errorEl.textContent = message;
+				errorEl.hidden = false;
+				[nameInput, phoneInput].forEach((input) => input.toggleAttribute('aria-invalid', input === field));
+				if (field) {
+					field.setAttribute('aria-describedby', 'order-error');
+					field.focus();
+				}
+			};
+			errorEl.id = 'order-error';
+
+			orderForm.addEventListener('submit', async (event) => {
+				event.preventDefault();
+				errorEl.hidden = true;
+				const nome = nameInput.value.trim();
+				const telefone = phoneInput.value.replace(/\D/g, '');
+				if (nome.length < 2) return showError('Coloca seu nome pra gente achar o pedido no balcão.', nameInput);
+				if (telefone.length < 10 || telefone.length > 13) return showError('Coloca um WhatsApp com DDD, tipo (84) 9 0000-0000.', phoneInput);
+
+				submit.disabled = true;
+				submit.textContent = 'Enviando…';
+				try {
+					const response = await fetch('/api/pdv/pedidos', {
+						method: 'POST',
+						headers: { 'content-type': 'application/json', accept: 'application/json' },
+						body: JSON.stringify({
+							nomeContato: nome,
+							telefoneContato: telefone,
+							itens: [...cart.values()].map((line) => ({ produtoId: line.id, quantidade: line.qty })),
+						}),
+					});
+					const data = await response.json().catch(() => null);
+					if (!response.ok) {
+						const erro = data?.erro as { codigo?: string; mensagem?: string; detalhes?: unknown } | undefined;
+						if (erro?.codigo === 'ESTOQUE_INSUFICIENTE' || erro?.codigo === 'ITEM_INVALIDO') {
+							// Atualiza o estoque dos itens que faltaram e ajusta a sacola
+							if (Array.isArray(erro.detalhes)) {
+								(erro.detalhes as { produtoId: string; disponivel: number }[]).forEach(({ produtoId, disponivel }) => {
+									const card = cards.get(produtoId);
+									if (card) card.dataset.stock = String(disponivel);
+								});
+								cart.forEach((line) => {
+									const max = limit(line.id);
+									if (max === 0) cart.delete(line.id);
+									else if (line.qty > max) line.qty = max;
+								});
+								save();
+								render();
+							}
+							return showError(`${erro.mensagem ?? 'Um item acabou.'} A sacola foi ajustada: confere e tenta de novo.`);
+						}
+						if (erro?.codigo === 'CONTATO_INVALIDO') return showError(erro.mensagem ?? 'Confere seu nome e WhatsApp.', phoneInput);
+						if (erro?.codigo === 'MUITAS_TENTATIVAS' && erro.mensagem) return showError(erro.mensagem);
+						return showError('Não deu pra enviar agora. Tenta de novo em instantes ou chama a gente no WhatsApp.');
+					}
+					const created = data as SavedOrder;
+					order = {
+						id: created.id,
+						numero: created.numero,
+						status: created.status,
+						itens: created.itens,
+						totalCentavos: created.totalCentavos,
+						validoAte: created.validoAte,
+						motivo: created.motivo,
+					};
+					saveOrder();
+					cart.clear();
+					save();
+					orderForm.reset();
+					render();
+					renderOrder();
+					$('#order-title').focus();
+					void pollOrder();
+				} catch {
+					showError('Sem conexão. Confere sua internet e tenta de novo.');
+				} finally {
+					submit.disabled = false;
+					submit.textContent = 'Fazer pedido';
+				}
+			});
+
+			$('[data-role="order-dismiss"]').addEventListener('click', () => {
+				window.clearTimeout(pollTimer);
+				order = null;
+				saveOrder();
+				renderOrder();
+				render();
+				announce.textContent = 'Pedido fechado nesta tela. Ele continua valendo na loja.';
+				$('#cart-heading').focus();
+			});
+
+			try {
+				const saved = JSON.parse(localStorage.getItem(ORDER_KEY) ?? 'null') as SavedOrder | null;
+				if (saved && typeof saved.id === 'string' && Number.isInteger(saved.numero) && ORDER_TEXT[saved.status]) order = saved;
+			} catch {
+				/* Ignora dado corrompido. */
+			}
+		}
+
+		// Com o PDV ligado (real ou simulado), a vitrine atualiza estoque e preço ao vivo.
+		if (mode === 'mock' || mode === 'live') {
 			const schedule = (cb: () => void) =>
 				'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 300);
 			schedule(() => void refreshStock());
@@ -558,7 +866,9 @@ const jsonLd = [
 
 		restore();
 		render();
+		renderOrder();
 		syncDrawer();
+		if (order) void pollOrder();
 	}
 </script>
 
@@ -928,7 +1238,36 @@ const jsonLd = [
 		--pack: var(--white);
 	}
 
+	/* Produto genérico vindo do PDV: caixa lacrada com etiqueta de preço */
+	.visual-generic span:nth-child(1) {
+		width: 34%;
+		aspect-ratio: 1;
+		border-radius: 6px;
+		background:
+			linear-gradient(var(--ink) 0 0) center 30% / 100% 2px no-repeat,
+			linear-gradient(var(--ink) 0 0) 30% center / 2px 100% no-repeat,
+			var(--tone);
+		transform: rotate(-6deg);
+	}
+	.visual-generic span:nth-child(2) {
+		width: 16%;
+		aspect-ratio: 3 / 2;
+		border-radius: 4px;
+		background: var(--white);
+		transform: translate(110%, 95%) rotate(12deg);
+	}
+	.visual-generic span:nth-child(3) {
+		display: none;
+	}
+	.product-card[data-index='1'] .visual-generic span:nth-child(1) {
+		aspect-ratio: 4 / 5;
+		transform: rotate(5deg);
+	}
+
 	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.product-card:hover .visual-generic span:nth-child(1) {
+			transform: rotate(-10deg) translateY(-4%);
+		}
 		.product-card:hover .visual-shield span:nth-child(1),
 		.product-card:hover .visual-triple span:nth-child(1) {
 			transform: translateX(-70%) rotate(-14deg);
@@ -1387,6 +1726,124 @@ const jsonLd = [
 		text-decoration: underline;
 		text-underline-offset: 3px;
 		cursor: pointer;
+	}
+
+	/* Pedido pelo site */
+	.order-form {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.field {
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	.field label {
+		font-size: 0.8125rem;
+		font-weight: 700;
+	}
+
+	.field input {
+		min-block-size: 2.75rem;
+		padding: 0.5rem 0.75rem;
+		border: 2px solid var(--ink);
+		border-radius: 10px;
+		background: var(--white);
+		color: var(--ink);
+		font: 500 1rem/1.3 var(--font-body);
+	}
+
+	.field input:focus-visible {
+		outline: 3px solid var(--cyan);
+		outline-offset: 2px;
+	}
+
+	.field input[aria-invalid] {
+		border-color: var(--pink);
+	}
+
+	.order-error {
+		margin: 0;
+		padding: 0.625rem 0.75rem;
+		border-left: 4px solid var(--pink);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--pink) 12%, var(--white));
+		font-size: 0.8125rem;
+		font-weight: 600;
+		line-height: 1.45;
+	}
+
+	.order-status {
+		display: grid;
+		gap: 0.625rem;
+		margin-block-end: 1rem;
+		padding: 1rem;
+		border: 2px solid var(--ink);
+		border-radius: 14px;
+		background: var(--white);
+		box-shadow: 4px 4px 0 var(--ink);
+	}
+
+	.order-kicker {
+		margin: 0;
+		color: #4a4852;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	.order-title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 400;
+	}
+
+	.order-title:focus-visible {
+		outline: 3px solid var(--cyan);
+		outline-offset: 4px;
+	}
+
+	.order-state {
+		margin: 0;
+		padding: 0.625rem 0.75rem;
+		border-radius: 10px;
+		background: color-mix(in srgb, var(--cyan) 16%, var(--white));
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.45;
+	}
+
+	.order-state[data-state='PAGAMENTO_PENDENTE'] {
+		background: color-mix(in srgb, var(--yellow) 30%, var(--white));
+	}
+
+	.order-state[data-state='RECUSADO'],
+	.order-state[data-state='CANCELADO'],
+	.order-state[data-state='EXPIRADO'] {
+		background: color-mix(in srgb, var(--pink) 14%, var(--white));
+	}
+
+	.order-items {
+		display: grid;
+		gap: 0.125rem;
+		margin: 0;
+		padding: 0;
+		font-size: 0.8125rem;
+		list-style: none;
+	}
+
+	.order-items .order-total {
+		margin-block-start: 0.25rem;
+		font-weight: 700;
+	}
+
+	.order-status[hidden],
+	.order-error[hidden],
+	.order-status .cart-cta[hidden] {
+		display: none;
 	}
 
 	/* Barra e gaveta no celular/tablet */

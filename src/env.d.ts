@@ -4,8 +4,10 @@ interface ImportMetaEnv {
 	readonly PUBLIC_SITE_URL?: string;
 	readonly PUBLIC_BLIP_APP_KEY?: string;
 	readonly PUBLIC_BLIP_COMMON_URL?: string;
-	readonly PUBLIC_PDV_MODE?: 'mock' | 'off';
+	readonly PUBLIC_PDV_MODE?: 'live' | 'mock' | 'off';
 	readonly PDV_MOCK_ADMIN_TOKEN?: string;
+	readonly DATABASE_URL?: string;
+	readonly PDV_SYNC_TOKEN?: string;
 }
 
 interface ImportMeta {

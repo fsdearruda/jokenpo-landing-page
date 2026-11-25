@@ -6,8 +6,8 @@ export const prerender = false;
 const metodos: MetodoPagamento[] = ['PIX', 'DEBITO', 'CREDITO', 'DINHEIRO'];
 
 /**
- * POST /api/pdv/pedidos/:id/confirmar — simula o pagamento aprovado
- * (no balcão ou, no futuro, pelo webhook do Mercado Pago) e baixa o estoque.
+ * POST /api/pdv/pedidos/:id/confirmar — só no mock: simula a loja registrando o pagamento.
+ * No modo `live` o pagamento é registrado no PDV (aba Pedidos) e a rota responde 405.
  */
 export const POST: APIRoute = async (context) => {
 	if (!isBackOffice(context)) return forbidden();

@@ -22,7 +22,7 @@ export const GET: APIRoute = () => {
 		`- [Página Principal](${siteUrl}/): Apresentação da loja, destaques da comunidade e chamadas de ação.`,
 		`- [Como Funciona](${siteUrl}/#como-funciona): Passo a passo simples para quem vai jogar na loja pela primeira vez.`,
 		`- [Tabela de Passes e Jogos](${siteUrl}/#jogar): Tabela de preços do Passe da Tarde, Dia do Boardgame, Passe de Sábado e Pegue e Jogue por hora.`,
-		`- [Produtos](${siteUrl}/produtos): Shields, deck boxes e triple packs de Pokémon TCG com preço e estoque. O cliente monta a sacola e envia o pedido pronto pelo WhatsApp da loja para retirar no balcão.`,
+		`- [Produtos](${siteUrl}/produtos): Shields, deck boxes, triple packs e outros produtos com preço e estoque do sistema da loja. O cliente faz o pedido no site, a loja confirma o estoque e o pagamento é combinado pelo WhatsApp, com retirada no balcão.`,
 		`- [Agenda de Torneios](${siteUrl}/#agenda): Programação semanal com torneios de Pokémon, Magic, Yu-Gi-Oh!, One Piece e boardgames.`,
 		`- [Card Games e Comunidade](${siteUrl}/#sobre): Informações sobre os card games suportados, produtos lacrados e cartas avulsas.`,
 		`- [Dúvidas Frequentes](${siteUrl}/#duvidas): Respostas sobre decks próprios, como jogar sem grupo e reservas.`,
