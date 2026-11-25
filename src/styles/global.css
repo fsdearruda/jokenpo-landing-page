@@ -81,6 +81,18 @@ a {
 	box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px var(--yellow);
 }
 
+/* Ícones (astro-icon). A regra no <symbol> alcança cada <use> do sprite, e
+   --icon-stroke herda do <svg> que o usa, permitindo espessura por instância. */
+.icon {
+	--icon-stroke: 3.5;
+	flex: none;
+}
+
+symbol[id^='ai:lucide:'] > *,
+svg[data-icon^='lucide:'] > :not(use, title, desc) {
+	stroke-width: var(--icon-stroke, 3.5);
+}
+
 .arrow-icon {
 	display: inline-block;
 	width: 0.75em;

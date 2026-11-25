@@ -1,0 +1,36 @@
+---
+/**
+ * Ícone da marca sobre `astro-icon` (Iconify).
+ *
+ * - Resolvido em build: o SVG sai inline no HTML, sem JS e sem requisição extra.
+ * - Modo sprite: o primeiro uso de cada glifo emite um `<symbol>`; os demais
+ *   reutilizam via `<use>`, então repetir ícones custa poucos bytes.
+ * - Decorativo por padrão (`aria-hidden`). Passe `label` quando o ícone for o
+ *   único nome acessível do controle.
+ * - `weight` ajusta a espessura dos glifos de traço (Lucide). O padrão da marca
+ *   é 3.5, definido em `--icon-stroke` no `global.css`.
+ *
+ * Novos glifos precisam constar em `include` no `astro.config.mjs`.
+ */
+import { Icon as AstroIcon } from 'astro-icon/components';
+import type { ComponentProps } from 'astro/types';
+
+type Props = Omit<ComponentProps<typeof AstroIcon>, 'style' | 'title' | 'stroke'> & {
+	label?: string;
+	weight?: number;
+	style?: string;
+};
+
+const { label, weight, style, class: className, ...rest } = Astro.props;
+const inlineStyle = [weight ? `--icon-stroke: ${weight}` : '', style ?? ''].filter(Boolean).join('; ');
+---
+
+<AstroIcon
+	{...rest}
+	class:list={['icon', className]}
+	style={inlineStyle || undefined}
+	role={label ? 'img' : undefined}
+	aria-label={label}
+	aria-hidden={label ? undefined : 'true'}
+	focusable="false"
+/>
