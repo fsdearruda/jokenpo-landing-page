@@ -350,6 +350,8 @@ const structuredData = {
 		min-height: 100vh;
 		min-height: 100dvh;
 		overflow: hidden;
+		/* `clip` corta igual a `hidden`, mas não cria contêiner de rolagem: mantém `position: sticky` funcionando. */
+		overflow: clip;
 		background: var(--ink);
 	}
 	.noise {
