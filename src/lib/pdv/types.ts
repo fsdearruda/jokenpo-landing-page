@@ -74,6 +74,7 @@ export type PdvErrorCode =
 	| 'CONTATO_INVALIDO'
 	| 'PEDIDO_NAO_ENCONTRADO'
 	| 'STATUS_INVALIDO'
+	| 'LIMITE_PEDIDOS'
 	| 'OPERACAO_NO_PDV';
 
 export class PdvError extends Error {
@@ -92,7 +93,8 @@ export interface PdvClient {
 	listarEstoque(): Promise<EstoqueItem[]>;
 	/** `null` quando a fonte não tem catálogo próprio (o mock usa o `products.json`). */
 	listarCatalogo(): Promise<ProdutoCatalogo[] | null>;
-	criarPedido(input: CriarPedidoInput): Promise<PedidoPublico>;
+	/** `origem.ipHash` (hash do IP, nunca o IP) limita pedidos em aberto por aparelho. */
+	criarPedido(input: CriarPedidoInput, origem?: { ipHash?: string }): Promise<PedidoPublico>;
 	buscarPedido(id: string): Promise<PedidoPublico>;
 	confirmarPagamento(id: string, metodo: MetodoPagamento): Promise<PedidoPublico>;
 	cancelarPedido(id: string): Promise<PedidoPublico>;
@@ -103,6 +105,11 @@ export interface PdvClient {
 /** Limite por item num pedido do site, para evitar que alguém trave o estoque inteiro. */
 export const MAX_QUANTIDADE_POR_ITEM = 5;
 export const MAX_ITENS_POR_PEDIDO = 20;
+/** Pedidos em aberto (aguardando a loja ou o pagamento) por WhatsApp e por IP. */
+export const MAX_ABERTOS_POR_TELEFONE = 2;
+export const MAX_ABERTOS_POR_IP = 3;
+/** Sem confirmação da loja nesse prazo, o pedido expira e as unidades voltam (evita estoque preso para sempre). */
+export const PRAZO_CONFIRMACAO_HORAS = 72;
 
 /** Valida nome, WhatsApp e itens; devolve os dados limpos e os itens agrupados por produto. */
 export function validarPedido(input: CriarPedidoInput) {

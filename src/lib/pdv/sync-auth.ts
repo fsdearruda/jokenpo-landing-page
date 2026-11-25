@@ -1,3 +1,4 @@
+import { getSecret } from 'astro:env/server';
 import { json } from './index';
 import { assinaturaValida } from './sync';
 
@@ -9,7 +10,7 @@ const MAX_CORPO = 4 * 1024 * 1024;
  * `Response` = recusa pronta para devolver.
  */
 export async function lerRequisicaoDoPdv(request: Request): Promise<{ corpo: string } | Response> {
-	const segredo = import.meta.env.PDV_SYNC_TOKEN ?? process.env.PDV_SYNC_TOKEN ?? '';
+	const segredo = getSecret('PDV_SYNC_TOKEN') ?? '';
 	if (segredo.length < 32) return json({ erro: { codigo: 'SYNC_DESATIVADO', mensagem: 'Sincronização não configurada.' } }, 503);
 	if (Number(request.headers.get('content-length') ?? 0) > MAX_CORPO) return json({ erro: { codigo: 'GRANDE_DEMAIS' } }, 413);
 	const corpo = request.method === 'GET' ? '' : await request.text();

@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 import vercel from '@astrojs/vercel';
 import decapCmsOauth from 'astro-decap-cms-oauth';
 import icon from 'astro-icon';
@@ -21,6 +21,14 @@ export default defineConfig({
 	// `server` mantém as rotas OAuth do Decap CMS sob demanda. As páginas públicas
 	// usam `export const prerender = true` e são servidas como HTML estático.
 	output: 'server',
+	// Segredos lidos em tempo de execução (não ficam gravados no bundle e trocam sem rebuild)
+	env: {
+		schema: {
+			DATABASE_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+			PDV_SYNC_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
+			PDV_MOCK_ADMIN_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
+		},
+	},
 	adapter: vercel(),
 	integrations: [
 		// Ícones resolvidos em build e inlinados como SVG: zero JS e zero requisições.

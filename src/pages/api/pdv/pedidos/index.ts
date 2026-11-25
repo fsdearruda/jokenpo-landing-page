@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getPdv, handle, json, readJson, type CriarPedidoInput } from '../../../../lib/pdv';
-import { dentroDoLimite } from '../../../../lib/pdv/limite';
+import { dentroDoLimite, hashIp } from '../../../../lib/pdv/limite';
 
 export const prerender = false;
 
@@ -10,13 +10,13 @@ export const prerender = false;
  * Corpo: `{ itens: [{ produtoId, quantidade }], nomeContato, telefoneContato }`.
  */
 export const POST: APIRoute = async ({ request, clientAddress }) => {
+	let ip: string | undefined;
+	try {
+		ip = clientAddress;
+	} catch {
+		/* adaptador sem IP do cliente */
+	}
 	if (getPdv()) {
-		let ip: string | undefined;
-		try {
-			ip = clientAddress;
-		} catch {
-			/* adaptador sem IP do cliente */
-		}
 		const permitido = await dentroDoLimite(ip).catch(() => true); // limite fora do ar não bloqueia venda
 		if (!permitido) {
 			return json({ erro: { codigo: 'MUITAS_TENTATIVAS', mensagem: 'Muitos pedidos seguidos. Espera uns minutos ou chama a gente no WhatsApp.' } }, 429);
@@ -30,10 +30,13 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		return json({ erro: { codigo: 'FORMATO_INVALIDO', mensagem: 'JSON inválido.' } }, 400);
 	}
 	return handle((pdv) =>
-		pdv.criarPedido({
-			itens: Array.isArray(body.itens) ? body.itens : [],
-			nomeContato: String(body.nomeContato ?? ''),
-			telefoneContato: String(body.telefoneContato ?? ''),
-		}),
+		pdv.criarPedido(
+			{
+				itens: Array.isArray(body.itens) ? body.itens : [],
+				nomeContato: String(body.nomeContato ?? ''),
+				telefoneContato: String(body.telefoneContato ?? ''),
+			},
+			{ ipHash: ip ? hashIp(ip) : undefined },
+		),
 	);
 };

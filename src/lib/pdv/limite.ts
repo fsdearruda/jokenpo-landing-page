@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { getSecret } from 'astro:env/server';
 import { sql } from '../db';
 import { pdvMode } from './index';
 
@@ -8,6 +9,10 @@ export const JANELA_MS = 10 * 60_000;
 
 const memoria = new Map<string, number>();
 
+/** Hash do IP com o segredo do site: identifica repetição sem guardar o IP (LGPD). */
+export const hashIp = (ip: string) =>
+	createHash('sha256').update(`${getSecret('PDV_SYNC_TOKEN') ?? 'jokenpo'}:${ip}`).digest('base64url').slice(0, 32);
+
 /**
  * Conta uma tentativa de pedido do IP e diz se ainda está dentro do limite.
  * No modo `live` a contagem fica no Postgres (as funções da Vercel não compartilham memória);
@@ -16,8 +21,7 @@ const memoria = new Map<string, number>();
 export async function dentroDoLimite(ip: string | undefined, agora = Date.now()): Promise<boolean> {
 	if (!ip) return true;
 	const janela = Math.floor(agora / JANELA_MS) * JANELA_MS;
-	const segredo = import.meta.env.PDV_SYNC_TOKEN ?? process.env.PDV_SYNC_TOKEN ?? 'jokenpo';
-	const chave = createHash('sha256').update(`${segredo}:${ip}`).digest('base64url').slice(0, 32);
+	const chave = hashIp(ip);
 
 	if (pdvMode !== 'live') {
 		const k = `${chave}:${janela}`;

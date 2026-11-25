@@ -106,15 +106,28 @@ foto completa. Sem resposta do site, as tentativas vão espaçando de 15 s até 
 
 ## 7. Segurança e LGPD
 
-- PC sem porta aberta; segredo só no `.env` do PDV e nas variáveis da Vercel.
-- O navegador nunca recebe nome completo nem telefone, só o primeiro nome e os 4
-  últimos dígitos.
-- Um dia depois de a loja receber o pedido, o banco do site apaga o contato do
-  evento e mascara o do pedido.
-- Logs sem dados pessoais.
-- Limite de 10 tentativas de pedido por IP a cada 10 min (`src/lib/pdv/limite.ts`, tabela `pdv_limite_ip`).
-  O IP não é guardado, só um hash com `PDV_SYNC_TOKEN`. Se o limite falhar, a venda não é bloqueada.
-  Valem também 5 unidades por item e 20 produtos por pedido.
+Revisão de 25/11/2026. As falhas encontradas e o que foi feito:
+
+| Risco | Correção |
+|---|---|
+| Alguém prende o estoque com pedidos que a loja não confirma (antes, a reserva no site não vencia) | Pedido sem confirmação expira em **72 h** no site, e o PDV não separa nada para evento vencido. No máximo **2 pedidos em aberto por WhatsApp** e **3 por IP**, mais 10 tentativas por IP a cada 10 min. O IP vira hash com o segredo, nunca é guardado |
+| `DATABASE_URL` e `PDV_SYNC_TOKEN` gravados em texto no bundle do servidor (e troca de segredo só com rebuild) | Lidos em tempo de execução via `astro:env` (`getSecret`). Build com valores marcadores não deixa nenhum no artefato |
+| Nome de produto com `</script>` vindo do PDV injetaria código pelo JSON-LD | `jsonForScript` no `BaseLayout` escapa `<`, `>`, `&`, U+2028 e U+2029. Testado no Chromium: nenhum alert, JSON-LD válido |
+| Requisição de estoque capturada e reenviada dentro dos 5 min da assinatura voltaria o estoque | O site só aceita envio com `geradoEm` mais novo que o último aceito. O PDV trata recusa como erro (avisa que o relógio do PC pode estar atrasado) |
+| Banco do site adulterado mandaria pedido com preço de R$ 0,01 ou nome falso | O PDV usa o nome do cadastro e só aceita o preço do site se for o atual ou um do histórico dos últimos 7 dias. Senão, usa o preço do PDV e anota no pedido |
+| Evento com produto inexistente travaria a fila do PDV para sempre (erro de chave estrangeira) | O item fica sem produto, e erro de dado recusa só aquele evento. A fila segue |
+| `SITE_SYNC_URL` com http mandaria a sincronização sem TLS | O PDV exige https (http só para localhost) |
+| Comparação do token das rotas de balcão do mock | Em tempo constante (`timingSafeEqual`) |
+| Contato do cliente | O navegador só recebe o primeiro nome e os 4 últimos dígitos. Um dia depois de encerrado o pedido, o banco do site guarda só isso. Logs sem dados pessoais |
+
+Continua valendo:
+- O PC da loja não tem porta aberta.
+- Tudo o que o PC envia é assinado com HMAC e vale por 5 min.
+- Produção e preview têm bancos e tokens separados.
+
+Pendências conhecidas, fora deste sistema:
+- O site não tem Content-Security-Policy, porque o widget do Blip e o Decap CMS precisam de testes antes. O caminho é começar com `Content-Security-Policy-Report-Only`.
+- `Hero` e `ExtrasSection` usam `set:html` com texto do `site.json`, que vem do CMS e é editado só por quem tem acesso ao repositório.
 
 ## 8. Produção
 

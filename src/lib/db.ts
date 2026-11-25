@@ -1,3 +1,4 @@
+import { getSecret } from 'astro:env/server';
 import postgres from 'postgres';
 
 /**
@@ -7,10 +8,9 @@ import postgres from 'postgres';
  */
 const globalStore = globalThis as typeof globalThis & { __jokenpoSql?: postgres.Sql };
 
-export const hasDatabase = () => Boolean(import.meta.env.DATABASE_URL ?? process.env.DATABASE_URL);
 
 export const sql = (): postgres.Sql => {
-	const url = import.meta.env.DATABASE_URL ?? process.env.DATABASE_URL;
+	const url = getSecret('DATABASE_URL');
 	if (!url) throw new Error('DATABASE_URL não definida.');
 	return (globalStore.__jokenpoSql ??= postgres(url, { max: 1, prepare: false, idle_timeout: 20, connect_timeout: 10, onnotice: () => {} }));
 };

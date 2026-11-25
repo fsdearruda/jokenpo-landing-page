@@ -683,7 +683,10 @@ const jsonLd = [
 			ENTREGUE: () => 'Entregue. Bom jogo!',
 			RECUSADO: () => 'Esse não deu: algum item acabou antes de a loja confirmar. Chama a gente no WhatsApp que a gente vê uma alternativa.',
 			CANCELADO: (o) => `A loja cancelou este pedido${o.motivo ? ` (${o.motivo})` : ''}.`,
-			EXPIRADO: () => 'O prazo de 48 h pra pagar acabou e as unidades voltaram pra loja. Se ainda quiser, é só pedir de novo.',
+			EXPIRADO: (o) =>
+				o.motivo?.includes('não confirmou')
+					? 'A loja não conseguiu confirmar a tempo e o pedido expirou. Se ainda quiser, é só pedir de novo.'
+					: 'O prazo de 48 h pra pagar acabou e as unidades voltaram pra loja. Se ainda quiser, é só pedir de novo.',
 		};
 		const FINAL: OrderStatus[] = ['ENTREGUE', 'RECUSADO', 'CANCELADO', 'EXPIRADO'];
 		let order: SavedOrder | null = null;
@@ -824,7 +827,7 @@ const jsonLd = [
 							return showError(`${erro.mensagem ?? 'Um item acabou.'} A sacola foi ajustada: confere e tenta de novo.`);
 						}
 						if (erro?.codigo === 'CONTATO_INVALIDO') return showError(erro.mensagem ?? 'Confere seu nome e WhatsApp.', phoneInput);
-						if (erro?.codigo === 'MUITAS_TENTATIVAS' && erro.mensagem) return showError(erro.mensagem);
+						if ((erro?.codigo === 'MUITAS_TENTATIVAS' || erro?.codigo === 'LIMITE_PEDIDOS') && erro.mensagem) return showError(erro.mensagem);
 						return showError('Não deu pra enviar agora. Tenta de novo em instantes ou chama a gente no WhatsApp.');
 					}
 					const created = data as SavedOrder;

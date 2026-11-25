@@ -3,7 +3,10 @@ import type postgres from 'postgres';
 import { sql } from '../db';
 import type { ComponenteKit, EnvioEstoque, ResultadoEvento, StatusPedidoSite } from './sync';
 import {
+	MAX_ABERTOS_POR_IP,
+	MAX_ABERTOS_POR_TELEFONE,
 	MAX_QUANTIDADE_POR_ITEM,
+	PRAZO_CONFIRMACAO_HORAS,
 	PdvError,
 	mascararNome,
 	mascararTelefone,
@@ -80,6 +83,16 @@ async function demandaPendente(tx: Tx) {
 	return demanda;
 }
 
+/**
+ * Pedido que a loja não confirmou em 72 h expira aqui e para de segurar unidades.
+ * Se o PC da loja receber esse evento depois, ele também não separa nada (ver PDV).
+ */
+async function expirarNaoConfirmados(tx: Tx) {
+	await tx`
+		UPDATE pdv_pedido SET status = 'EXPIRADO', motivo = 'A loja não confirmou a tempo', atualizado_em = now()
+		WHERE status = 'AGUARDANDO_CONFIRMACAO' AND criado_em < now() - make_interval(hours => ${PRAZO_CONFIRMACAO_HORAS})`;
+}
+
 /** Disponível no site: o do PDV menos a demanda pendente; kit pelo componente que acaba primeiro. */
 function disponivelNoSite(p: Pick<LinhaProduto, 'produto_id' | 'disponivel' | 'componentes'>, demanda: Map<string, number>) {
 	if (p.componentes?.length) {
@@ -104,6 +117,7 @@ const publico = (p: LinhaPedido): PedidoPublico => ({
 class CloudPdv implements PdvClient {
 	async listarCatalogo(): Promise<ProdutoCatalogo[]> {
 		const db = sql();
+		await expirarNaoConfirmados(db);
 		const [produtos, demanda] = await Promise.all([
 			db<LinhaProduto[]>`
 				SELECT produto_id, sku, nome, categoria, grupo, preco_centavos, disponivel, componentes FROM pdv_produto WHERE visivel ORDER BY grupo, nome`,
@@ -124,12 +138,28 @@ class CloudPdv implements PdvClient {
 		return (await this.listarCatalogo()).map(({ produtoId, disponivel, precoCentavos }) => ({ produtoId, disponivel, precoCentavos }));
 	}
 
-	async criarPedido(input: CriarPedidoInput): Promise<PedidoPublico> {
+	async criarPedido(input: CriarPedidoInput, origem?: { ipHash?: string }): Promise<PedidoPublico> {
 		const { nome, telefone, quantidades } = validarPedido(input);
 		const ids = [...quantidades.keys()];
+		const ipHash = origem?.ipHash ?? null;
 		return sql().begin(async (tx) => {
 			// Uma linha só trava todas as criações de pedido e os envios do PDV: sem corrida pela última unidade
 			await tx`SELECT 1 FROM pdv_sync WHERE id = 1 FOR UPDATE`;
+			await expirarNaoConfirmados(tx);
+
+			// Quem já tem pedidos em aberto não segura mais estoque até pagar ou a loja confirmar
+			const [abertos] = await tx<{ por_telefone: number; por_ip: number }[]>`
+				SELECT
+					count(*) FILTER (WHERE telefone_contato = ${telefone})::int AS por_telefone,
+					count(*) FILTER (WHERE ${ipHash}::text IS NOT NULL AND ip_hash = ${ipHash})::int AS por_ip
+				FROM pdv_pedido WHERE status IN ('AGUARDANDO_CONFIRMACAO', 'PAGAMENTO_PENDENTE')`;
+			if (abertos.por_telefone >= MAX_ABERTOS_POR_TELEFONE || abertos.por_ip >= MAX_ABERTOS_POR_IP) {
+				throw new PdvError(
+					'LIMITE_PEDIDOS',
+					'Você já tem pedidos em aberto. Conclui o pagamento (ou espera a loja confirmar) antes de fazer outro.',
+					429,
+				);
+			}
 			const produtos = await tx<LinhaProduto[]>`
 				SELECT produto_id, sku, nome, categoria, grupo, preco_centavos, disponivel, componentes FROM pdv_produto WHERE visivel AND produto_id = ANY(${ids})`;
 			const porId = new Map(produtos.map((p) => [p.produto_id, p]));
@@ -164,8 +194,8 @@ class CloudPdv implements PdvClient {
 			const id = randomUUID();
 			const total = itens.reduce((s, i) => s + i.totalCentavos, 0);
 			const [pedido] = await tx<LinhaPedido[]>`
-				INSERT INTO pdv_pedido (id, status, itens, total_centavos, nome_contato, telefone_contato)
-				VALUES (${id}, 'AGUARDANDO_CONFIRMACAO', ${tx.json(itens)}, ${total}, ${nome}, ${telefone})
+				INSERT INTO pdv_pedido (id, status, itens, total_centavos, nome_contato, telefone_contato, ip_hash)
+				VALUES (${id}, 'AGUARDANDO_CONFIRMACAO', ${tx.json(itens)}, ${total}, ${nome}, ${telefone}, ${ipHash})
 				RETURNING *`;
 			const [evento] = await tx<{ id: string }[]>`
 				INSERT INTO pdv_evento (tipo, pedido_id, payload)
@@ -183,6 +213,7 @@ class CloudPdv implements PdvClient {
 
 	async buscarPedido(id: string): Promise<PedidoPublico> {
 		if (!UUID.test(id)) throw new PdvError('PEDIDO_NAO_ENCONTRADO', 'Pedido não encontrado.', 404);
+		await expirarNaoConfirmados(sql());
 		const [p] = await sql()<LinhaPedido[]>`SELECT * FROM pdv_pedido WHERE id = ${id}`;
 		if (!p) throw new PdvError('PEDIDO_NAO_ENCONTRADO', 'Pedido não encontrado.', 404);
 		return publico(p);
@@ -216,8 +247,13 @@ async function atualizarPedido(tx: Tx, p: StatusPedidoSite) {
 /** Recebe a foto (completa ou parcial) do estoque e as mudanças de pedidos feitas na loja. */
 export async function receberEstoque(envio: EnvioEstoque) {
 	return sql().begin(async (tx) => {
-		const [estado] = await tx<{ pdv_seq: string }[]>`SELECT pdv_seq FROM pdv_sync WHERE id = 1 FOR UPDATE`;
-		// Envio parcial atrasado é ignorado; foto completa sempre vale (ex.: PDV restaurado de um backup)
+		const [estado] = await tx<{ pdv_seq: string; ultimo_gerado_em: Date | null }[]>`
+			SELECT pdv_seq, ultimo_gerado_em FROM pdv_sync WHERE id = 1 FOR UPDATE`;
+		const geradoEm = new Date(envio.geradoEm);
+		if (Number.isNaN(geradoEm.getTime())) return { aceito: false };
+		// Envio mais velho que o último aceito é ignorado: cobre envio atrasado e requisição capturada e
+		// reenviada. Foto completa de um PDV restaurado de backup passa, porque é gerada na hora.
+		if (estado.ultimo_gerado_em && geradoEm <= estado.ultimo_gerado_em) return { aceito: false };
 		if (!envio.completo && envio.pdvSeq <= Number(estado.pdv_seq)) return { aceito: false };
 
 		if (envio.itens.length) {
@@ -239,7 +275,8 @@ export async function receberEstoque(envio: EnvioEstoque) {
 		}
 		for (const p of envio.pedidos) await atualizarPedido(tx, p);
 		await tx`
-			UPDATE pdv_sync SET pdv_seq = ${envio.pdvSeq}, eventos_aplicados_ate = ${envio.eventosAplicadosAte}, ultimo_contato_em = now()
+			UPDATE pdv_sync SET pdv_seq = ${envio.pdvSeq}, eventos_aplicados_ate = ${envio.eventosAplicadosAte}, ultimo_contato_em = now(),
+				ultimo_gerado_em = ${geradoEm}
 				${envio.completo ? tx`, ultima_foto_completa_em = now()` : tx``}
 			WHERE id = 1`;
 		return { aceito: true };
@@ -276,7 +313,8 @@ export async function confirmarEventos(resultados: ResultadoEvento[]) {
 			WHERE aplicado_em < now() - interval '1 day' AND payload ? 'telefoneContato'`;
 		await tx`
 			UPDATE pdv_pedido SET nome_contato = split_part(nome_contato, ' ', 1), telefone_contato = right(telefone_contato, 4), contato_mascarado = true
-			WHERE NOT contato_mascarado AND status <> 'AGUARDANDO_CONFIRMACAO' AND atualizado_em < now() - interval '1 day'`;
+			WHERE NOT contato_mascarado AND status NOT IN ('AGUARDANDO_CONFIRMACAO', 'PAGAMENTO_PENDENTE')
+				AND atualizado_em < now() - interval '1 day'`;
 		await tx`UPDATE pdv_sync SET ultimo_contato_em = now() WHERE id = 1`;
 	});
 }

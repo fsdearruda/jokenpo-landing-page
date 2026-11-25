@@ -1,4 +1,6 @@
+import { timingSafeEqual } from 'node:crypto';
 import type { APIContext } from 'astro';
+import { getSecret } from 'astro:env/server';
 import { cloudPdv } from './cloud';
 import { mockPdv } from './mock';
 import { PdvError, type PdvClient } from './types';
@@ -50,9 +52,11 @@ export const handle = async (operation: (pdv: PdvClient) => Promise<unknown>) =>
  * funcionam no `astro dev`. No modo `live` isso é feito no PDV e as rotas respondem 405.
  */
 export const isBackOffice = ({ request }: APIContext) => {
-	const token = import.meta.env.PDV_MOCK_ADMIN_TOKEN;
+	const token = getSecret('PDV_MOCK_ADMIN_TOKEN');
 	if (!token) return import.meta.env.DEV;
-	return request.headers.get('authorization') === `Bearer ${token}`;
+	const esperado = Buffer.from(`Bearer ${token}`);
+	const recebido = Buffer.from(request.headers.get('authorization') ?? '');
+	return esperado.length === recebido.length && timingSafeEqual(esperado, recebido);
 };
 
 export const forbidden = () => json({ erro: { codigo: 'NAO_AUTORIZADO', mensagem: 'Rota restrita ao balcão.' } }, 401);

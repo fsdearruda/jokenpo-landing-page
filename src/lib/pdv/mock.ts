@@ -49,7 +49,7 @@ class MockPdv implements PdvClient {
 		return null;
 	}
 
-	async criarPedido(input: CriarPedidoInput): Promise<PedidoPublico> {
+	async criarPedido(input: CriarPedidoInput, _origem?: { ipHash?: string }): Promise<PedidoPublico> {
 		this.expirar();
 		const { nome, telefone, quantidades } = validarPedido(input);
 		for (const id of quantidades.keys()) {
