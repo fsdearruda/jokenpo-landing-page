@@ -27,27 +27,6 @@ Visualmente, o lançador no canto inferior direito segue o estilo Arcade 2.0, co
 
 Para ativar o bot em desenvolvimento ou produção, preencha `PUBLIC_BLIP_APP_KEY` (obtida em `Canais > Blip Chat > Instalação` no portal da Blip), informe `PUBLIC_BLIP_COMMON_URL` se o contrato usar domínio dedicado e inclua `localhost` e `jokenpo.cards` na lista de domínios autorizados em `Canais > Blip Chat > Configurações`.
 
-## Produtos e integração com o PDV
-
-A página `/produtos` mostra shields, deck boxes e triple packs em seções por categoria, com um card por variação e filtro por categoria. O cliente monta a sacola e toca em **Enviar pedido no WhatsApp**: abre a conversa com a loja com itens, quantidades e total já escritos, para retirar no balcão. O site não pede nome nem telefone. A sacola fica fixa à direita no desktop e vira uma gaveta com barra inferior no celular. Ela guarda os itens no `localStorage` e deixa mudar a quantidade direto no card ou na sacola. Nomes de vitrine diferentes do PDV (ex.: "Deck box dupla" aparece como "Deck box completa") ficam em `labelOverrides`, no script de extração. Os dados vêm do banco do PDV (`comanda`) e ficam em `src/data/products.json`, gerado só com campos públicos (id, SKU, nome, preço e estoque). Para atualizar a partir de um novo dump:
-
-```bash
-pg_restore -f banco.sql banco.dump
-node scripts/extract-products.mjs banco.sql
-```
-
-A integração com o PDV fica na interface `PdvClient` em `src/lib/pdv/`. Hoje a vitrine só consulta o estoque nela; as rotas de pedido ficam prontas para o balcão ou para o checkout online. Por enquanto só existe a implementação simulada (`mock.ts`), em memória: ela reserva estoque (`RESERVA`), confirma venda (`VENDA`), cancela ou expira (`LIBERACAO`) seguindo os nomes do schema do PDV. O estado zera a cada reinício ou cold start.
-
-| Rota | Uso |
-|---|---|
-| `GET /api/pdv/estoque` | Disponível por produto |
-| `POST /api/pdv/pedidos` | Cria a reserva (`{ itens: [{ produtoId, quantidade }], nomeContato, telefoneContato }`) |
-| `GET /api/pdv/pedidos/:id` | Status da reserva |
-| `POST /api/pdv/pedidos/:id/confirmar` | Simula pagamento aprovado (rota de balcão) |
-| `POST /api/pdv/pedidos/:id/cancelar` | Devolve o estoque (rota de balcão) |
-
-`PUBLIC_PDV_MODE` controla o comportamento: `mock` no `pnpm dev` (estoque ao vivo do PDV simulado) e `off` no build de produção (rotas desligadas, estoque do build). O plano para pagamento online está em [docs/plano-checkout-mercado-pago.md](docs/plano-checkout-mercado-pago.md).
-
 ## Decisões de projeto
 
 ### Acessibilidade
@@ -68,7 +47,7 @@ Use sempre o componente `src/components/Icon.astro`. Ele marca o ícone como dec
 
 ### Desempenho e descoberta por agentes
 
-As rotas públicas (`/`, `/produtos`, `/404`, `/admin` e `/llms.txt`) são pré-renderizadas em HTML estático, enquanto o adaptador da Vercel mantém as rotas de autenticação e da API do PDV (`/api/pdv/*`) sob demanda. As capas dos jogos passam pelo pipeline de imagens do Astro (`astro:assets`), e as fontes `Archivo Black` e `Poppins` são empacotadas localmente via Fontsource com preload no `<head>`.
+As rotas públicas (`/`, `/404`, `/admin` e `/llms.txt`) são pré-renderizadas em HTML estático, enquanto o adaptador da Vercel mantém as rotas de autenticação sob demanda. As capas dos jogos passam pelo pipeline de imagens do Astro (`astro:assets`), e as fontes `Archivo Black` e `Poppins` são empacotadas localmente via Fontsource com preload no `<head>`.
 
 Os metadados incluem Open Graph, Twitter Cards, grafo JSON-LD (`WebSite`, `WebPage`, `GameStore`, `Event` e `FAQPage`), `sitemap.xml` e endpoint `/llms.txt` no formato do `llmstxt.org`. Cabeçalhos de cache e segurança ficam em `vercel.json`. Conforme registrado em [DESIGN.md](DESIGN.md), a página atingiu 100 em Acessibilidade, Boas Práticas, SEO e Agentic Browsing, e 98 em Performance no Lighthouse.
 
@@ -122,8 +101,6 @@ Consulte [.env.example](.env.example). Nunca versione chaves ou segredos reais n
 | `OAUTH_GITHUB_CLIENT_SECRET` | Secret do app OAuth para o Decap CMS | Apenas para usar `/admin` |
 | `PUBLIC_BLIP_APP_KEY` | App Key do canal Blip Chat | Apenas para exibir o chat |
 | `PUBLIC_BLIP_COMMON_URL` | URL dedicada do contrato no Blip, se houver | Não |
-| `PUBLIC_PDV_MODE` | `mock` (estoque ao vivo do PDV simulado) ou `off` (estoque do build) em `/produtos` | Não (padrão `mock` em dev, `off` em produção) |
-| `PDV_MOCK_ADMIN_TOKEN` | Bearer token das rotas de balcão do mock | Não (sem ele, só funcionam em dev) |
 
 Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desativado localmente. Enquanto `PUBLIC_BLIP_APP_KEY` estiver vazia, o botão do Blip Chat não é renderizado. Ao configurar o Blip, libere os domínios do site (`localhost` e `jokenpo.cards`) em `Canais > Blip Chat > Configurações` no portal da Blip.
 
@@ -132,10 +109,6 @@ Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desati
 | Caminho | Responsabilidade |
 |---|---|
 | `src/pages/index.astro` | Composição das seções da landing page |
-| `src/pages/produtos.astro` | Vitrine de produtos, sacola e pedido pelo WhatsApp |
-| `src/pages/api/pdv/` | Rotas da API do PDV (mock) |
-| `src/lib/catalog.ts`, `src/lib/pdv/` | Catálogo tipado, contrato `PdvClient` e PDV simulado |
-| `src/data/products.json` | Produtos extraídos do PDV (gerado por `scripts/extract-products.mjs`) |
 | `src/pages/admin.astro` | Painel do Decap CMS em `/admin` |
 | `src/pages/llms.txt.ts` | Geração do arquivo `/llms.txt` a partir de `site.json` |
 | `src/pages/404.astro` | Página de erro 404 |

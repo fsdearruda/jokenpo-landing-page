@@ -20,7 +20,7 @@ export default defineConfig({
 		// `include` limita o bundle SSR aos glifos usados; adicione novos nomes aqui.
 		icon({
 			include: {
-				lucide: ['arrow-right', 'arrow-up-right', 'arrow-down', 'arrow-up', 'plus', 'minus', 'x', 'shopping-bag'],
+				lucide: ['arrow-right', 'arrow-up-right', 'arrow-down', 'arrow-up', 'plus'],
 				'simple-icons': ['whatsapp'],
 			},
 		}),

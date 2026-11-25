@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import siteData from '../data/site.json';
-import { families, formatPrice } from '../lib/catalog';
 
 export const prerender = true;
 
@@ -22,7 +21,6 @@ export const GET: APIRoute = () => {
 		`- [Página Principal](${siteUrl}/): Apresentação da loja, destaques da comunidade e chamadas de ação.`,
 		`- [Como Funciona](${siteUrl}/#como-funciona): Passo a passo simples para quem vai jogar na loja pela primeira vez.`,
 		`- [Tabela de Passes e Jogos](${siteUrl}/#jogar): Tabela de preços do Passe da Tarde, Dia do Boardgame, Passe de Sábado e Pegue e Jogue por hora.`,
-		`- [Produtos](${siteUrl}/produtos): Shields, deck boxes e triple packs de Pokémon TCG com preço e estoque. O cliente monta a sacola e envia o pedido pronto pelo WhatsApp da loja para retirar no balcão.`,
 		`- [Agenda de Torneios](${siteUrl}/#agenda): Programação semanal com torneios de Pokémon, Magic, Yu-Gi-Oh!, One Piece e boardgames.`,
 		`- [Card Games e Comunidade](${siteUrl}/#sobre): Informações sobre os card games suportados, produtos lacrados e cartas avulsas.`,
 		`- [Dúvidas Frequentes](${siteUrl}/#duvidas): Respostas sobre decks próprios, como jogar sem grupo e reservas.`,
@@ -54,12 +52,6 @@ export const GET: APIRoute = () => {
 		'## Acervo de Jogos Disponíveis',
 		...boardgames.map(
 			(g) => `- ${g.name} (${g.categoryName}, ${g.price}/h) — ${g.players} · ${g.tag} · Editora: ${g.publisher}`,
-		),
-		'',
-		'## Produtos para Retirada na Loja',
-		...families.map(
-			(f) =>
-				`- ${f.name} (${f.subtitle}): ${f.variants.map((v) => `${v.label} ${formatPrice(v.priceCents)}`).join(' · ')}`,
 		),
 		'',
 		'## Estrutura e Serviços na Loja',

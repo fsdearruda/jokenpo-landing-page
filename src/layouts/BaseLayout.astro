@@ -13,29 +13,20 @@ interface Props {
 	title?: string;
 	description?: string;
 	robots?: string;
-	/** Caminho canônico da página, começando com `/`. */
-	path?: string;
-	/** Nós extras para o grafo JSON-LD da página. */
-	jsonLd?: Record<string, unknown>[];
 }
 
 const {
 	title = siteData.title,
 	description = siteData.description,
 	robots = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-	path = '/',
-	jsonLd = [],
 } = Astro.props;
 
-const isHome = path === '/';
-
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
-const homeUrl = `${siteUrl}/`;
-const canonicalUrl = `${siteUrl}${path}`;
+const canonicalUrl = siteUrl ? `${siteUrl}/` : '/';
 const socialImageUrl = `${siteUrl}/og-image.png`;
 const storeId = `${siteUrl}/#store`;
 const websiteId = `${siteUrl}/#website`;
-const webpageId = `${canonicalUrl}#webpage`;
+const webpageId = `${siteUrl}/#webpage`;
 const faqId = `${siteUrl}/#faq`;
 
 const parseTournamentPrice = (detail: string, name: string) => {
@@ -127,7 +118,7 @@ const structuredData = {
 		{
 			'@type': 'WebSite',
 			'@id': websiteId,
-			url: homeUrl,
+			url: canonicalUrl,
 			name: siteData.name,
 			description: siteData.description,
 			inLanguage: 'pt-BR',
@@ -142,7 +133,7 @@ const structuredData = {
 			inLanguage: 'pt-BR',
 			isPartOf: { '@id': websiteId },
 			about: { '@id': storeId },
-			...(isHome ? { mainEntity: { '@id': storeId } } : {}),
+			mainEntity: { '@id': storeId },
 			primaryImageOfPage: {
 				'@type': 'ImageObject',
 				url: socialImageUrl,
@@ -155,7 +146,7 @@ const structuredData = {
 			'@id': storeId,
 			name: siteData.name,
 			description: siteData.description,
-			url: homeUrl,
+			url: canonicalUrl,
 			image: socialImageUrl,
 			logo: `${siteUrl}/Vetor/coelho.svg`,
 			telephone: siteData.contact.whatsapp,
@@ -221,7 +212,7 @@ const structuredData = {
 									'@type': 'Offer',
 									price,
 									priceCurrency: 'BRL',
-									url: `${homeUrl}#agenda`,
+									url: `${canonicalUrl}#agenda`,
 									availability: 'https://schema.org/InStock',
 								},
 							}
@@ -230,8 +221,7 @@ const structuredData = {
 			}),
 			sameAs: [siteData.contact.instagram, siteData.contact.communityWhatsapp],
 		},
-		...jsonLd,
-		...(isHome ? [{
+		{
 			'@type': 'FAQPage',
 			'@id': faqId,
 			isPartOf: { '@id': webpageId },
@@ -243,7 +233,7 @@ const structuredData = {
 					text: item.answer,
 				},
 			})),
-		}] : []),
+		},
 	],
 };
 ---
@@ -350,8 +340,6 @@ const structuredData = {
 		min-height: 100vh;
 		min-height: 100dvh;
 		overflow: hidden;
-		/* `clip` corta igual a `hidden`, mas não cria contêiner de rolagem: mantém `position: sticky` funcionando. */
-		overflow: clip;
 		background: var(--ink);
 	}
 	.noise {
