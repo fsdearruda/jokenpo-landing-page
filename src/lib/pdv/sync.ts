@@ -29,7 +29,26 @@ export interface ItemFoto {
 	noCatalogo: boolean;
 	atualizadoEm: string;
 	componentes?: ComponenteKit[];
+	/**
+	 * Promoção vigente no canal site (precoCentavos já é o preço promocional). null = sem promoção:
+	 * o site limpa o selo. Ausente (PDV antigo) = o site mantém o que tinha até a próxima foto.
+	 */
+	promocao?: PromocaoFoto | null;
 }
+
+/** Selo de promoção de um produto no site: preço antigo riscado, nome e até quando vale. */
+export interface PromocaoFoto {
+	id: string;
+	/** Até `NOME_PROMOCAO_SITE_MAX` caracteres. */
+	nome: string;
+	/** Preço cadastrado, mostrado riscado (maior que precoCentavos). */
+	precoOriginalCentavos: number;
+	/** ISO 8601. */
+	terminaEm: string;
+}
+
+/** O selo do site é pequeno. */
+export const NOME_PROMOCAO_SITE_MAX = 30;
 
 export interface ComponenteKit {
 	produtoId: string;
@@ -80,6 +99,26 @@ const isText = (v: unknown, max: number): v is string => typeof v === 'string' &
 const optText = (v: unknown, max: number) => (v === null || v === undefined ? null : isText(v, max) ? v : undefined);
 const isUuid = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f-]{36}$/i.test(v);
 
+/**
+ * Confere o campo `promocao` de um produto do envio de estoque. Devolve a promoção válida ou null
+ * (sem promoção, ou formato inválido: o produto aparece só com precoCentavos, sem selo).
+ * Mesmas regras de `lerPromocaoFoto` no PDV.
+ */
+export function lerPromocaoFoto(bruto: unknown, precoCentavos: number): PromocaoFoto | null {
+	if (!bruto || typeof bruto !== 'object') return null;
+	const p = bruto as Record<string, unknown>;
+	const texto = (v: unknown, max: number) => (typeof v === 'string' && v.trim() && v.length <= max ? v.trim() : null);
+	const id = texto(p.id, 64);
+	const nome = texto(p.nome, NOME_PROMOCAO_SITE_MAX);
+	const original = Number.isInteger(p.precoOriginalCentavos) && (p.precoOriginalCentavos as number) >= 1 && (p.precoOriginalCentavos as number) <= 100_000_000
+		? (p.precoOriginalCentavos as number)
+		: null;
+	const terminaEm = texto(p.terminaEm, 40);
+	if (!id || !nome || original === null || !Number.isInteger(precoCentavos) || original <= precoCentavos) return null;
+	if (!terminaEm || Number.isNaN(Date.parse(terminaEm))) return null;
+	return { id, nome, precoOriginalCentavos: original, terminaEm };
+}
+
 export function lerStatusPedido(v: unknown): StatusPedidoSite | null {
 	const p = v as Record<string, unknown> | null;
 	if (!p || !isUuid(p.pedidoId) || !isInt(p.numeroPdv, 1) || !STATUS_SITE.includes(p.status as StatusSite)) return null;
@@ -116,6 +155,8 @@ export function lerEnvioEstoque(v: unknown): EnvioEstoque | null {
 			produtoId: raw.produtoId, sku, nome: raw.nome, categoria, grupo, precoCentavos: raw.precoCentavos,
 			disponivel: raw.disponivel, noCatalogo: raw.noCatalogo, atualizadoEm: raw.atualizadoEm,
 			...(componentes ? { componentes } : {}),
+			// Ausente fica ausente (mantém o selo salvo); presente e inválida vira null (sem selo)
+			...(raw.promocao !== undefined ? { promocao: lerPromocaoFoto(raw.promocao, raw.precoCentavos) } : {}),
 		});
 	}
 	const pedidos: StatusPedidoSite[] = [];

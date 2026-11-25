@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type postgres from 'postgres';
 import { sql } from '../db';
-import type { ComponenteKit, EnvioEstoque, ResultadoEvento, StatusPedidoSite } from './sync';
+import type { ComponenteKit, EnvioEstoque, PromocaoFoto, ResultadoEvento, StatusPedidoSite } from './sync';
 import {
 	MAX_ABERTOS_POR_IP,
 	MAX_ABERTOS_POR_TELEFONE,
@@ -56,7 +56,12 @@ type LinhaProduto = {
 	preco_centavos: number;
 	disponivel: number;
 	componentes: ComponenteKit[] | null;
+	promocao?: PromocaoFoto | null;
 };
+
+/** Selo só enquanto a promoção vale. Se o PDV ficar offline, o selo some no fim mesmo sem um novo envio. */
+const promocaoVigente = (p: PromocaoFoto | null | undefined, agora = Date.now()) =>
+	p && Date.parse(p.terminaEm) > agora ? p : null;
 
 /**
  * Unidades pedidas no site que a última foto do PDV ainda não inclui, por produto.
@@ -120,7 +125,7 @@ class CloudPdv implements PdvClient {
 		await expirarNaoConfirmados(db);
 		const [produtos, demanda] = await Promise.all([
 			db<LinhaProduto[]>`
-				SELECT produto_id, sku, nome, categoria, grupo, preco_centavos, disponivel, componentes FROM pdv_produto WHERE visivel ORDER BY grupo, nome`,
+				SELECT produto_id, sku, nome, categoria, grupo, preco_centavos, disponivel, componentes, promocao FROM pdv_produto WHERE visivel ORDER BY grupo, nome`,
 			demandaPendente(db),
 		]);
 		return produtos.map((p) => ({
@@ -131,6 +136,7 @@ class CloudPdv implements PdvClient {
 			grupo: p.grupo,
 			precoCentavos: p.preco_centavos,
 			disponivel: disponivelNoSite(p, demanda),
+			promocao: promocaoVigente(p.promocao),
 		}));
 	}
 
@@ -256,14 +262,27 @@ export async function receberEstoque(envio: EnvioEstoque) {
 		if (estado.ultimo_gerado_em && geradoEm <= estado.ultimo_gerado_em) return { aceito: false };
 		if (!envio.completo && envio.pdvSeq <= Number(estado.pdv_seq)) return { aceito: false };
 
-		if (envio.itens.length) {
-			const linhas = envio.itens.map((i) => ({
-				produto_id: i.produtoId, sku: i.sku, nome: i.nome, categoria: i.categoria, grupo: i.grupo,
-				preco_centavos: i.precoCentavos, disponivel: i.disponivel, visivel: i.noCatalogo, atualizado_em: i.atualizadoEm,
-				componentes: i.componentes ? (tx.json(i.componentes as unknown as postgres.JSONValue) as unknown as string) : null,
-			}));
+		// Com `promocao` no envio, grava (null limpa o selo). Sem o campo (PDV antigo), mantém o que estava salvo.
+		const comPromocao = envio.itens.filter((i) => i.promocao !== undefined);
+		const semPromocao = envio.itens.filter((i) => i.promocao === undefined);
+		const json = (v: unknown) => (v ? (tx.json(v as postgres.JSONValue) as unknown as string) : null);
+		const linha = (i: EnvioEstoque['itens'][number]) => ({
+			produto_id: i.produtoId, sku: i.sku, nome: i.nome, categoria: i.categoria, grupo: i.grupo,
+			preco_centavos: i.precoCentavos, disponivel: i.disponivel, visivel: i.noCatalogo, atualizado_em: i.atualizadoEm,
+			componentes: json(i.componentes),
+		});
+		if (comPromocao.length) {
 			await tx`
-				INSERT INTO pdv_produto ${tx(linhas)}
+				INSERT INTO pdv_produto ${tx(comPromocao.map((i) => ({ ...linha(i), promocao: json(i.promocao) })))}
+				ON CONFLICT (produto_id) DO UPDATE SET
+					sku = excluded.sku, nome = excluded.nome, categoria = excluded.categoria, grupo = excluded.grupo,
+					preco_centavos = excluded.preco_centavos, disponivel = excluded.disponivel, visivel = excluded.visivel,
+					atualizado_em = excluded.atualizado_em, componentes = excluded.componentes, promocao = excluded.promocao,
+					recebido_em = now()`;
+		}
+		if (semPromocao.length) {
+			await tx`
+				INSERT INTO pdv_produto ${tx(semPromocao.map(linha))}
 				ON CONFLICT (produto_id) DO UPDATE SET
 					sku = excluded.sku, nome = excluded.nome, categoria = excluded.categoria, grupo = excluded.grupo,
 					preco_centavos = excluded.preco_centavos, disponivel = excluded.disponivel, visivel = excluded.visivel,

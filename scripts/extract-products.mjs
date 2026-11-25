@@ -9,8 +9,11 @@
  * Só lê as tabelas `Produto` e `Categoria` e só exporta campos públicos
  * (id, SKU, nome, preço e estoque). Custo, fornecedor e qualquer tabela com
  * dados pessoais (`Cliente`, `Usuario`, `EntradaEstoque`...) ficam de fora.
+ *
+ * O que é editado no CMS (textos das famílias, nome de vitrine, fotos e promoção) é
+ * mantido: o script só renova id, SKU, nome no PDV, preço e estoque.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const sqlPath = process.argv[2];
@@ -105,11 +108,22 @@ const families = [
 	},
 ];
 
+const target = resolve('src/data/products.json');
+const previous = existsSync(target) ? JSON.parse(readFileSync(target, 'utf8')) : { families: [] };
+const previousFamilies = new Map(previous.families.map((f) => [f.slug, f]));
+const previousVariants = new Map(previous.families.flatMap((f) => f.variants.map((v) => [v.id, v])));
+/** Campos da família editados no CMS. */
+const FAMILY_CMS = ['name', 'category', 'subtitle', 'description', 'variantLabel', 'type', 'tone'];
+/** Campos da variação editados no CMS. */
+const VARIANT_CMS = ['label', 'title', 'swatch', 'images', 'promo'];
+const pick = (source, keys) => Object.fromEntries(keys.filter((k) => source?.[k] !== undefined).map((k) => [k, source[k]]));
+
 const output = {
 	source: 'Dump do PDV (banco comanda), tabelas Produto e Categoria',
 	extractedAt: new Date().toLocaleDateString('sv-SE'),
 	families: families.map(({ match, label, swatch, title, ...family }) => ({
 		...family,
+		...pick(previousFamilies.get(family.slug), FAMILY_CMS),
 		variants: produtos
 			.filter(match)
 			.sort((a, b) => Number(a.precoCentavos) - Number(b.precoCentavos) || a.nome.localeCompare(b.nome, 'pt-BR'))
@@ -123,6 +137,9 @@ const output = {
 				priceCents: Number(p.precoCentavos),
 				stock: Math.max(0, Number(p.estoque) - Number(p.estoqueReservado)),
 				...(swatch ? { swatch: swatch(p) } : {}),
+				images: [],
+				promo: { active: false, compareAtPrice: null, badge: '' },
+				...pick(previousVariants.get(p.id), VARIANT_CMS),
 			})),
 	})),
 };
@@ -130,6 +147,5 @@ const output = {
 const empty = output.families.filter((f) => f.variants.length === 0).map((f) => f.slug);
 if (empty.length) console.warn(`Aviso: famílias sem produtos ativos: ${empty.join(', ')}`);
 
-const target = resolve('src/data/products.json');
 writeFileSync(target, `${JSON.stringify(output, null, '\t')}\n`);
 console.log(`${output.families.reduce((n, f) => n + f.variants.length, 0)} variações gravadas em ${target}`);

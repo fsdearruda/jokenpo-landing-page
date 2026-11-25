@@ -64,7 +64,7 @@ e vale por 5 minutos.
 |---|---|
 | `GET /api/pdv-sync/eventos?depois=&limite=` | Pedidos criados no site, em ordem (inclui os já aplicados; o PDV é idempotente) |
 | `POST /api/pdv-sync/eventos/ack` | Resultado de cada evento (`APLICADO` com status do pedido, ou `RECUSADO`) |
-| `POST /api/pdv-sync/estoque` | Foto do estoque (completa ou só o que mudou), `eventosAplicadosAte` e status dos pedidos alterados na loja |
+| `POST /api/pdv-sync/estoque` | Foto do estoque (completa ou só o que mudou), `eventosAplicadosAte` e status dos pedidos alterados na loja. Cada produto pode trazer `promocao` (`{ id, nome, precoOriginalCentavos, terminaEm }`): `null` limpa o selo e campo ausente mantém o que estava salvo (migração `004_promocoes.sql`) |
 
 Ciclo do worker no PDV (`src/server/site-sync.ts`):
 

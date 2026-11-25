@@ -47,7 +47,7 @@ export async function carregarVitrine(): Promise<Vitrine> {
 					.map((v) => {
 						const p = porId.get(v.id)!;
 						usados.add(v.id);
-						return { ...v, pdvName: p.nome, priceCents: p.precoCentavos, stock: p.disponivel };
+						return { ...v, pdvName: p.nome, priceCents: p.precoCentavos, stock: p.disponivel, pdvPromo: p.promocao ?? null };
 					}),
 			}))
 			.filter((family) => family.variants.length > 0);
@@ -82,6 +82,7 @@ export async function carregarVitrine(): Promise<Vitrine> {
 						pdvName: p.nome,
 						priceCents: p.precoCentavos,
 						stock: p.disponivel,
+						pdvPromo: p.promocao ?? null,
 					})),
 				};
 			});

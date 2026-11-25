@@ -14,22 +14,34 @@
 				{
 					"id": "cmw3sqns70020m2skmfqpsers",
 					"sku": "ACS-SHIELD-PRETO-100",
-					"label": "Preto",
-					"title": "Shield preto · 100 un",
 					"pdvName": "Shield preto (100 un)",
 					"priceCents": 2500,
 					"stock": 10,
-					"swatch": "black"
+					"label": "Preto",
+					"title": "Shield preto · 100 un",
+					"swatch": "black",
+					"images": [],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				},
 				{
 					"id": "cmwqrejad00y7vk1wokbbcr18",
 					"sku": null,
-					"label": "Roxo",
-					"title": "Shield roxo · 100 un",
 					"pdvName": "Shield roxo (100 un)",
 					"priceCents": 2500,
 					"stock": 6,
-					"swatch": "purple"
+					"label": "Roxo",
+					"title": "Shield roxo · 100 un",
+					"swatch": "purple",
+					"images": [],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				}
 			]
 		},
@@ -45,20 +57,50 @@
 				{
 					"id": "cmw3sqnsf0027m2sk2oje2cfl",
 					"sku": "ACS-SLEEVE-ANIME-50",
-					"label": "50 un",
-					"title": "Shield personalizada · 50 un",
 					"pdvName": "Shield Personalizada (50 un)",
 					"priceCents": 5990,
-					"stock": 2
+					"stock": 2,
+					"label": "50 un",
+					"title": "Shield personalizada · 50 un",
+					"images": [
+						{
+							"src": "/src/assets/products/shield-estampa-iono.jpg",
+							"alt": "Shield personalizada com estampa de anime em tons de rosa, azul e amarelo"
+						},
+						{
+							"src": "/src/assets/products/shield-estampa-iono-verso.jpg",
+							"alt": "Frente estampada e verso preto da shield personalizada"
+						}
+					],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				},
 				{
 					"id": "cmw3sqnsk002em2skbd0smdbj",
 					"sku": "ACS-SLEEVE-ANIME-60",
-					"label": "60 un",
-					"title": "Shield personalizada · 60 un",
 					"pdvName": "Shield Personalizada (60 un)",
 					"priceCents": 6990,
-					"stock": 2
+					"stock": 2,
+					"label": "60 un",
+					"title": "Shield personalizada · 60 un",
+					"images": [
+						{
+							"src": "/src/assets/products/shield-estampa-acerola.jpg",
+							"alt": "Shield personalizada holográfica com estampa de anime em tons de roxo"
+						},
+						{
+							"src": "/src/assets/products/shield-estampa-acerola-verso.jpg",
+							"alt": "Frente estampada e verso holográfico da shield personalizada"
+						}
+					],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				}
 			]
 		},
@@ -74,29 +116,74 @@
 				{
 					"id": "cmw3sqnrr001mm2skldx9zpc7",
 					"sku": "ACS-DECKBOX-SIMPLES",
-					"label": "Simples",
-					"title": "Deck box simples",
 					"pdvName": "Deck box simples",
 					"priceCents": 6990,
-					"stock": 2
+					"stock": 2,
+					"label": "Simples",
+					"title": "Deck box simples",
+					"images": [
+						{
+							"src": "/src/assets/products/deckbox-simples-preta-vermelha.jpg",
+							"alt": "Deck box simples preta com detalhe vermelho, fechada"
+						},
+						{
+							"src": "/src/assets/products/deckbox-simples-preta.jpg",
+							"alt": "Deck box simples preta, fechada"
+						}
+					],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				},
 				{
 					"id": "cmw3sqnrz001tm2sk9mafrrox",
 					"sku": "ACS-CAIXA-ARMAZENAMENTO",
-					"label": "Completa",
-					"title": "Deck box completa",
 					"pdvName": "Deck box dupla",
 					"priceCents": 14990,
-					"stock": 2
+					"stock": 2,
+					"label": "Completa",
+					"title": "Deck box completa",
+					"images": [
+						{
+							"src": "/src/assets/products/deckbox-completa-aberta.jpg",
+							"alt": "Deck box completa aberta, preta com interior vermelho e dois compartimentos"
+						},
+						{
+							"src": "/src/assets/products/deckbox-completa-azul.jpg",
+							"alt": "Deck box completa azul, fechada"
+						}
+					],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				},
 				{
 					"id": "cmw3sqnrl001fm2skua6y1bvc",
 					"sku": "ACS-DECKBOX-RYSHEPRO",
-					"label": "Toploader",
-					"title": "Deck box toploader",
 					"pdvName": "Deck box Toploader",
 					"priceCents": 15990,
-					"stock": 2
+					"stock": 2,
+					"label": "Toploader",
+					"title": "Deck box toploader",
+					"images": [
+						{
+							"src": "/src/assets/products/deckbox-toploader-roxa.jpg",
+							"alt": "Deck box toploader preta e roxa aberta, com gaveta de dados e toploader magnético"
+						},
+						{
+							"src": "/src/assets/products/deckbox-toploader-rosa.jpg",
+							"alt": "Deck box toploader rosa aberta, com dados e deck à mostra"
+						}
+					],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				}
 			]
 		},
@@ -112,29 +199,47 @@
 				{
 					"id": "cmw6nyuhx000yvkh07ar246t0",
 					"sku": "PKM-ESCURIDAO-ABSOLUTA-TRIPLO",
-					"label": "Escuridão Absoluta",
-					"title": "Triple pack Escuridão Absoluta",
 					"pdvName": "Pokémon – Escuridão Absoluta – Triplo pack",
 					"priceCents": 3990,
-					"stock": 8
+					"stock": 8,
+					"label": "Escuridão Absoluta",
+					"title": "Triple pack Escuridão Absoluta",
+					"images": [],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				},
 				{
 					"id": "cmw3sqnqt000nm2sku2nww3pg",
 					"sku": "PKM-FOGO-FANTASMAGORICO-TRIPLO",
-					"label": "Fogo Fantasmagórico",
-					"title": "Triple pack Fogo Fantasmagórico",
 					"pdvName": "Pokémon – Fogo Fantasmagórico – Triplo pack",
 					"priceCents": 3990,
-					"stock": 23
+					"stock": 23,
+					"label": "Fogo Fantasmagórico",
+					"title": "Triple pack Fogo Fantasmagórico",
+					"images": [],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				},
 				{
 					"id": "cmw3sqnql000gm2skhva10l9c",
 					"sku": "PKM-REINADO-DELTA-TRIPLO",
-					"label": "Reinado Delta",
-					"title": "Triple pack Reinado Delta",
 					"pdvName": "Pokémon – Reinado Delta – Triplo pack",
 					"priceCents": 4500,
-					"stock": 36
+					"stock": 36,
+					"label": "Reinado Delta",
+					"title": "Triple pack Reinado Delta",
+					"images": [],
+					"promo": {
+						"active": false,
+						"compareAtPrice": null,
+						"badge": ""
+					}
 				}
 			]
 		}

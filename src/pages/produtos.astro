@@ -1,10 +1,12 @@
 ---
+import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import siteData from '../data/site.json';
-import { LOW_STOCK_THRESHOLD, catalog, formatPrice, toneOf } from '../lib/catalog';
+import { LOW_STOCK_THRESHOLD, catalog, cardPrice, compareAtCents, formatPrice, promoBadge, toneOf, type PaymentRules } from '../lib/catalog';
 import { MAX_QUANTIDADE_POR_ITEM, pdvMode } from '../lib/pdv';
 import { carregarVitrine } from '../lib/vitrine';
+import { resolveProductImage } from '../lib/product-images';
 
 // Estática por padrão. No modo `live`, o astro.config.mjs a torna sob demanda (com cache
 // curto na CDN) para mostrar o catálogo escolhido no PDV.
@@ -29,6 +31,26 @@ const orderApi = effectiveMode !== 'off';
 const stockLevel = (stock: number) => (stock <= 0 ? 'out' : stock <= LOW_STOCK_THRESHOLD ? 'low' : 'ok');
 const stockText = { out: 'Esgotado', low: 'Últimas unidades', ok: 'Em estoque' } as const;
 
+const shop = siteData.shop;
+const payment: PaymentRules = shop.payment;
+const modeText = orderApi ? shop.orderOnSite : shop.orderOnWhatsapp;
+const feeOn = payment.cardFeeEnabled && payment.cardFeePercent > 0;
+
+/** URL absoluta da foto principal de cada variação, para o JSON-LD. */
+const photoUrls = new Map(
+	await Promise.all(
+		families.flatMap((family) =>
+			family.variants
+				.filter((variant) => variant.images?.length)
+				.map(async (variant) => {
+					const src = resolveProductImage(variant.images![0].src);
+					const url = typeof src === 'string' ? src : (await getImage({ src, width: 720, format: 'webp' })).src;
+					return [variant.id, new URL(url, siteUrl).href] as const;
+				}),
+		),
+	),
+);
+
 const jsonLd = [
 	{
 		'@type': 'ItemList',
@@ -50,6 +72,7 @@ const jsonLd = [
 					'@type': 'Product',
 					name: variant.title,
 					...(variant.sku ? { sku: variant.sku } : {}),
+					...(photoUrls.has(variant.id) ? { image: photoUrls.get(variant.id) } : {}),
 					offers: {
 						'@type': 'Offer',
 						price: (variant.priceCents / 100).toFixed(2),
@@ -66,8 +89,8 @@ const jsonLd = [
 ---
 
 <BaseLayout
-	title="Produtos: shields, deck boxes e triple packs | Jokenpo"
-	description="Shields, deck boxes e triple packs de Pokémon TCG com preço de balcão. Monte o pedido, mande pelo WhatsApp e retire na Jokenpo, no Shopping New Way Center em Natal/RN."
+	title={shop.seoTitle}
+	description={shop.seoDescription}
 	path="/produtos"
 	jsonLd={jsonLd}
 >
@@ -78,33 +101,22 @@ const jsonLd = [
 		data-whatsapp={whatsappNumber}
 		data-max-qty={MAX_QUANTIDADE_POR_ITEM}
 		data-low-stock={LOW_STOCK_THRESHOLD}
+		data-payment={JSON.stringify(payment)}
 	>
 		<div class="shop-layout">
 			<div class="shop-catalog">
 				<header class="shop-intro">
 					<div>
-						<p class="eyebrow">{orderApi ? 'PRODUTOS · RETIRADA NA LOJA' : 'PRODUTOS · PEDIDO PELO WHATSAPP'}</p>
-						<h1>TUDO PRO <span>SEU DECK</span></h1>
-						<p class="shop-lead">
-							{
-								orderApi
-									? 'Shields, deck boxes, triple packs e mais, com preço de balcão. Monte a sacola, faça o pedido e a gente separa pra você buscar.'
-									: 'Shields, deck boxes e triple packs de Pokémon com preço de balcão. Monte a sacola, mande pelo WhatsApp e passe na loja pra buscar.'
-							}
-						</p>
+						<p class="eyebrow">{modeText.eyebrow}</p>
+						<h1>{shop.titleLine} <span>{shop.titleHighlight}</span></h1>
+						<p class="shop-lead">{modeText.lead}</p>
 					</div>
 					{
-						orderApi ? (
+						modeText.perks.length > 0 && (
 							<ul class="shop-perks" role="list">
-								<li><strong>Sem cadastro</strong><span>Só seu nome e WhatsApp</span></li>
-								<li><strong>A gente separa</strong><span>A loja confere o estoque e guarda pra você</span></li>
-								<li><strong>48 h pra pagar</strong><span>Pix pelo WhatsApp e retirada na loja 24</span></li>
-							</ul>
-						) : (
-							<ul class="shop-perks" role="list">
-								<li><strong>Sem cadastro</strong><span>O pedido vai pronto pro nosso WhatsApp</span></li>
-								<li><strong>A gente separa</strong><span>Confirmamos o estoque na conversa</span></li>
-								<li><strong>Paga na retirada</strong><span>No balcão da loja 24</span></li>
+								{modeText.perks.map((perk) => (
+									<li><strong>{perk.title}</strong><span>{perk.text}</span></li>
+								))}
 							</ul>
 						)
 					}
@@ -147,6 +159,9 @@ const jsonLd = [
 								<ul class="product-grid" role="list">
 									{family.variants.map((variant, index) => {
 										const level = stockLevel(variant.stock);
+										const photos = variant.images ?? [];
+										const before = compareAtCents(variant);
+										const badge = promoBadge(variant, shop.promoBadgeDefault);
 										return (
 											<li>
 												<article
@@ -155,21 +170,60 @@ const jsonLd = [
 													data-price={variant.priceCents}
 													data-stock={variant.stock}
 													data-title={variant.title}
+													data-compare={before ?? undefined}
 													data-swatch={variant.swatch ?? (family.slug === 'shield-personalizada' ? 'art' : undefined)}
 													data-index={index}
 													aria-labelledby={`p-${variant.id}`}
 												>
-													<div class={`product-visual visual-${family.type}`} aria-hidden="true">
-														<span />
-														<span />
-														<span />
-													</div>
+													{photos.length > 0 ? (
+														<div class="product-visual product-photo">
+															{photos.slice(0, 2).map((photo, i) => {
+																const src = resolveProductImage(photo.src);
+																const alt = i === 0 ? photo.alt : '';
+																const cls = i === 0 ? undefined : 'photo-alt';
+																return typeof src === 'string' ? (
+																	<img src={src} alt={alt} class={cls} loading="lazy" decoding="async" />
+																) : (
+																	<Image
+																		src={src}
+																		alt={alt}
+																		class={cls}
+																		widths={[240, 360, 480, 720]}
+																		sizes="(min-width: 640px) 260px, 50vw"
+																		format="webp"
+																		quality={78}
+																	/>
+																);
+															})}
+															{badge && <strong class="promo-badge">{badge}</strong>}
+														</div>
+													) : (
+														<div class={`product-visual visual-${family.type}`}>
+															<span aria-hidden="true" />
+															<span aria-hidden="true" />
+															<span aria-hidden="true" />
+															{badge && <strong class="promo-badge">{badge}</strong>}
+														</div>
+													)}
 													<div class="card-body">
 														<p class="card-kicker">{family.subtitle}</p>
 														<h3 class="card-title" id={`p-${variant.id}`}>
 															{variant.title}
 														</h3>
-														<p class="card-price">{formatPrice(variant.priceCents)}</p>
+														<div class="card-price" data-role="price">
+															<p class="price-before" data-role="price-before" hidden={!before}>
+																<span class="sr-only">De </span><s>{before ? formatPrice(before) : ''}</s>
+															</p>
+															<p class="price-main">
+																<span data-role="price-pix">{formatPrice(variant.priceCents)}</span>
+																{feeOn && <small>no Pix</small>}
+															</p>
+															{feeOn && (
+																<p class="price-card">
+																	ou <span data-role="price-card">{formatPrice(cardPrice(variant.priceCents, payment))}</span> no cartão
+																</p>
+															)}
+														</div>
 														<p class="card-stock" data-role="stock" data-level={level}>
 															{stockText[level]}
 														</p>
@@ -200,9 +254,8 @@ const jsonLd = [
 				{
 					families.length === 0 && (
 						<p class="catalog-empty">
-							Nenhum produto no site agora. Chama a gente no{' '}
-							<a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">WhatsApp<span class="sr-only"> (abre em nova aba)</span></a>{' '}
-							que a gente te conta o que tem na loja.
+							{shop.emptyCatalog}{' '}
+							<a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">Falar no WhatsApp<span class="sr-only"> (abre em nova aba)</span></a>
 						</p>
 					)
 				}
@@ -274,6 +327,7 @@ const jsonLd = [
 							<span>Total <small data-role="cart-items"></small></span>
 							<strong data-role="cart-total">R$ 0</strong>
 						</p>
+						{feeOn && <p class="cart-pix" data-role="cart-card"></p>}
 						{
 							orderApi ? (
 								<form class="order-form" data-role="order-form" novalidate>
@@ -290,13 +344,13 @@ const jsonLd = [
 											inputmode="tel"
 											autocomplete="tel-national"
 											placeholder="(84) 9 0000-0000"
-											maxlength="20"
+											maxlength="16"
 											required
 										/>
 									</div>
 									<p class="order-error" data-role="order-error" role="alert" hidden></p>
 									<button type="submit" class="button button-pink cart-cta" data-role="order-submit">Fazer pedido</button>
-									<p class="cart-hint">A loja confere o estoque e você paga por Pix no WhatsApp em até 48 h. Retirada na loja 24.</p>
+									<p class="cart-hint">{modeText.cartHint}</p>
 								</form>
 							) : (
 								<>
@@ -311,7 +365,7 @@ const jsonLd = [
 										Enviar pedido no WhatsApp
 										<span class="sr-only">(abre o WhatsApp em nova aba)</span>
 									</a>
-									<p class="cart-hint">A conversa abre com o pedido escrito. É só tocar em enviar.</p>
+									<p class="cart-hint">{modeText.cartHint}</p>
 									<details class="cart-preview">
 										<summary>Ver a mensagem</summary>
 										<pre data-role="message"></pre>
@@ -342,7 +396,7 @@ const jsonLd = [
 </BaseLayout>
 
 <script>
-	import { formatPrice } from '../lib/catalog';
+	import { cardPrice, formatPrice, type PaymentRules } from '../lib/catalog';
 
 	type Line = { id: string; qty: number };
 	type OrderStatus = 'AGUARDANDO_CONFIRMACAO' | 'PAGAMENTO_PENDENTE' | 'PAGO' | 'ENTREGUE' | 'RECUSADO' | 'CANCELADO' | 'EXPIRADO';
@@ -350,7 +404,7 @@ const jsonLd = [
 		id: string;
 		numero: number;
 		status: OrderStatus;
-		itens: { descricao: string; quantidade: number }[];
+		itens: { descricao: string; quantidade: number; precoUnitarioCentavos?: number }[];
 		totalCentavos: number;
 		validoAte: string | null;
 		motivo: string | null;
@@ -366,6 +420,15 @@ const jsonLd = [
 		const STORAGE_KEY = 'jokenpo:sacola';
 		const ORDER_KEY = 'jokenpo:pedido';
 		const optional = <T extends Element = HTMLElement>(selector: string) => root.querySelector<T>(selector);
+		const payment = JSON.parse(root.dataset.payment ?? '{}') as PaymentRules;
+		/** Total do pedido no cartão, com a taxa sobre o preço de cada item gravado no pedido. */
+		const orderCard = (o: SavedOrder) =>
+			o.itens.every((item) => item.precoUnitarioCentavos)
+				? o.itens.reduce((sum, item) => sum + cardPrice(item.precoUnitarioCentavos!, payment) * item.quantidade, 0)
+				: cardPrice(o.totalCentavos, payment);
+		/** Preço do PDV é o do Pix; com taxa ligada, o total vem nos dois meios. */
+		const totalSentence = (cents: number, card: number) =>
+			card > cents ? `${formatPrice(cents)} no Pix ou ${formatPrice(card)} no cartão` : formatPrice(cents);
 
 		const cards = new Map(
 			[...root.querySelectorAll<HTMLElement>('.product-card')].map((card) => [card.dataset.id!, card]),
@@ -395,11 +458,14 @@ const jsonLd = [
 		const totals = () => {
 			let items = 0;
 			let cents = 0;
+			let card = 0;
 			cart.forEach((line) => {
+				const { price } = info(line.id);
 				items += line.qty;
-				cents += line.qty * info(line.id).price;
+				cents += line.qty * price;
+				card += line.qty * cardPrice(price, payment);
 			});
-			return { items, cents };
+			return { items, cents, card };
 		};
 
 		/* Persistência local: a sacola sobrevive a um recarregamento. */
@@ -523,7 +589,7 @@ const jsonLd = [
 		};
 
 		/** Mensagem pronta pro WhatsApp da loja, no tom da marca e sem emoji. */
-		function orderMessage(cents: number) {
+		function orderMessage(cents: number, card: number) {
 			const lines = [...cart.values()].map((line) => {
 				const { title, price } = info(line.id);
 				const unit = line.qty > 1 ? ` (${formatPrice(price)} cada)` : '';
@@ -534,15 +600,20 @@ const jsonLd = [
 				'',
 				...lines,
 				'',
-				`Total: ${formatPrice(cents)}`,
+				`Total: ${totalSentence(cents, card)}`,
 				'',
 				'Pode separar pra mim?',
 			].join('\n');
 		}
 
 		function render() {
-			const { items, cents } = totals();
+			const { items, cents, card } = totals();
 			const empty = cart.size === 0;
+			const cardLine = optional('[data-role="cart-card"]');
+			if (cardLine) {
+				cardLine.hidden = card <= cents;
+				cardLine.replaceChildren('no Pix · ou ', Object.assign(document.createElement('strong'), { textContent: formatPrice(card) }), ' no cartão');
+			}
 			cartList.replaceChildren(...[...cart.values()].map(lineTemplate));
 			cartEmpty.hidden = !empty || Boolean(order); // com pedido aberto, o painel do pedido ocupa o lugar
 			cartFoot.hidden = empty;
@@ -565,7 +636,7 @@ const jsonLd = [
 			const message = optional('[data-role="message"]');
 			const link = optional<HTMLAnchorElement>('[data-role="whatsapp-link"]');
 			if (message && link) {
-				const text = orderMessage(cents);
+				const text = orderMessage(cents, card);
 				message.textContent = text;
 				link.href = `https://wa.me/${root!.dataset.whatsapp}?text=${encodeURIComponent(text)}`;
 			}
@@ -630,6 +701,17 @@ const jsonLd = [
 			});
 		});
 
+		/** Redesenha o bloco de preço quando o PDV manda um preço novo. */
+		const paintPrice = (card: HTMLElement) => {
+			const price = Number(card.dataset.price);
+			const before = Number(card.dataset.compare) || 0;
+			const beforeEl = $('[data-role="price-before"]', card);
+			beforeEl.hidden = before <= price;
+			$('[data-role="price-pix"]', card).textContent = formatPrice(price);
+			const cardEl = card.querySelector('[data-role="price-card"]');
+			if (cardEl) cardEl.textContent = formatPrice(cardPrice(price, payment));
+		};
+
 		const refreshStock = async () => {
 			try {
 				const response = await fetch('/api/pdv/estoque', { headers: { accept: 'application/json' } });
@@ -643,7 +725,7 @@ const jsonLd = [
 					card.dataset.stock = String(disponivel);
 					if (precoCentavos && precoCentavos !== Number(card.dataset.price)) {
 						card.dataset.price = String(precoCentavos);
-						$('.card-price', card).textContent = formatPrice(precoCentavos);
+						paintPrice(card);
 					}
 				});
 				// Produto que saiu do catálogo no PDV fica como esgotado até a página recarregar
@@ -728,12 +810,12 @@ const jsonLd = [
 					li.textContent = `${item.quantidade}x ${item.descricao}`;
 					return li;
 				}),
-				Object.assign(document.createElement('li'), { className: 'order-total', textContent: `Total ${formatPrice(order.totalCentavos)}` }),
+				Object.assign(document.createElement('li'), { className: 'order-total', textContent: `Total ${totalSentence(order.totalCentavos, orderCard(order))}` }),
 			);
 			const text =
 				order.status === 'RECUSADO'
 					? `Oi, Jokenpo! O pedido #${order.numero} do site não tinha estoque. Tem alguma alternativa?`
-					: `Oi, Jokenpo! Fiz o pedido #${order.numero} no site (total ${formatPrice(order.totalCentavos)}). Como faço o pagamento?`;
+					: `Oi, Jokenpo! Fiz o pedido #${order.numero} no site (total ${totalSentence(order.totalCentavos, orderCard(order))}). Como faço o pagamento?`;
 			const whatsapp = $<HTMLAnchorElement>('[data-role="order-whatsapp"]', panel);
 			whatsapp.href = `https://wa.me/${root!.dataset.whatsapp}?text=${encodeURIComponent(text)}`;
 			whatsapp.hidden = order.status === 'PAGO' || order.status === 'ENTREGUE';
@@ -786,13 +868,58 @@ const jsonLd = [
 			};
 			errorEl.id = 'order-error';
 
+			/* Máscara do WhatsApp: (84) 9 0000-0000 ou (84) 3333-4444, mantendo o cursor no lugar. */
+			const formatPhone = (raw: string) => {
+				let d = raw.replace(/\D/g, '');
+				if (d.length > 11 && d.startsWith('55')) d = d.slice(2);
+				d = d.slice(0, 11);
+				if (d.length === 0) return '';
+				if (d.length <= 2) return `(${d}`;
+				const ddd = `(${d.slice(0, 2)}) `;
+				const rest = d.slice(2);
+				// Celular começa com 9: já formata como (84) 9 0000-0000 enquanto digita
+				if (rest[0] === '9') {
+					const body = rest.slice(1);
+					if (!body) return `${ddd}9`;
+					return `${ddd}9 ${body.slice(0, 4)}${body.length > 4 ? `-${body.slice(4)}` : ''}`;
+				}
+				if (rest.length > 4) return `${ddd}${rest.slice(0, 4)}-${rest.slice(4)}`;
+				return `${ddd}${rest}`;
+			};
+			// Apagar logo depois de um separador apaga o dígito anterior, senão a máscara devolve o separador
+			phoneInput.addEventListener('beforeinput', (event) => {
+				const { selectionStart: start, selectionEnd: end, value } = phoneInput;
+				if (event.inputType !== 'deleteContentBackward' || start === null || start !== end || start === 0) return;
+				if (/\d/.test(value[start - 1])) return;
+				let i = start - 1;
+				while (i >= 0 && !/\d/.test(value[i])) i--;
+				if (i < 0) return;
+				event.preventDefault();
+				const digitsBefore = value.slice(0, i).replace(/\D/g, '').length;
+				const formatted = formatPhone(value.slice(0, i) + value.slice(start));
+				phoneInput.value = formatted;
+				let pos = 0;
+				for (let seen = 0; pos < formatted.length && seen < digitsBefore; pos++) if (/\d/.test(formatted[pos])) seen++;
+				phoneInput.setSelectionRange(pos, pos);
+			});
+			phoneInput.addEventListener('input', () => {
+				const caret = phoneInput.selectionStart ?? phoneInput.value.length;
+				const digitsBefore = phoneInput.value.slice(0, caret).replace(/\D/g, '').length;
+				const formatted = formatPhone(phoneInput.value);
+				if (formatted === phoneInput.value) return;
+				phoneInput.value = formatted;
+				let pos = 0;
+				for (let seen = 0; pos < formatted.length && seen < digitsBefore; pos++) if (/\d/.test(formatted[pos])) seen++;
+				phoneInput.setSelectionRange(pos, pos);
+			});
+
 			orderForm.addEventListener('submit', async (event) => {
 				event.preventDefault();
 				errorEl.hidden = true;
 				const nome = nameInput.value.trim();
-				const telefone = phoneInput.value.replace(/\D/g, '');
+				const telefone = formatPhone(phoneInput.value).replace(/\D/g, '');
 				if (nome.length < 2) return showError('Coloca seu nome pra gente achar o pedido no balcão.', nameInput);
-				if (telefone.length < 10 || telefone.length > 13) return showError('Coloca um WhatsApp com DDD, tipo (84) 9 0000-0000.', phoneInput);
+				if (telefone.length < 10) return showError('Coloca um WhatsApp com DDD, tipo (84) 9 0000-0000.', phoneInput);
 
 				submit.disabled = true;
 				submit.textContent = 'Enviando…';
@@ -1154,8 +1281,9 @@ const jsonLd = [
 		opacity: 0.55;
 	}
 
-	/* Ilustração em CSS: o PDV não tem foto desses itens */
+	/* Ilustração em CSS para itens sem foto */
 	.product-visual {
+		position: relative;
 		display: grid;
 		place-items: center;
 		aspect-ratio: 4 / 3;
@@ -1164,6 +1292,28 @@ const jsonLd = [
 		background-color: var(--ink);
 		background-image: radial-gradient(color-mix(in oklch, var(--tone) 26%, transparent) 1.5px, transparent 2px);
 		background-size: 14px 14px;
+	}
+
+	/* Foto do produto: fundo branco das fotos de catálogo, enquadrada inteira */
+	.product-photo {
+		position: relative;
+		background: var(--white);
+	}
+	.product-photo img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		transition: opacity var(--duration-normal) var(--ease-out);
+	}
+	.product-photo .photo-alt {
+		opacity: 0;
+	}
+	@media (hover: hover) {
+		.product-card:hover .product-photo .photo-alt {
+			opacity: 1;
+		}
 	}
 
 	.product-visual span {
@@ -1322,12 +1472,63 @@ const jsonLd = [
 	}
 
 	.card-price {
-		margin: auto 0 0.125rem;
+		display: grid;
+		gap: 0.125rem;
+		margin: auto 0 0.25rem;
+	}
+
+	.card-price p {
+		margin: 0;
+	}
+
+	.price-before {
+		color: #b9b7c2;
+		font-size: 0.75rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.price-before[hidden] {
+		display: none;
+	}
+
+	.price-main {
 		color: var(--yellow);
 		font-family: var(--font-display);
 		font-size: 1.375rem;
 		line-height: 1.1;
 		font-variant-numeric: tabular-nums;
+	}
+
+	.price-main small {
+		display: block;
+		margin-top: 0.125rem;
+		font-family: var(--font-body);
+		font-size: 0.75rem;
+		font-weight: 700;
+	}
+
+	.price-card {
+		color: #d6d4dd;
+		font-size: 0.75rem;
+		line-height: 1.35;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Selo de promoção no canto da foto */
+	.promo-badge {
+		position: absolute;
+		inset: 0.5rem auto auto 0.5rem;
+		z-index: 1;
+		padding: 0.25rem 0.5rem;
+		border: 2px solid var(--ink);
+		border-radius: 999px;
+		background: var(--pink);
+		color: var(--ink);
+		font: 800 0.75rem/1 var(--font-body);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		box-shadow: 2px 2px 0 var(--ink);
 	}
 
 	.card-stock {
@@ -1637,6 +1838,7 @@ const jsonLd = [
 	.cart-foot {
 		flex: none;
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 0.75rem;
 		padding: 1rem 1.25rem 1.25rem;
 		border-top: 2px solid var(--ink);
@@ -1653,6 +1855,22 @@ const jsonLd = [
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
+	}
+
+	.cart-pix {
+		margin: -0.25rem 0 0;
+		color: #4a4852;
+		font-size: 0.8125rem;
+		text-align: end;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.cart-pix strong {
+		color: var(--ink);
+	}
+
+	.cart-pix[hidden] {
+		display: none;
 	}
 
 	.cart-total small {
@@ -1761,11 +1979,14 @@ const jsonLd = [
 	/* Pedido pelo site */
 	.order-form {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 0.75rem;
+		min-inline-size: 0;
 	}
 
 	.field {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 0.25rem;
 	}
 
@@ -1775,6 +1996,8 @@ const jsonLd = [
 	}
 
 	.field input {
+		inline-size: 100%;
+		min-inline-size: 0;
 		min-block-size: 2.75rem;
 		padding: 0.5rem 0.75rem;
 		border: 2px solid var(--ink);
@@ -2018,7 +2241,7 @@ const jsonLd = [
 			font-size: 0.875rem;
 		}
 
-		.card-price {
+		.price-main {
 			font-size: 1.1875rem;
 		}
 
@@ -2050,6 +2273,7 @@ const jsonLd = [
 
 	@media (prefers-reduced-motion: reduce) {
 		.product-visual span,
+		.product-photo img,
 		.cart,
 		.cart.is-open {
 			transition: none;
@@ -2065,7 +2289,7 @@ const jsonLd = [
 		.product-card.is-in-cart {
 			outline: 3px solid Highlight;
 		}
-		.product-visual {
+		.product-visual:not(.product-photo) {
 			display: none;
 		}
 	}

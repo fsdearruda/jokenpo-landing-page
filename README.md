@@ -80,6 +80,13 @@ Os metadados incluem Open Graph, Twitter Cards, grafo JSON-LD (`WebSite`, `WebPa
 
 Horários, agenda semanal, passes de boardgame, catálogo de jogos e perguntas frequentes ficam centralizados em `src/data/site.json`. A equipe da loja pode editar esses dados pelo Decap CMS em `/admin`, autenticado via OAuth do GitHub (`astro-decap-cms-oauth`).
 
+A página `/produtos` também é editada pelo CMS, em duas coleções:
+
+- **5. Produtos: Página, Pix e Cartão** (`shop` em `src/data/site.json`): textos da página nos dois modos de pedido, taxa do cartão (%) e selo padrão das promoções.
+- **6. Produtos: Fotos, Textos e Promoções** (`src/data/products.json`): títulos das seções, nome de vitrine de cada produto, até duas fotos (a segunda aparece no hover) e promoção (selo e preço "de" riscado).
+
+Preço e estoque são definidos só no PDV. Promoções por evento são criadas no PDV (Cadastros → Promoções): com o PDV ligado ao site (`live`), cada produto chega com o preço promocional, o preço antigo e o nome da promoção, que vira o selo do card. O selo some quando a promoção acaba, mesmo se o PC da loja estiver offline. A promoção do CMS continua como alternativa para quando o PDV não manda promoção (por exemplo, no modo `off`): baixe o preço no PDV e ligue o selo no CMS com o preço antigo. O "de R$ X" só aparece se for maior que o preço atual. O preço do PDV é o preço no Pix, e o site mostra o preço no cartão somando a taxa do CMS (a loja cobra essa diferença ao receber no cartão). As fotos enviadas pelo CMS vão para `src/assets/products/` e passam pelo pipeline de imagens do Astro. O script `scripts/extract-products.mjs` renova só id, SKU, nome no PDV, preço e estoque, e mantém o que foi editado no CMS.
+
 ## Stack
 
 - Astro 7 (`output: 'server'` com `@astrojs/vercel`) e TypeScript em modo estrito

@@ -388,5 +388,55 @@
       "category": "grandes"
     }
   ],
-  "description": "Jokenpo: card games, jogos de tabuleiro, espaço para jogar e torneios na Zona Norte de Natal. Vem jogar com a gente!"
+  "description": "Jokenpo: card games, jogos de tabuleiro, espaço para jogar e torneios na Zona Norte de Natal. Vem jogar com a gente!",
+  "shop": {
+    "seoTitle": "Produtos: shields, deck boxes e triple packs | Jokenpo",
+    "seoDescription": "Shields, deck boxes e triple packs de Pokémon TCG com preço de balcão. Monte o pedido, mande pelo WhatsApp e retire na Jokenpo, no Shopping New Way Center em Natal/RN.",
+    "titleLine": "TUDO PRO",
+    "titleHighlight": "SEU DECK",
+    "payment": {
+      "cardFeeEnabled": true,
+      "cardFeePercent": 5
+    },
+    "promoBadgeDefault": "Promo",
+    "orderOnSite": {
+      "eyebrow": "PRODUTOS · RETIRADA NA LOJA",
+      "lead": "Shields, deck boxes, triple packs e mais, com preço de balcão. Monte a sacola, faça o pedido e a gente separa pra você buscar.",
+      "perks": [
+        {
+          "title": "Sem cadastro",
+          "text": "Só seu nome e WhatsApp"
+        },
+        {
+          "title": "A gente separa",
+          "text": "A loja confere o estoque e guarda pra você"
+        },
+        {
+          "title": "48 h pra pagar",
+          "text": "Pix pelo WhatsApp e retirada na loja 24"
+        }
+      ],
+      "cartHint": "A loja confere o estoque e você paga por Pix no WhatsApp em até 48 h. Retirada na loja 24."
+    },
+    "orderOnWhatsapp": {
+      "eyebrow": "PRODUTOS · PEDIDO PELO WHATSAPP",
+      "lead": "Shields, deck boxes e triple packs de Pokémon com preço de balcão. Monte a sacola, mande pelo WhatsApp e passe na loja pra buscar.",
+      "perks": [
+        {
+          "title": "Sem cadastro",
+          "text": "O pedido vai pronto pro nosso WhatsApp"
+        },
+        {
+          "title": "A gente separa",
+          "text": "Confirmamos o estoque na conversa"
+        },
+        {
+          "title": "Paga na retirada",
+          "text": "No balcão da loja 24"
+        }
+      ],
+      "cartHint": "A conversa abre com o pedido escrito. É só tocar em enviar."
+    },
+    "emptyCatalog": "Nenhum produto no site agora. Chama a gente no WhatsApp que a gente te conta o que tem na loja."
+  }
 }

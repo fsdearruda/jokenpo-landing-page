@@ -32,6 +32,16 @@ export interface ProdutoCatalogo extends EstoqueItem {
 	nome: string;
 	categoria: string | null;
 	grupo: string | null;
+	/** Promoção do PDV vigente no site (só enquanto `terminaEm` não passou). */
+	promocao?: PromocaoPdv | null;
+}
+
+/** Promoção criada no PDV: o preço promocional já está em `precoCentavos`. */
+export interface PromocaoPdv {
+	id: string;
+	nome: string;
+	precoOriginalCentavos: number;
+	terminaEm: string;
 }
 
 export interface ItemPedidoInput {
