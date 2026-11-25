@@ -39,6 +39,12 @@ Animações respeitam `prefers-reduced-motion: reduce`, e a faixa contínua de c
 
 O visual segue o guia da marca em [docs/style-guide.md](docs/style-guide.md) e as especificações registradas em [DESIGN.md](DESIGN.md). O layout usa propriedades CSS customizadas em `src/styles/global.css` e estilos com escopo por componente, sem bibliotecas externas de UI, combinando fundo escuro (`#0e0e10`), acentos em amarelo, ciano e rosa, bordas sólidas e sombras secas deslocadas.
 
+### Ícones
+
+Os ícones usam `astro-icon` com coleções Iconify instaladas como dependências de desenvolvimento: Lucide para setas e controles (mesma geometria de traço arredondado das peças da marca) e Simple Icons para logos de terceiros, como o WhatsApp. Tudo é resolvido em build e sai como SVG inline, sem JavaScript, fonte de ícones ou requisição extra. O modo sprite emite um `<symbol>` no primeiro uso de cada glifo e reutiliza com `<use>` nos demais.
+
+Use sempre o componente `src/components/Icon.astro`. Ele marca o ícone como decorativo (`aria-hidden`) por padrão, aceita `label` quando o ícone for o único nome acessível do controle e `weight` para ajustar a espessura do traço (padrão `3.5`, via `--icon-stroke`). Para adicionar um glifo novo, inclua o nome em `include` no `astro.config.mjs`, o que mantém o bundle do servidor restrito aos ícones usados.
+
 ### Desempenho e descoberta por agentes
 
 As rotas públicas (`/`, `/404`, `/admin` e `/llms.txt`) são pré-renderizadas em HTML estático, enquanto o adaptador da Vercel mantém as rotas de autenticação sob demanda. As capas dos jogos passam pelo pipeline de imagens do Astro (`astro:assets`), e as fontes `Archivo Black` e `Poppins` são empacotadas localmente via Fontsource com preload no `<head>`.
@@ -53,6 +59,7 @@ Horários, agenda semanal, passes de boardgame, catálogo de jogos e perguntas f
 
 - Astro 7 (`output: 'server'` com `@astrojs/vercel`) e TypeScript em modo estrito
 - HTML e CSS nativos com tokens próprios e `@fontsource/archivo-black` e `@fontsource/poppins`
+- `astro-icon` com Iconify (`@iconify-json/lucide` para UI e `@iconify-json/simple-icons` para marcas), resolvido em build via `src/components/Icon.astro`
 - `blip-chat-widget` empacotado localmente para o chatbot flutuante da Blip
 - Decap CMS (`/admin`) com `astro-decap-cms-oauth`
 

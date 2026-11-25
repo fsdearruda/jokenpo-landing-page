@@ -20,10 +20,13 @@
     "@fontsource/poppins": "^5.3.0",
     "astro": "^7.4.8",
     "astro-decap-cms-oauth": "^0.6.0",
+    "astro-icon": "^1.2.0",
     "blip-chat-widget": "^1.14.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@iconify-json/lucide": "^1.2.158",
+    "@iconify-json/simple-icons": "^1.2.103",
     "@types/node": "^26.6.6",
     "typescript": "^6.0.3"
   }
