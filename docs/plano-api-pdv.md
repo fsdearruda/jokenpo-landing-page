@@ -134,7 +134,7 @@ aponta para o banco de preview. Funções da Vercel em `gru1` (`vercel.json`), a
 
 Para testar um preview com dados, rode o PDV de testes com `SITE_SYNC_URL` igual à URL do
 preview e `SITE_SYNC_TOKEN` com o token de preview. Se o preview tiver proteção de deploy,
-inclua o cabeçalho de bypass da Vercel.
+coloque o segredo de bypass da Vercel em `SITE_SYNC_BYPASS` no PDV.
 
 Falta, nesta ordem:
 
