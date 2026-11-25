@@ -32,7 +32,7 @@
 			]
 		},
 		{
-			"source": "/(admin|oauth)(.*)",
+			"source": "/(admin|oauth|api)(.*)",
 			"headers": [
 				{
 					"key": "X-Robots-Tag",
