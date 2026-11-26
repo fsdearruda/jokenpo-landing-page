@@ -25,10 +25,10 @@ pnpm-debug.log*
 .idea/
 .vercel
 
-# agent skills
-.agents/
-skills-lock.json
-.claude/
+# agentes: skills e instruções são versionadas (.agents/skills, com .claude/skills apontando para lá);
+# só a configuração pessoal fica fora
+.claude/settings.local.json
+.claude/worktrees/
 agent/
 .env*.local
 .lighthouseci/

@@ -26,10 +26,19 @@ alterados, o resultado da validação e placeholders pendentes.
 
 ## Leia antes, conforme a tarefa
 
-- Interface ou interação: `docs/ui-ux-guidelines.md` e `DESIGN.md` (tokens reais em `src/styles/global.css`). Evite visual genérico de IA.
+- Interface ou interação: siga a skill `jokenpo-ui-ux` (`.agents/skills/jokenpo-ui-ux/SKILL.md`; se o seu agente
+  não carrega skills, leia o arquivo direto), com `docs/ui-ux-guidelines.md` e `DESIGN.md` (tokens reais em
+  `src/styles/global.css`). Evite visual genérico de IA.
 - Textos públicos e dados da loja: `docs/brand-content.md`.
 - Peças para redes sociais (não o site): `docs/style-guide.md`.
 - Pedidos, estoque ou rotas `/api/pdv*`: `docs/plano-api-pdv.md` e o protocolo em `docs/API-SITE.md` do PDV.
+
+## Instruções para agentes
+
+- Este arquivo vale para qualquer agente; `CLAUDE.md` só importa ele (`@AGENTS.md`). Mude regras aqui.
+- Skills ficam em `.agents/skills/<nome>/SKILL.md` (formato Agent Skills: `name` igual à pasta e `description`
+  no frontmatter); `.claude/skills` é um link para essa pasta. Não duplique skill nem instale pacote que repita
+  o que já está nos docs.
 
 ## Metas que não podem regredir
 

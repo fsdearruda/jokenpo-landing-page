@@ -65,11 +65,14 @@ evoluir. Aplicam-se a novas páginas, componentes, estilos e interações.
 
 ## Checklist antes de concluir
 
-- [ ] Navegação funciona com teclado, toque e mouse (consulte `frontend-a11y`).
+O passo a passo completo (estados, verificação em ciclo e revisão contra visual genérico de IA) está na
+skill `jokenpo-ui-ux` (`.agents/skills/jokenpo-ui-ux/SKILL.md`).
+
+- [ ] Navegação funciona com teclado, toque e mouse.
 - [ ] Foco, hover e pressionamento são perceptíveis.
 - [ ] Movimento reduzido foi respeitado.
-- [ ] Contraste e alto contraste foram considerados (audite com `wcag-audit-patterns`).
+- [ ] Contraste e alto contraste (`forced-colors`) foram considerados.
 - [ ] Layout funciona com zoom e em 320px sem quebras.
-- [ ] `alt`, nomes acessíveis e dimensões das imagens estão corretos (evite layout shifts com `core-web-vitals`).
-- [ ] **Garantir deslop (`frontend-design-deslop`)**: remover padrões e clichês visuais de IA (gradientes genéricos roxo/azul, cards flutuantes sem propósito, cantos excessivamente arredondados e sombras artificiais), preservando a identidade em `docs/style-guide.md` e revisando com `interface-review`.
-- [ ] `pnpm check` e `pnpm build` passam.
+- [ ] `alt`, nomes acessíveis e dimensões das imagens estão corretos (sem layout shift).
+- [ ] Sem clichês visuais de IA (`references/anti-slop.md` da skill), preservando a identidade do `DESIGN.md`.
+- [ ] `pnpm check`, `pnpm test` e `pnpm build` passam.
