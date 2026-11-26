@@ -77,18 +77,28 @@ async function conferirRemoto() {
 		console.error('PDV_CONTRACT_TOKEN não definido.');
 		process.exit(1);
 	}
+	const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'jokenpo-contract-check' };
+	// O GitHub responde 404 tanto para "sem acesso" quanto para "arquivo não existe": confere o acesso antes
+	const repo = await fetch(`https://api.github.com/repos/${PDV_GITHUB}`, { headers });
+	if (!repo.ok) {
+		console.error(`PDV_CONTRACT_TOKEN sem acesso a ${PDV_GITHUB} (HTTP ${repo.status}). Token vencido ou sem permissão de leitura em Contents.`);
+		process.exit(1);
+	}
 	const api = (caminho, accept) =>
-		fetch(`https://api.github.com/repos/${PDV_GITHUB}/contents/${caminho}?ref=main`, {
-			headers: { Authorization: `Bearer ${token}`, Accept: accept, 'User-Agent': 'jokenpo-contract-check' },
-		}).then((r) => {
+		fetch(`https://api.github.com/repos/${PDV_GITHUB}/contents/${caminho}?ref=main`, { headers: { ...headers, Accept: accept } }).then((r) => {
+			if (r.status === 404) return null;
 			if (!r.ok) throw new Error(`${caminho}: HTTP ${r.status}`);
 			return accept.endsWith('raw') ? r.text() : r.json();
 		});
-	const fixtures = (await api(FIXTURES, 'application/vnd.github+json')).map((f) => f.name);
+	const lista = await api(FIXTURES, 'application/vnd.github+json');
+	if (!lista) {
+		console.error(`${FIXTURES}/ não existe no main do PDV: o contrato novo ainda não entrou lá.`);
+		process.exit(1);
+	}
 	const diferentes = [];
-	for (const [de, para] of arquivos(fixtures)) {
+	for (const [de, para] of arquivos(lista.map((f) => f.name))) {
 		const remoto = await api(de, 'application/vnd.github.raw');
-		if (!existsSync(para) || readFileSync(para, 'utf8') !== remoto) diferentes.push(para);
+		if (remoto === null || !existsSync(para) || readFileSync(para, 'utf8') !== remoto) diferentes.push(para);
 	}
 	if (diferentes.length) {
 		console.error(`O contrato mudou no PDV (main): ${diferentes.join(', ')}.\nRode \`pnpm sync:contract\` e ajuste o site.`);
