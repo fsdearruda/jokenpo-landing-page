@@ -4,6 +4,9 @@ interface ImportMetaEnv {
 	readonly PUBLIC_SITE_URL?: string;
 	readonly PUBLIC_BLIP_APP_KEY?: string;
 	readonly PUBLIC_BLIP_COMMON_URL?: string;
+	readonly PUBLIC_UMAMI_WEBSITE_ID?: string;
+	readonly PUBLIC_UMAMI_SCRIPT_URL?: string;
+	readonly PUBLIC_UMAMI_DOMAINS?: string;
 }
 
 interface ImportMeta {

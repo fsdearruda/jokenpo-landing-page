@@ -43,6 +43,7 @@ const colors = ['cyan', 'yellow', 'pink'];
 	<p class="faq-footer-note">
 		Ficou com mais alguma dúvida?{' '}
 		<a
+			data-umami-event="whatsapp" data-umami-event-local="duvidas"
 			href={`https://wa.me/${whatsappDigits}?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20Jokenp%C3%B4`}
 			target="_blank"
 			rel="noopener noreferrer"
@@ -50,11 +51,23 @@ const colors = ['cyan', 'yellow', 'pink'];
 			Chama a gente no WhatsApp
 		</a>{' '}
 		ou entre na{' '}
-		<a href={contact.communityWhatsapp} target="_blank" rel="noopener noreferrer">
+		<a data-umami-event="comunidade" data-umami-event-local="duvidas" href={contact.communityWhatsapp} target="_blank" rel="noopener noreferrer">
 			comunidade
 		</a>.
 	</p>
 </section>
+
+<script>
+	import { registrar } from '../scripts/analytics';
+
+	// Quais perguntas o pessoal abre: mostra o que falta explicar na página
+	document.querySelectorAll<HTMLDetailsElement>('.faq-item').forEach((item) => {
+		item.addEventListener('toggle', () => {
+			const pergunta = item.querySelector('.faq-question-text')?.textContent?.trim();
+			if (item.open && pergunta) registrar('duvida-abrir', { pergunta: pergunta.slice(0, 200) });
+		});
+	});
+</script>
 
 <style>
 	@media (width > 800px) {

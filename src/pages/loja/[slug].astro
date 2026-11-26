@@ -44,7 +44,7 @@ if (erro) {
 			<div class="nao-encontrado">
 				<h1>A loja saiu do ar por um instante</h1>
 				<p>Tenta de novo em alguns minutos ou chama a gente no WhatsApp que a gente separa.</p>
-				<a href={`https://wa.me/${siteData.contact.whatsapp.replace(/\D/g, '')}`}>Falar no WhatsApp</a>
+				<a data-umami-event="whatsapp" data-umami-event-local="produto-offline" href={`https://wa.me/${siteData.contact.whatsapp.replace(/\D/g, '')}`}>Falar no WhatsApp</a>
 			</div>
 		</BaseLayout>
 	) : (

@@ -208,7 +208,7 @@ const jsonLd = [
 					families.length === 0 && (
 						<p class="catalog-empty">
 							{shop.emptyCatalog}{' '}
-							<a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">Falar no WhatsApp<span class="sr-only"> (abre em nova aba)</span></a>
+							<a data-umami-event="whatsapp" data-umami-event-local="loja-vazia" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">Falar no WhatsApp<span class="sr-only"> (abre em nova aba)</span></a>
 						</p>
 					)
 				}

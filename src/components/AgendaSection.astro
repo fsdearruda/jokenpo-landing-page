@@ -55,6 +55,7 @@ const whatsappDigits = siteData.contact.whatsapp.replace(/\D/g, '');
 		<div class="agenda-cta-actions">
 			<a
 				class="button button-yellow agenda-community-btn"
+				data-umami-event="comunidade" data-umami-event-local="agenda"
 				href={siteData.contact.communityWhatsapp}
 				target="_blank"
 				rel="noopener noreferrer"
@@ -64,6 +65,7 @@ const whatsappDigits = siteData.contact.whatsapp.replace(/\D/g, '');
 			</a>
 			<a
 				class="agenda-cta-link"
+				data-umami-event="whatsapp" data-umami-event-local="torneios"
 				href={`https://wa.me/${whatsappDigits}?text=Ol%C3%A1!%20Quero%20saber%20sobre%20os%20torneios%20da%20semana%20na%20Jokenp%C3%B4`}
 				target="_blank"
 				rel="noopener noreferrer"

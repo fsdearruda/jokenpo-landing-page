@@ -4,6 +4,7 @@
  */
 import { initBotId } from 'botid/client/core';
 import { formatPrice, pixPrice, type PaymentRules } from '../lib/catalog';
+import { registrar } from './analytics';
 import {
 	ehEstoque,
 	ehFalta,
@@ -116,7 +117,10 @@ if (root) {
 		if (next === before && qty > before) announce.textContent = `Limite de ${plural(next, 'unidade', 'unidades')} de ${title}.`;
 		else if (next === 0) announce.textContent = `${title} saiu da sacola.`;
 		else announce.textContent = `${title}: ${next} na sacola. Total ${formatPrice(totals().cents)}.`;
-		if (origin === 'card' && before === 0 && next > 0) pulseBar();
+		if (origin === 'card' && before === 0 && next > 0) {
+			pulseBar();
+			registrar('sacola-adicionar', { origem: 'vitrine', produto: title.slice(0, 200), categoria: cards.get(id)?.closest('li')?.dataset.category ?? '' });
+		}
 	};
 
 	/* Cards */
@@ -267,6 +271,7 @@ if (root) {
 		}
 	};
 	const openDrawer = () => {
+		if (!drawerOpen) registrar('sacola-abrir');
 		drawerOpen = true;
 		syncDrawer();
 		$<HTMLButtonElement>('[data-role="cart-close"]').focus();
@@ -308,6 +313,7 @@ if (root) {
 	filterButtons.forEach((button) => {
 		button.addEventListener('click', () => {
 			category = button.dataset.filter ?? 'all';
+			registrar('loja-filtro', { tipo: 'categoria', valor: category });
 			filterButtons.forEach((b) => {
 				b.classList.toggle('is-active', b === button);
 				b.setAttribute('aria-pressed', String(b === button));
@@ -315,7 +321,12 @@ if (root) {
 			applyFilters();
 		});
 	});
-	cartaSelects.forEach((select) => select.addEventListener('change', applyFilters));
+	cartaSelects.forEach((select) =>
+		select.addEventListener('change', () => {
+			if (select.value) registrar('loja-filtro', { tipo: select.dataset.cartaFiltro ?? 'carta', valor: select.value });
+			applyFilters();
+		}),
+	);
 
 	/** Redesenha o bloco de preço quando o PDV manda um preço novo. */
 	const paintPrice = (card: HTMLElement) => {
@@ -481,6 +492,9 @@ if (root) {
 			}
 		};
 		errorEl.id = 'order-error';
+		// Começou a preencher o pedido (o formulário fica dentro da sacola, não há etapa de checkout)
+		orderForm.addEventListener('focusin', () => registrar('pedido-iniciar'), { once: true });
+		const falhou = (codigo: string) => registrar('pedido-erro', { codigo });
 
 		/* Máscara do WhatsApp: (84) 9 0000-0000 ou (84) 3333-4444, mantendo o cursor no lugar. */
 		const formatPhone = (raw: string) => {
@@ -532,8 +546,14 @@ if (root) {
 			errorEl.hidden = true;
 			const nome = nameInput.value.trim();
 			const telefone = formatPhone(phoneInput.value).replace(/\D/g, '');
-			if (nome.length < 2) return showError('Coloca seu nome pra gente achar o pedido no balcão.', nameInput);
-			if (telefone.length < 10) return showError('Coloca um WhatsApp com DDD, tipo (84) 9 0000-0000.', phoneInput);
+			if (nome.length < 2) {
+				falhou('NOME');
+				return showError('Coloca seu nome pra gente achar o pedido no balcão.', nameInput);
+			}
+			if (telefone.length < 10) {
+				falhou('TELEFONE');
+				return showError('Coloca um WhatsApp com DDD, tipo (84) 9 0000-0000.', phoneInput);
+			}
 
 			submit.disabled = true;
 			submit.textContent = 'Enviando…';
@@ -550,6 +570,7 @@ if (root) {
 				const data = await response.json().catch(() => null);
 				if (!response.ok) {
 					const erro = erroDa(data);
+					falhou(erro?.codigo ?? `HTTP_${response.status}`);
 					if (erro?.codigo === 'ESTOQUE_INSUFICIENTE' || erro?.codigo === 'ITEM_INVALIDO') {
 						// Atualiza o estoque dos itens que faltaram e ajusta a sacola
 						if (Array.isArray(erro.detalhes)) {
@@ -573,6 +594,9 @@ if (root) {
 				}
 				if (!ehPedido(data)) throw new Error('resposta inesperada');
 				const created = data;
+				const unidades = created.itens.reduce((soma, item) => soma + item.quantidade, 0);
+				// Valor no cartão (o preço do PDV); o Pix e o pagamento de fato ficam no PDV
+				registrar('pedido-criado', { itens: unidades, revenue: created.totalCentavos / 100, currency: 'BRL' });
 				order = {
 					id: created.id,
 					numero: created.numero,
@@ -592,6 +616,7 @@ if (root) {
 				$('#order-title').focus();
 				void pollOrder();
 			} catch {
+				falhou('SEM_CONEXAO');
 				showError('Sem conexão. Confere sua internet e tenta de novo.');
 			} finally {
 				submit.disabled = false;

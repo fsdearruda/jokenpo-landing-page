@@ -1,0 +1,63 @@
+---
+/**
+ * Umami Cloud: visitas e eventos sem cookie e sem dado pessoal. Só carrega com PUBLIC_UMAMI_WEBSITE_ID e só
+ * conta nos domínios de produção (preview e localhost ficam de fora). O script entra depois do `load`, num
+ * momento ocioso, para não pesar no Lighthouse. Eventos: src/scripts/analytics.ts e atributos `data-umami-event`.
+ */
+import { SITE_URL } from '../lib/site-url';
+
+const websiteId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID?.trim() ?? '';
+const scriptUrl = import.meta.env.PUBLIC_UMAMI_SCRIPT_URL?.trim() || 'https://cloud.umami.is/script.js';
+const host = new URL(SITE_URL).hostname;
+const domains = import.meta.env.PUBLIC_UMAMI_DOMAINS?.trim() || `${host},www.${host}`;
+---
+
+{
+	websiteId && (
+		<script is:inline define:vars={{ websiteId, scriptUrl, domains }}>
+			// Da URL e do referrer só saem caminho e parâmetros utm_* (nada de query solta nem #hash).
+			window.jokenpoUmami = function (tipo, dados) {
+				var limpar = function (valor) {
+					if (typeof valor !== 'string' || !valor) return valor;
+					try {
+						var url = new URL(valor, location.origin);
+						var utm = new URLSearchParams();
+						url.searchParams.forEach(function (v, k) {
+							if (/^utm_/.test(k)) utm.append(k, v);
+						});
+						var busca = utm.toString();
+						var caminho = url.pathname + (busca ? '?' + busca : '');
+						return valor.charAt(0) === '/' ? caminho : url.origin + caminho;
+					} catch (e) {
+						return '';
+					}
+				};
+				if (dados && typeof dados === 'object') {
+					dados.url = limpar(dados.url);
+					dados.referrer = limpar(dados.referrer);
+				}
+				return dados;
+			};
+			var carregar = function () {
+				var s = document.createElement('script');
+				s.src = scriptUrl;
+				s.defer = true;
+				s.dataset.websiteId = websiteId;
+				s.dataset.domains = domains;
+				s.dataset.beforeSend = 'jokenpoUmami';
+				s.dataset.excludeHash = 'true';
+				s.dataset.performance = 'true';
+				s.onload = function () {
+					document.dispatchEvent(new Event('umami:pronto'));
+				};
+				document.head.appendChild(s);
+			};
+			var depois = function () {
+				if ('requestIdleCallback' in window) requestIdleCallback(carregar, { timeout: 3000 });
+				else setTimeout(carregar, 1500);
+			};
+			if (document.readyState === 'complete') depois();
+			else addEventListener('load', depois, { once: true });
+		</script>
+	)
+}
