@@ -9,6 +9,7 @@ Vercel. Estrutura, rotas e variáveis: `README.md`.
 pnpm check        # confere a cópia do contrato do PDV + astro check
 pnpm test         # vitest (contrato com o PDV e cálculo de estoque)
 pnpm build
+vercel env pull .env.local          # banco e Blob de preview: sem isso a /loja fica vazia no dev
 pnpm exec astro dev --background   # dev em segundo plano; `astro dev status|logs|stop`
 ```
 
@@ -17,8 +18,8 @@ alterados, o resultado da validação e placeholders pendentes.
 
 ## Fontes da verdade
 
-- Conteúdo da landing (horários, agenda, FAQ, banners, textos da loja): `src/data/site.json`, editado pelo CMS.
-- Produtos, preço, estoque e promoções: o PDV (repositório `jokenpo-pdv`), pela sincronização.
+- Conteúdo da landing (horários, agenda, FAQ, banners, textos da página da loja): `src/data/site.json`, editado pelo CMS.
+- Produtos, fotos, nomes, descrições, preço, estoque, promoções e acréscimo do cartão: só o PDV (repositório `jokenpo-pdv`), pela sincronização. Não existe catálogo no build nem no CMS.
 - `src/lib/pdv/sync.ts` e `contract-fixtures/` são cópias do PDV: nunca edite; mude no PDV e rode `pnpm sync:contract`.
 - Não edite gerados: `dist/`, `.vercel/`, `.astro/`.
 

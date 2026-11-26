@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import siteData from '../data/site.json';
-import { families, formatPrice } from '../lib/catalog';
 
 export const prerender = true;
 
@@ -57,10 +56,8 @@ export const GET: APIRoute = () => {
 		),
 		'',
 		'## Produtos para Retirada na Loja',
-		...families.map(
-			(f) =>
-				`- ${f.name} (${f.subtitle}): ${f.variants.map((v) => `${v.label} ${formatPrice(v.priceCents)}`).join(' · ')}`,
-		),
+		`- [Loja](${siteUrl}/loja): Catálogo com preço e estoque de agora, direto do sistema da loja (shields, deck boxes, booster packs, acessórios e cartas avulsas).`,
+		`- [Páginas de produto](${siteUrl}/sitemap.xml): Cada produto tem a própria página em /loja/<produto>, listada no sitemap, com preço no Pix e no cartão, estoque e descrição.`,
 		'',
 		'## Estrutura e Serviços na Loja',
 		...extras.map((e) => `- ${e.title}: ${e.description}`),

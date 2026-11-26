@@ -29,7 +29,8 @@ export default defineConfig({
 		schema: {
 			DATABASE_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
 			PDV_SYNC_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
-			PDV_MOCK_ADMIN_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
+			// false = pedido só pelo WhatsApp (o catálogo continua). Lido no build: mudar exige novo deploy.
+			PEDIDOS_NO_SITE: envField.boolean({ context: 'server', access: 'public', default: true }),
 		},
 	},
 	// imagesConfig liga o otimizador da Vercel (/_vercel/image) para as fotos de produto no Vercel Blob

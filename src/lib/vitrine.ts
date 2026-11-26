@@ -1,14 +1,14 @@
-import { families as buildFamilies, variantsById, type PaymentRules, type ProductFamily, type ProductVariant, type Tone } from './catalog';
-import { getPdv, pdvMode, type ProdutoCatalogo } from './pdv';
+import type { PaymentRules, ProductFamily, ProductVariant, Tone } from './catalog';
+import { getPdv, type ProdutoCatalogo } from './pdv';
 import { acrescimoCartaoDaLoja, ultimoContatoDaLoja } from './pdv/cloud';
 
 export interface Vitrine {
 	families: ProductFamily[];
-	/** `pdv` = catálogo e estoque ao vivo do PDV; `build` = `products.json` extraído no build. */
-	fonte: 'pdv' | 'build';
-	/** Última vez que o PC da loja falou com o site (só no modo `live`). */
+	/** O catálogo do PDV carregou (false = banco fora do ar ou loja que nunca sincronizou). */
+	disponivel: boolean;
+	/** Última vez que o PC da loja falou com o site. */
 	lojaVistaEm: string | null;
-	/** Acréscimo do cartão definido no PDV, em centésimos de % (null = vale o do CMS). */
+	/** Acréscimo do cartão definido no PDV, em centésimos de % (null = o PDV ainda não mandou). */
 	acrescimoCartaoBp: number | null;
 }
 
@@ -22,16 +22,17 @@ const slugify = (text: string) =>
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-|-$/g, '') || 'produtos';
 
-const BUILD: Vitrine = { families: buildFamilies, fonte: 'build', lojaVistaEm: null, acrescimoCartaoBp: null };
+const VAZIA: Vitrine = { families: [], disponivel: false, lojaVistaEm: null, acrescimoCartaoBp: null };
 
-/** Acréscimo do cartão: o do PDV (Cadastros → Site) quando ele já mandou; senão o do CMS. */
-export const regrasPagamento = (acrescimoCartaoBp: number | null, cms: PaymentRules): PaymentRules =>
-	acrescimoCartaoBp === null ? cms : { cardFeeEnabled: acrescimoCartaoBp > 0, cardFeePercent: acrescimoCartaoBp / 100 };
+/** Acréscimo do cartão definido no PDV (Cadastros → Site); sem ele, cartão custa o mesmo que o Pix. */
+export const regrasPagamento = (acrescimoCartaoBp: number | null): PaymentRules => ({
+	cardFeeEnabled: (acrescimoCartaoBp ?? 0) > 0,
+	cardFeePercent: (acrescimoCartaoBp ?? 0) / 100,
+});
 
-/** Card de um produto do PDV. Sem foto no PDV ainda, usa a do CMS antigo pelo id (transição; sai na limpeza da fase 4). */
+/** Card de um produto do PDV. */
 export function variante(p: ProdutoCatalogo): ProductVariant {
 	const titulo = p.nomeSite ?? p.nome;
-	const antigo = variantsById.get(p.produtoId);
 	const fotos = p.fotos ?? [];
 	return {
 		id: p.produtoId,
@@ -42,29 +43,24 @@ export function variante(p: ProdutoCatalogo): ProductVariant {
 		priceCents: p.precoCentavos,
 		stock: p.disponivel,
 		pdvPromo: p.promocao ?? null,
-		images: fotos.length ? fotos.map((src, i) => ({ src, alt: i === 0 ? titulo : '' })) : antigo?.variant.images,
-		swatch: antigo?.variant.swatch,
-		visual: p.carta ? 'carta' : (antigo?.family.type ?? 'generic'),
-		carta: p.carta ?? null,
+		images: fotos.map((src, i) => ({ src, alt: i === 0 ? titulo : '' })),
 		description: p.descricao ?? null,
 		slug: p.slug ?? null,
 		featured: p.destaque ?? false,
+		carta: p.carta ?? null,
 	};
 }
 
 /**
- * Monta as seções da vitrine a partir do PDV (modo `live`): uma seção por grupo de categoria, na ordem das
- * categorias do PDV; dentro da seção, destaques primeiro. O que aparece, o nome, a descrição e as fotos são
- * decididos no PDV (Cadastros → Produtos e Cadastros → Site).
+ * Monta as seções da vitrine a partir do PDV: uma seção por grupo de categoria, na ordem das categorias do PDV;
+ * dentro da seção, destaques primeiro. O que aparece, o nome, a descrição e as fotos são decididos no PDV
+ * (Cadastros → Produtos e Cadastros → Site).
  */
 export async function carregarVitrine(): Promise<Vitrine> {
-	const pdv = getPdv();
-	if (pdvMode !== 'live' || !pdv) return BUILD;
-
 	try {
-		const [catalogo, vistaEm, acrescimoCartaoBp] = await Promise.all([pdv.listarCatalogo(), ultimoContatoDaLoja(), acrescimoCartaoDaLoja()]);
-		// Loja ainda não sincronizou nenhuma vez: mostra o catálogo do build (pedido pelo WhatsApp)
-		if (!catalogo || !vistaEm) return BUILD;
+		const [catalogo, vistaEm, acrescimoCartaoBp] = await Promise.all([getPdv().listarCatalogo(), ultimoContatoDaLoja(), acrescimoCartaoDaLoja()]);
+		// Loja que nunca sincronizou: vitrine vazia com o WhatsApp
+		if (!vistaEm) return VAZIA;
 
 		const grupos = new Map<string, ProdutoCatalogo[]>();
 		for (const p of catalogo) {
@@ -79,26 +75,21 @@ export async function carregarVitrine(): Promise<Vitrine> {
 				let slug = slugify(grupo);
 				while (slugs.has(slug)) slug += '-2';
 				slugs.add(slug);
-				const variants = produtos
-					.map(variante)
-					.sort((a, b) => Number(b.featured) - Number(a.featured) || a.title.localeCompare(b.title, 'pt-BR'));
 				return {
 					slug,
-					type: 'generic',
-					tone: TONS[index % TONS.length],
 					name: grupo,
 					category: grupo,
-					subtitle: grupo,
-					description: '',
-					variantLabel: 'Produto',
-					variants,
+					tone: TONS[index % TONS.length],
+					variants: produtos
+						.map(variante)
+						.sort((a, b) => Number(b.featured) - Number(a.featured) || a.title.localeCompare(b.title, 'pt-BR')),
 				};
 			});
 
-		return { families, fonte: 'pdv', lojaVistaEm: vistaEm.toISOString(), acrescimoCartaoBp };
+		return { families, disponivel: true, lojaVistaEm: vistaEm.toISOString(), acrescimoCartaoBp };
 	} catch (error) {
-		// Banco fora do ar: a página continua com o catálogo do build e o pedido pelo WhatsApp
+		// Banco fora do ar: a CDN segue servindo a última página boa (stale-while-revalidate); sem ela, vitrine vazia
 		console.error('[vitrine] catálogo do PDV indisponível', error instanceof Error ? error.message : error);
-		return BUILD;
+		return VAZIA;
 	}
 }

@@ -1,7 +1,10 @@
-import products from '../data/products.json';
 import type { CartaFoto } from './pdv/sync';
 
-export type ProductType = 'shield' | 'deckbox' | 'triple' | 'generic' | 'carta';
+/**
+ * Tipos e regras de apresentação da vitrine. Os dados (produtos, preço, estoque, conteúdo, fotos e promoções)
+ * vêm todos do PDV da loja: ver `vitrine.ts`.
+ */
+
 export type Tone = 'cyan' | 'yellow' | 'pink';
 
 export interface ProductVariant {
@@ -9,75 +12,37 @@ export interface ProductVariant {
 	id: string;
 	sku: string | null;
 	label: string;
-	/** Nome mostrado no card, na sacola e no comprovante. */
+	/** Nome mostrado no card, na sacola e no comprovante (nome de vitrine do PDV, ou o nome). */
 	title: string;
 	/** Nome no cadastro do PDV. */
 	pdvName: string;
 	priceCents: number;
-	/** Estoque disponível no momento da extração (`estoque - estoqueReservado`). */
+	/** Disponível no site (estoque do PDV menos os pedidos que a loja ainda não confirmou). */
 	stock: number;
-	swatch?: 'black' | 'purple';
-	/** Fotos editadas no CMS. A primeira vai no card; a segunda aparece no hover. */
+	/** Fotos enviadas pelo PDV. A primeira vai no card; a segunda aparece no hover. */
 	images?: ProductImage[];
-	/** Promoção ligada no CMS. O preço cobrado continua vindo do PDV. */
-	promo?: ProductPromo;
-	/** Promoção criada no PDV (modo `live`). Tem prioridade sobre a do CMS. */
+	/** Promoção vigente criada no PDV. */
 	pdvPromo?: { nome: string; precoOriginalCentavos: number; terminaEm: string } | null;
-	/** Conteúdo editado no PDV (modo `live`). */
 	description?: string | null;
 	slug?: string | null;
 	featured?: boolean;
-	/** Ilustração quando não há foto (sem isto, a do tipo da família). */
-	visual?: ProductType;
 	/** Carta avulsa: dados para o cartão de texto e os filtros. */
 	carta?: CartaFoto | null;
 }
 
 export interface ProductImage {
-	/** Caminho no repositório (`/src/assets/products/...`) ou URL pública. */
 	src: string;
 	alt: string;
 }
 
-export interface ProductPromo {
-	active: boolean;
-	/** Preço "de" (riscado), em reais. Só aparece se for maior que o preço do PDV. */
-	compareAtPrice?: number | null;
-	/** Texto do selo; vazio usa o desconto calculado ou o selo padrão. */
-	badge?: string;
-}
-
 export interface ProductFamily {
 	slug: string;
-	type: ProductType;
 	name: string;
-	/** Título da seção na vitrine. */
+	/** Título da seção na vitrine (grupo de categoria do PDV). */
 	category: string;
-	subtitle: string;
-	description: string;
-	variantLabel: string;
 	variants: ProductVariant[];
-	/** Cor da seção; sem isto vem do tipo. Usado nas seções montadas a partir das categorias do PDV. */
-	tone?: Tone;
+	tone: Tone;
 }
-
-export const productTypes: Record<ProductType, { label: string; plural: string; color: Tone }> = {
-	shield: { label: 'Shield', plural: 'Shields', color: 'cyan' },
-	deckbox: { label: 'Deck box', plural: 'Deck boxes', color: 'yellow' },
-	triple: { label: 'Triple pack', plural: 'Triple packs', color: 'pink' },
-	generic: { label: 'Produto', plural: 'Produtos', color: 'cyan' },
-	carta: { label: 'Carta avulsa', plural: 'Cartas avulsas', color: 'pink' },
-};
-
-export const toneOf = (family: ProductFamily): Tone => family.tone ?? productTypes[family.type].color;
-
-export const catalog = products as { source: string; extractedAt: string; families: ProductFamily[] };
-
-export const families = catalog.families.filter((family) => family.variants.length > 0);
-
-export const variantsById = new Map(
-	families.flatMap((family) => family.variants.map((variant) => [variant.id, { family, variant }] as const)),
-);
 
 /** Formata centavos no padrão da marca: `R$ 25` ou `R$ 59,90`. */
 export const formatPrice = (cents: number) => {
@@ -87,39 +52,24 @@ export const formatPrice = (cents: number) => {
 };
 
 export interface PaymentRules {
-	/** Liga a taxa do cartão. Desligada, o cartão custa o mesmo que o Pix. */
+	/** Liga o acréscimo do cartão. Desligado, o cartão custa o mesmo que o Pix. */
 	cardFeeEnabled: boolean;
 	/** Acréscimo no cartão, em %, sobre o preço do PDV (que é o preço no Pix). */
 	cardFeePercent: number;
 }
 
-/** O preço do PDV é o preço no Pix; o cartão leva a taxa do CMS, arredondada ao centavo. */
+/** O preço do PDV é o preço no Pix; o cartão leva o acréscimo definido no PDV, arredondado ao centavo. */
 export const cardPrice = (cents: number, rules: PaymentRules) =>
 	rules.cardFeeEnabled && rules.cardFeePercent > 0 ? Math.round(cents * (1 + rules.cardFeePercent / 100)) : cents;
 
-type PromoFields = Pick<ProductVariant, 'promo' | 'pdvPromo' | 'priceCents'>;
+type PromoFields = Pick<ProductVariant, 'pdvPromo' | 'priceCents'>;
 
-/**
- * Preço "de" em centavos, só quando há promoção e o valor é maior que o preço atual.
- * A promoção do PDV vence; a do CMS vale quando o PDV não manda nenhuma (ex.: site sem PDV ligado).
- */
-export const compareAtCents = (variant: PromoFields) => {
-	if (variant.pdvPromo) return variant.pdvPromo.precoOriginalCentavos > variant.priceCents ? variant.pdvPromo.precoOriginalCentavos : null;
-	const promo = variant.promo;
-	if (!promo?.active || !promo.compareAtPrice) return null;
-	const cents = Math.round(promo.compareAtPrice * 100);
-	return cents > variant.priceCents ? cents : null;
-};
+/** Preço "de" em centavos, só quando há promoção do PDV e o valor é maior que o preço atual. */
+export const compareAtCents = (variant: PromoFields) =>
+	variant.pdvPromo && variant.pdvPromo.precoOriginalCentavos > variant.priceCents ? variant.pdvPromo.precoOriginalCentavos : null;
 
-/** Texto do selo: nome da promoção do PDV; senão o selo do CMS, o desconto em % ou o selo padrão. */
-export const promoBadge = (variant: PromoFields, fallback: string) => {
-	if (variant.pdvPromo) return variant.pdvPromo.nome;
-	if (!variant.promo?.active) return null;
-	if (variant.promo.badge?.trim()) return variant.promo.badge.trim();
-	const before = compareAtCents(variant);
-	if (before) return `-${Math.round((1 - variant.priceCents / before) * 100)}%`;
-	return fallback;
-};
+/** Texto do selo: o nome da promoção do PDV. */
+export const promoBadge = (variant: PromoFields) => variant.pdvPromo?.nome ?? null;
 
 /** Até este número de unidades a vitrine mostra "Últimas unidades". */
 export const LOW_STOCK_THRESHOLD = 3;

@@ -28,7 +28,7 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 | `src/lib/pdv/fotos.ts`, `src/pages/api/pdv-sync/foto.ts` | Fotos de produto enviadas pelo PDV, guardadas no Vercel Blob (`jokenpo-fotos`, público, `gru1`, uma pasta por ambiente) |
 | `src/lib/pdv/limite.ts` | Limite de pedidos por IP |
 | `src/pages/api/pdv-sync/*` | Rotas chamadas pelo PC da loja |
-| `src/lib/pdv/index.ts`, `types.ts`, `mock.ts` | `PUBLIC_PDV_MODE = live \| mock \| off`, contrato público e mock |
+| `src/lib/pdv/index.ts`, `types.ts` | Acesso ao PDV (`getPdv`), `PEDIDOS_NO_SITE` e contrato público das rotas `/api/pdv/*` |
 | `src/lib/vitrine.ts` | Seções da vitrine: uma por grupo de categoria do PDV, destaques primeiro, nome/descrição/fotos do PDV |
 | `src/pages/loja/[slug].astro`, `src/pages/sitemap.xml.ts` | Página de cada produto (slug criado no PDV) e sitemap com essas páginas |
 | `src/pages/loja.astro` | Sempre sob demanda (`prerender = false`), com `s-maxage=60, stale-while-revalidate=600` na CDN |
@@ -40,7 +40,7 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 | Postgres Neon (plano gratuito, `sa-east-1`) | `jokenpo-pdv-ponte` | `jokenpo-pdv-ponte-preview` |
 | `DATABASE_URL` e afins | integração da Vercel | integração da Vercel |
 | `PDV_SYNC_TOKEN` | cópia local em `~/.config/jokenpo/site-sync-token` (vai para o PC da loja) | outro valor: `~/.config/jokenpo/site-sync-token-preview` |
-| `PUBLIC_PDV_MODE` | `live` | `live` (só Preview) |
+| `PEDIDOS_NO_SITE` | não definido (= `true`) | não definido |
 | `BLOB_READ_WRITE_TOKEN` | integração do Vercel Blob | integração do Vercel Blob |
 
 `vercel env pull` em desenvolvimento aponta para o banco de preview. Funções da Vercel em `gru1`
@@ -48,7 +48,7 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 
 ## Produção
 
-Ligado desde 25/11/2026: o PC da loja sincroniza e `/loja` usa o catálogo do PDV. Fotos de produto
+Ligado desde 25/11/2026: o PC da loja sincroniza e `/loja` usa o catálogo do PDV (é a única fonte desde a fase 4: sem `products.json`, sem mock e sem conteúdo de produto no CMS). Fotos de produto
 otimizadas pelo `/_vercel/image` (`imagesConfig` no `astro.config.mjs`) a partir do Blob.
 
 ## Cartas avulsas

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getPdv, pdvMode } from '../lib/pdv';
+import { getPdv } from '../lib/pdv';
 
 // Gerado a cada pedido (com cache na CDN): inclui a página de cada produto que está na vitrine do PDV.
 export const prerender = false;
@@ -8,8 +8,7 @@ const xml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 export const GET: APIRoute = async () => {
 	const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
-	const pdv = getPdv();
-	const catalogo = pdvMode === 'live' && pdv ? await pdv.listarCatalogo().catch(() => null) : null;
+	const catalogo = await getPdv().listarCatalogo().catch(() => null);
 	const urls = [
 		`${siteUrl}/`,
 		`${siteUrl}/loja`,

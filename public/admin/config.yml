@@ -414,11 +414,11 @@ collections:
               - { label: Resposta, name: answer, widget: text }
 
   - name: shop_page
-    label: "5. Loja: Página, Pix e Cartão"
-    description: "Textos da página /loja, taxa do cartão e selo padrão das promoções. Preço (no Pix) e estoque vêm do PDV."
+    label: "5. Loja: Textos da Página"
+    description: "Textos da página /loja. Produtos, fotos, preços, estoque, promoções e o acréscimo do cartão são editados no PDV da loja (Cadastros → Produtos e Cadastros → Site)."
     files:
       - name: shop_file
-        label: "Página da Loja e Pagamento"
+        label: "Página da Loja"
         file: src/data/site.json
         format: json
         fields:
@@ -443,29 +443,6 @@ collections:
                 name: titleHighlight
                 widget: string
                 hint: "Sempre em CAIXA ALTA (ex.: SEU DECK)"
-              - label: Pagamento (Pix e Cartão)
-                name: payment
-                widget: object
-                collapsed: false
-                hint: "O preço do PDV é o preço no Pix. No cartão, o site soma a taxa abaixo."
-                fields:
-                  - label: Cobrar taxa no cartão?
-                    name: cardFeeEnabled
-                    widget: boolean
-                    default: true
-                    hint: "Desligado, o cartão aparece com o mesmo preço do Pix e o site mostra um preço só."
-                  - label: Taxa do Cartão (%)
-                    name: cardFeePercent
-                    widget: number
-                    value_type: float
-                    min: 0
-                    max: 30
-                    step: 0.1
-                    hint: "Ex.: 5 mostra R$ 73,40 no cartão para um produto de R$ 69,90 no Pix."
-              - label: Selo Padrão das Promoções
-                name: promoBadgeDefault
-                widget: string
-                hint: "Usado quando a promoção está ligada mas não tem selo nem preço 'de' (ex.: Promo, Oferta)."
               - label: Textos com Pedido pelo Site (PDV ligado)
                 name: orderOnSite
                 widget: object
@@ -485,118 +462,8 @@ collections:
                 widget: text
                 hint: "Aparece com um botão para o WhatsApp quando nenhum produto está no site."
 
-  - name: products_catalog
-    label: "6. Loja: Fotos, Textos e Promoções"
-    description: "Fotos, nomes de vitrine e promoções de cada produto. Preço e estoque são definidos no PDV da loja."
-    files:
-      - name: products_file
-        label: "Catálogo de Produtos"
-        file: src/data/products.json
-        format: json
-        fields:
-          - { label: Origem dos Dados, name: source, widget: hidden }
-          - { label: Data da Extração, name: extractedAt, widget: hidden }
-          - label: Categorias de Produtos
-            name: families
-            widget: list
-            allow_add: false
-            summary: "{{fields.category}}"
-            hint: "Produtos novos entram pelo PDV (Cadastros → Site). Aqui você edita como eles aparecem. A loja mostra os produtos numa grade só, na ordem desta lista: arraste as categorias para mudar a ordem."
-            fields:
-              - { label: Identificador, name: slug, widget: hidden }
-              - label: Nome da Categoria
-                name: category
-                widget: string
-                hint: "Ex.: Deck boxes. Aparece no filtro e acima do nome no card."
-              - label: Nome do Produto
-                name: name
-                widget: string
-              - label: Descrição Curta (Google)
-                name: subtitle
-                widget: string
-                hint: "Ex.: Caixa para guardar o deck"
-              - label: Descrição da Categoria (Google)
-                name: description
-                widget: text
-                required: false
-              - label: O que Muda Entre as Opções
-                name: variantLabel
-                widget: string
-                hint: "Ex.: Cor, Modelo, Pacote, Coleção"
-              - label: Ilustração (quando não há foto)
-                name: type
-                widget: select
-                options:
-                  - { label: "Shield (cartas)", value: shield }
-                  - { label: "Deck box (caixa)", value: deckbox }
-                  - { label: "Triple pack (boosters)", value: triple }
-                  - { label: "Genérico (caixa lacrada)", value: generic }
-              - label: Opções à Venda
-                name: variants
-                widget: list
-                allow_add: false
-                summary: "{{fields.title}}"
-                fields:
-                  - { label: ID no PDV, name: id, widget: hidden }
-                  - { label: SKU, name: sku, widget: hidden }
-                  - { label: Nome no PDV, name: pdvName, widget: hidden }
-                  - { label: Preço no PDV (centavos), name: priceCents, widget: hidden }
-                  - { label: Estoque, name: stock, widget: hidden }
-                  - label: Nome no Card, Sacola e Pedido
-                    name: title
-                    widget: string
-                    hint: "Ex.: Deck box completa. O PDV continua com o nome dele."
-                  - label: Nome Curto da Opção
-                    name: label
-                    widget: string
-                    hint: "Ex.: Completa, Preto, 50 un"
-                  - label: Cor da Ilustração (shields sem foto)
-                    name: swatch
-                    widget: select
-                    required: false
-                    options:
-                      - { label: Preto, value: black }
-                      - { label: Roxo, value: purple }
-                  - label: Fotos
-                    name: images
-                    widget: list
-                    required: false
-                    max: 2
-                    summary: "{{fields.alt}}"
-                    hint: "A 1ª foto aparece no card; a 2ª aparece ao passar o mouse. Use fotos quadradas com fundo branco."
-                    fields:
-                      - label: Foto
-                        name: src
-                        widget: image
-                        media_folder: /src/assets/products
-                        public_folder: /src/assets/products
-                        choose_url: false
-                      - label: Descrição da Foto (acessibilidade)
-                        name: alt
-                        widget: string
-                        hint: "Descreva o que aparece, ex.: Deck box azul fechada."
-                  - label: Promoção
-                    name: promo
-                    widget: object
-                    collapsed: true
-                    hint: "Promoções por evento são criadas no PDV (Cadastros → Promoções) e aparecem sozinhas no site. Use esta opção só para produtos sem promoção no PDV: baixe o preço lá e ligue o selo aqui com o preço antigo."
-                    fields:
-                      - { label: Promoção ativa?, name: active, widget: boolean, default: false }
-                      - label: Preço Antigo "De" (R$)
-                        name: compareAtPrice
-                        widget: number
-                        value_type: float
-                        min: 0
-                        required: false
-                        hint: "Aparece riscado só se for maior que o preço atual do PDV. Ex.: 79.90"
-                      - label: Texto do Selo
-                        name: badge
-                        widget: string
-                        required: false
-                        hint: "Ex.: Black Friday. Vazio mostra o desconto em % (ou o selo padrão)."
-
   - name: banners
-    label: "7. Banners de Eventos e Promoções"
+    label: "6. Banners de Eventos e Promoções"
     description: "Banners com fotos que giram em carrossel na página inicial e na loja. O formato do banner segue o tamanho da foto enviada."
     files:
       - name: banners_file

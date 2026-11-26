@@ -235,14 +235,6 @@ class CloudPdv implements PdvClient {
 		if (!p) throw new PdvError('PEDIDO_NAO_ENCONTRADO', 'Pedido não encontrado.', 404);
 		return publico(p);
 	}
-
-	async confirmarPagamento(): Promise<PedidoPublico> {
-		throw new PdvError('OPERACAO_NO_PDV', 'O pagamento é registrado no PDV da loja.', 405);
-	}
-
-	async cancelarPedido(): Promise<PedidoPublico> {
-		throw new PdvError('OPERACAO_NO_PDV', 'O cancelamento é feito no PDV da loja.', 405);
-	}
 }
 
 export const cloudPdv: PdvClient = new CloudPdv();

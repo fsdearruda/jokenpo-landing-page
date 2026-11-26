@@ -29,28 +29,30 @@ Para ativar o bot em desenvolvimento ou produção, preencha `PUBLIC_BLIP_APP_KE
 
 ## Loja e integração com o PDV
 
-A página `/loja` (antiga `/produtos`, que redireciona com 301) mostra shields, deck boxes e triple packs numa grade única ordenada por categoria (na ordem da lista no CMS), com um card por variação e filtro por categoria. O cliente monta a sacola e toca em **Enviar pedido no WhatsApp**: abre a conversa com a loja com itens, quantidades e total já escritos, para retirar no balcão. O site não pede nome nem telefone. A sacola fica fixa à direita no desktop e vira uma gaveta com barra inferior no celular. Ela guarda os itens no `localStorage` e deixa mudar a quantidade direto no card ou na sacola. Nomes de vitrine diferentes do PDV (ex.: "Deck box dupla" aparece como "Deck box completa") ficam em `labelOverrides`, no script de extração. Os dados vêm do banco do PDV (`comanda`) e ficam em `src/data/products.json`, gerado só com campos públicos (id, SKU, nome, preço e estoque). Para atualizar a partir de um novo dump:
+O PDV da loja (repositório `jokenpo-pdv`) é o único lugar onde se edita a loja do site: quais produtos aparecem
+(Cadastros → Site), nome de vitrine, descrição, destaque, fotos, preço, estoque, promoções e o acréscimo do cartão.
+O site só mostra e recebe pedidos.
 
-```bash
-pg_restore -f banco.sql banco.dump
-node scripts/extract-products.mjs banco.sql
-```
+- **`/loja`**: uma seção por grupo de categoria do PDV, com sacola fixa no desktop e gaveta no celular (guardada no
+  `localStorage`). Cartas avulsas aparecem como cartão de texto, com filtros por jogo, coleção, condição e idioma.
+  Gerada sob demanda com cache de 60 s na CDN.
+- **`/loja/<produto>`**: página de cada produto (fotos, preço no Pix e no cartão, estoque, descrição, JSON-LD
+  `Product`), listada no `/sitemap.xml`.
+- **Pedido**: a sacola pede nome e WhatsApp e cria o pedido, que fica **aguardando confirmação** até o PC da loja
+  conferir o estoque (mesmo com o PC desligado na hora: ele aplica quando liga). Com estoque, a loja separa e o
+  cliente tem 48 h para pagar por Pix no WhatsApp; sem estoque, o pedido é recusado. O cliente acompanha na sacola.
+  Se o PC passar de 6 h sem contato, ou com `PEDIDOS_NO_SITE=false`, a sacola manda o pedido pelo WhatsApp.
 
-A integração com o PDV fica na interface `PdvClient` em `src/lib/pdv/`, com três modos em `PUBLIC_PDV_MODE`:
-
-- `live`: PDV real. O PC da loja sincroniza com o site pelas rotas `/api/pdv-sync/*` (só chamadas de saída, assinadas com `PDV_SYNC_TOKEN`). O site guarda uma cópia do catálogo e a fila de pedidos num Postgres (`DATABASE_URL`, tabelas criadas no build da Vercel ou com `pnpm db:migrate`). O que aparece na vitrine é escolhido no PDV, em Cadastros → Site, e `/loja` é gerada sob demanda com cache de 60 s na CDN.
-- `mock`: PDV simulado em memória, padrão no `pnpm dev`.
-- `off`: sem PDV. A vitrine usa `products.json` e o pedido vai só pelo WhatsApp. É o padrão no build sem configuração.
-
-Com PDV (`live` ou `mock`), a sacola pede nome e WhatsApp e cria o pedido. Ele fica **aguardando confirmação** até o PC da loja conferir o estoque, o que acontece mesmo se o pedido for feito com o PC desligado: ele é aplicado quando o PC liga. Se o PC passar de 6 h sem contato, a sacola volta a mandar o pedido pelo WhatsApp até ele voltar. Com estoque, a loja separa as unidades e o cliente tem 48 h para pagar por Pix no WhatsApp. Sem estoque, o pedido é recusado. O cliente acompanha o status na própria sacola. Operação do lado do site e passos para produção: [docs/plano-api-pdv.md](docs/plano-api-pdv.md). O protocolo completo fica em `docs/API-SITE.md` do repositório `jokenpo-pdv`.
+O PC da loja só faz chamadas de saída (rotas `/api/pdv-sync/*`, assinadas com HMAC); o site guarda uma cópia do
+catálogo e a fila de pedidos num Postgres (Neon) e as fotos no Vercel Blob. Operação do site:
+[docs/plano-api-pdv.md](docs/plano-api-pdv.md). Protocolo completo: `docs/API-SITE.md` do `jokenpo-pdv`.
 
 | Rota | Uso |
 |---|---|
 | `GET /api/pdv/estoque` | Disponível e preço por produto |
 | `POST /api/pdv/pedidos` | Cria o pedido (`{ itens: [{ produtoId, quantidade }], nomeContato, telefoneContato }`) |
 | `GET /api/pdv/pedidos/:id` | Status do pedido |
-| `POST /api/pdv/pedidos/:id/confirmar`, `.../cancelar` | Só no mock (rotas de balcão); no `live` isso é feito no PDV |
-| `GET /api/pdv-sync/eventos`, `POST /api/pdv-sync/eventos/ack`, `POST /api/pdv-sync/estoque` | Usadas pelo PC da loja (assinatura HMAC) |
+| `GET /api/pdv-sync/eventos`, `POST /api/pdv-sync/eventos/ack`, `POST /api/pdv-sync/estoque`, `POST /api/pdv-sync/foto` | Usadas pelo PC da loja (assinatura HMAC) |
 
 ## Decisões de projeto
 
@@ -78,15 +80,10 @@ Os metadados incluem Open Graph, Twitter Cards, grafo JSON-LD (`WebSite`, `WebPa
 
 ### Conteúdo e CMS
 
-Horários, agenda semanal, passes de boardgame, catálogo de jogos e perguntas frequentes ficam centralizados em `src/data/site.json`. A equipe da loja pode editar esses dados pelo Decap CMS em `/admin`, autenticado via OAuth do GitHub (`astro-decap-cms-oauth`).
-
-A página `/loja` também é editada pelo CMS:
-
-- **5. Loja: Página, Pix e Cartão** (`shop` em `src/data/site.json`): título, frase curta e texto da sacola nos dois modos de pedido, taxa do cartão (%) e selo padrão das promoções.
-- **6. Loja: Fotos, Textos e Promoções** (`src/data/products.json`): nome e ordem das categorias, nome de vitrine de cada produto, até duas fotos (a segunda aparece no hover) e promoção (selo e preço "de" riscado).
-- **7. Banners de Eventos e Promoções** (`banners` em `src/data/site.json`): banners da loja e/ou da página inicial, cada um com uma ou mais fotos que giram em carrossel (ordem definida arrastando no CMS), datas de início e fim, link opcional e tempo por foto. A moldura usa a proporção da 1ª foto: banner largo ocupa a linha toda; em pé ou quadrado fica com altura limitada e pode dividir a linha com outro. As fotos vão para `src/assets/banners/` e passam pelo pipeline de imagens do Astro. As datas também são conferidas no navegador, então o banner aparece e some no dia certo sem novo deploy. O carrossel tem botão de pausa, para com ponteiro ou foco e não gira sozinho com `prefers-reduced-motion`.
-
-Preço e estoque são definidos só no PDV. Promoções por evento são criadas no PDV (Cadastros → Promoções): com o PDV ligado ao site (`live`), cada produto chega com o preço promocional, o preço antigo e o nome da promoção, que vira o selo do card. O selo some quando a promoção acaba, mesmo se o PC da loja estiver offline. A promoção do CMS continua como alternativa para quando o PDV não manda promoção (por exemplo, no modo `off`): baixe o preço no PDV e ligue o selo no CMS com o preço antigo. O "de R$ X" só aparece se for maior que o preço atual. O preço do PDV é o preço no Pix, e o site mostra o preço no cartão somando a taxa do CMS (a loja cobra essa diferença ao receber no cartão). As fotos enviadas pelo CMS vão para `src/assets/products/` e passam pelo pipeline de imagens do Astro. O script `scripts/extract-products.mjs` renova só id, SKU, nome no PDV, preço e estoque, e mantém o que foi editado no CMS.
+Horários, agenda semanal, passes de boardgame, catálogo de jogos, perguntas frequentes, textos da página `/loja` e
+banners ficam em `src/data/site.json`, editados pelo Decap CMS em `/admin` (OAuth do GitHub, `astro-decap-cms-oauth`).
+Os banners (coleção 6) giram em carrossel na página inicial e na `/loja`, com datas de início e fim conferidas também
+no navegador. Produtos, fotos, preços e promoções não passam pelo CMS: são editados no PDV.
 
 ## Stack
 
@@ -104,6 +101,7 @@ O projeto usa Node 24 (definido em `.nvmrc`) e `pnpm`.
 nvm use
 pnpm install
 cp .env.example .env
+vercel env pull .env.local   # banco e Blob de preview, para a /loja ter dados
 pnpm dev
 ```
 
@@ -137,11 +135,10 @@ Consulte [.env.example](.env.example). Nunca versione chaves ou segredos reais n
 | `OAUTH_GITHUB_CLIENT_SECRET` | Secret do app OAuth para o Decap CMS | Apenas para usar `/admin` |
 | `PUBLIC_BLIP_APP_KEY` | App Key do canal Blip Chat | Apenas para exibir o chat |
 | `PUBLIC_BLIP_COMMON_URL` | URL dedicada do contrato no Blip, se houver | Não |
-| `PUBLIC_PDV_MODE` | `live` (PDV real), `mock` (PDV simulado) ou `off` (estoque do build, pedido só pelo WhatsApp) em `/loja` | Não (padrão `mock` em dev, `off` em produção) |
-| `DATABASE_URL` | Postgres da ponte site ↔ PDV | Só no modo `live` |
-| `PDV_SYNC_TOKEN` | Segredo compartilhado com o PC da loja (`SITE_SYNC_TOKEN` no PDV) | Só no modo `live` |
-| `PDV_MOCK_ADMIN_TOKEN` | Bearer token das rotas de balcão do mock | Não (sem ele, só funcionam em dev) |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob das fotos de produto enviadas pelo PDV | Só no modo `live` (criada pela integração) |
+| `PEDIDOS_NO_SITE` | `false` manda o pedido só pelo WhatsApp (o catálogo continua); vale no próximo deploy | Não (padrão `true`) |
+| `DATABASE_URL` | Postgres da ponte site ↔ PDV | Sim, para a `/loja` |
+| `PDV_SYNC_TOKEN` | Segredo compartilhado com o PC da loja (`SITE_SYNC_TOKEN` no PDV) | Sim, para a sincronização |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob das fotos de produto enviadas pelo PDV | Sim (criada pela integração) |
 
 Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desativado localmente. Enquanto `PUBLIC_BLIP_APP_KEY` estiver vazia, o botão do Blip Chat não é renderizado. Ao configurar o Blip, libere os domínios do site (`localhost` e `jokenpo.cards`) em `Canais > Blip Chat > Configurações` no portal da Blip.
 
@@ -155,9 +152,8 @@ Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desati
 | `src/pages/sitemap.xml.ts` | Sitemap gerado com as páginas de produto do PDV |
 | `src/components/PromoBanners.astro`, `src/lib/banners.ts` | Banners de eventos e promoções em carrossel |
 | `src/pages/api/pdv/`, `src/pages/api/pdv-sync/` | API pública do PDV e rotas de sincronização do PC da loja |
-| `src/lib/catalog.ts`, `src/lib/vitrine.ts`, `src/lib/pdv/` | Catálogo tipado, seções da vitrine, contrato `PdvClient`, ponte com o PDV real e PDV simulado |
+| `src/lib/catalog.ts`, `src/lib/vitrine.ts`, `src/lib/pdv/` | Tipos e preços da vitrine, seções a partir do PDV, contrato `PdvClient` e ponte com o PDV (Postgres e Vercel Blob) |
 | `db/migrations/` | Tabelas da ponte site ↔ PDV (aplicadas no build da Vercel; à mão: `pnpm db:migrate`) |
-| `src/data/products.json` | Produtos extraídos do PDV (gerado por `scripts/extract-products.mjs`) |
 | `src/pages/admin.astro` | Painel do Decap CMS em `/admin` |
 | `src/pages/llms.txt.ts` | Geração do arquivo `/llms.txt` a partir de `site.json` |
 | `src/pages/404.astro` | Página de erro 404 |
