@@ -14,7 +14,22 @@
       "disponivel": 4,
       "noCatalogo": true,
       "atualizadoEm": "2026-11-28T11:59:00.000Z",
-      "promocao": { "id": "bf", "nome": "Black Friday", "precoOriginalCentavos": 6990, "terminaEm": "2026-11-30T03:00:00.000Z" }
+      "promocao": {
+        "id": "bf",
+        "nome": "Black Friday",
+        "precoOriginalCentavos": 6990,
+        "terminaEm": "2026-11-30T03:00:00.000Z"
+      },
+      "conteudo": {
+        "nomeSite": "Deck box completa",
+        "descricao": "Leve o deck protegido na mochila.",
+        "slug": "deck-box-completa",
+        "destaque": true,
+        "fotos": [
+          "https://exemplo.public.blob.vercel-storage.com/produtos/cmw3sqnrz001tm2sk9mafrrox/f1.webp"
+        ],
+        "ordemGrupo": 2
+      }
     },
     {
       "produtoId": "kit-turno",
@@ -27,10 +42,26 @@
       "noCatalogo": true,
       "atualizadoEm": "2026-11-20T10:00:00.000Z",
       "componentes": [
-        { "produtoId": "marcador-energy", "quantidade": 1, "disponivel": 15 },
-        { "produtoId": "marcador-supporter", "quantidade": 1, "disponivel": 15 }
+        {
+          "produtoId": "marcador-energy",
+          "quantidade": 1,
+          "disponivel": 15
+        },
+        {
+          "produtoId": "marcador-supporter",
+          "quantidade": 1,
+          "disponivel": 15
+        }
       ],
-      "promocao": null
+      "promocao": null,
+      "conteudo": {
+        "nomeSite": null,
+        "descricao": null,
+        "slug": "kit-turno",
+        "destaque": false,
+        "fotos": [],
+        "ordemGrupo": null
+      }
     },
     {
       "produtoId": "shield-roxo",
@@ -46,6 +77,15 @@
     }
   ],
   "pedidos": [
-    { "pedidoId": "8a0c6f1e-0000-4000-8000-000000000001", "numeroPdv": 31, "status": "PAGAMENTO_PENDENTE", "validoAte": "2026-11-30T12:00:00.000Z", "motivo": null }
-  ]
+    {
+      "pedidoId": "8a0c6f1e-0000-4000-8000-000000000001",
+      "numeroPdv": 31,
+      "status": "PAGAMENTO_PENDENTE",
+      "validoAte": "2026-11-30T12:00:00.000Z",
+      "motivo": null
+    }
+  ],
+  "loja": {
+    "acrescimoCartaoBp": 500
+  }
 }

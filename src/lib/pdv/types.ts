@@ -36,6 +36,13 @@ export interface ProdutoCatalogo extends EstoqueItem {
 	grupo: string | null;
 	/** Promoção do PDV vigente no site (só enquanto `terminaEm` não passou). */
 	promocao?: PromocaoPdv | null;
+	/** Conteúdo da vitrine editado no PDV (vazio enquanto o PDV não mandar). */
+	nomeSite?: string | null;
+	descricao?: string | null;
+	slug?: string | null;
+	destaque?: boolean;
+	fotos?: string[];
+	ordemGrupo?: number | null;
 }
 
 /** Promoção criada no PDV: o preço promocional já está em `precoCentavos`. */

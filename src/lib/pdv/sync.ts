@@ -90,6 +90,21 @@ export interface ItemFoto {
    * o site limpa o selo. Ausente (PDV antigo) = o site mantém o que tinha até a próxima foto.
    */
   promocao?: PromocaoFoto | null;
+  /**
+   * Conteúdo da vitrine, editado no PDV. Ausente (PDV antigo) = o site mantém o que tinha.
+   * Vem sempre inteiro: cada campo vazio é null (ou lista vazia), nunca ausente.
+   */
+  conteudo?: ConteudoFoto;
+}
+
+/** O que o site mostra além de nome e preço: tudo vem do cadastro do PDV. */
+export interface ConteudoFoto {
+  nomeSite: string | null;    // nome de vitrine; null = usa `nome`
+  descricao: string | null;
+  slug: string | null;        // endereço da página do produto (/loja/<slug>)
+  destaque: boolean;          // aparece primeiro na seção
+  fotos: string[];            // URLs públicas (Vercel Blob), na ordem; a 1ª é a capa
+  ordemGrupo: number | null;  // ordem da seção (Categoria.ordem do grupo)
 }
 
 /** Selo de promoção de um produto no site: preço antigo riscado, nome e até quando vale. */
@@ -107,7 +122,29 @@ export interface EnvioEstoque {
   geradoEm: string;
   itens: ItemFoto[];
   pedidos: StatusPedidoSite[];
+  /** Regras da loja para o site. Ausente (PDV antigo) = o site mantém o que tinha. */
+  loja?: LojaFoto;
 }
+
+export interface LojaFoto {
+  /** Acréscimo no preço para pagar no cartão, em centésimos de % (500 = 5%). 0 = sem acréscimo. */
+  acrescimoCartaoBp: number;
+}
+
+/** Foto de produto enviada pelo PDV (POST /api/pdv-sync/foto). O site guarda e devolve a URL pública. */
+export interface EnvioFoto {
+  produtoId: string;
+  fotoId: string;
+  tipo: "image/webp" | "image/jpeg" | "image/png";
+  dados: string; // base64
+}
+
+/** Limites de conteúdo (o PDV também confere ao salvar). */
+export const MAX_FOTOS_PRODUTO = 5;
+export const MAX_FOTO_BYTES = 2_500_000; // depois de virar base64 cabe no corpo de 4,5 MB da Vercel
+export const MAX_DESCRICAO_SITE = 1_000;
+export const MAX_NOME_SITE = 80;
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 // ─── Assinatura ─────────────────────────────────────────
 
@@ -236,6 +273,8 @@ export function lerEnvioEstoque(v: unknown): EnvioEstoque | null {
       ...(componentes ? { componentes } : {}),
       // Ausente fica ausente (o site mantém o selo salvo); presente e inválida vira null (sem selo)
       ...(raw.promocao !== undefined ? { promocao: lerPromocaoFoto(raw.promocao, raw.precoCentavos) } : {}),
+      // Ausente fica ausente; presente e inválido também fica ausente (o site mantém o conteúdo salvo)
+      ...(raw.conteudo !== undefined && lerConteudoFoto(raw.conteudo) ? { conteudo: lerConteudoFoto(raw.conteudo)! } : {}),
     });
   }
   const pedidos: StatusPedidoSite[] = [];
@@ -244,7 +283,14 @@ export function lerEnvioEstoque(v: unknown): EnvioEstoque | null {
     if (!p) return null;
     pedidos.push(p);
   }
-  return { pdvSeq: e.pdvSeq, completo: e.completo, eventosAplicadosAte: e.eventosAplicadosAte, geradoEm: e.geradoEm, itens, pedidos };
+  let loja: LojaFoto | undefined;
+  if (e.loja !== undefined) {
+    const l = e.loja as Record<string, unknown> | null;
+    const acrescimo = inteiro(l?.acrescimoCartaoBp, 0, 5_000);
+    if (acrescimo === null) return null;
+    loja = { acrescimoCartaoBp: acrescimo };
+  }
+  return { pdvSeq: e.pdvSeq, completo: e.completo, eventosAplicadosAte: e.eventosAplicadosAte, geradoEm: e.geradoEm, itens, pedidos, ...(loja ? { loja } : {}) };
 }
 
 /** Confere as confirmações de eventos (POST /api/pdv-sync/eventos/ack). null = recusa o lote. */
@@ -261,6 +307,34 @@ export function lerResultados(v: unknown): ResultadoEvento[] | null {
     else return null;
   }
   return out;
+}
+
+/** Confere o campo `conteudo`. Inválido vira null (o site mantém o que tinha, sem travar o envio). */
+export function lerConteudoFoto(bruto: unknown): ConteudoFoto | null {
+  if (!bruto || typeof bruto !== "object") return null;
+  const c = bruto as Record<string, unknown>;
+  const nomeSite = textoOpcional(c.nomeSite, MAX_NOME_SITE);
+  const descricao = textoOpcional(c.descricao, MAX_DESCRICAO_SITE);
+  const slug = textoOpcional(c.slug, 120);
+  const ordemGrupo = c.ordemGrupo === null || c.ordemGrupo === undefined ? null : inteiro(c.ordemGrupo, 0, 1_000_000);
+  if (nomeSite === undefined || descricao === undefined || slug === undefined || (slug !== null && !SLUG.test(slug))) return null;
+  if (typeof c.destaque !== "boolean" || !Array.isArray(c.fotos) || c.fotos.length > MAX_FOTOS_PRODUTO) return null;
+  const fotos: string[] = [];
+  for (const f of c.fotos) {
+    if (typeof f !== "string" || f.length > 500 || !f.startsWith("https://")) return null;
+    fotos.push(f);
+  }
+  if (c.ordemGrupo !== null && c.ordemGrupo !== undefined && ordemGrupo === null) return null;
+  return { nomeSite, descricao, slug, destaque: c.destaque, fotos, ordemGrupo };
+}
+
+/** Confere o envio de uma foto. null = recusa. */
+export function lerEnvioFoto(v: unknown): EnvioFoto | null {
+  const f = v as Record<string, unknown> | null;
+  if (!f || !textoExato(f.produtoId, 64) || !textoExato(f.fotoId, 64) || !/^[A-Za-z0-9_-]+$/.test(f.fotoId) || !/^[A-Za-z0-9_-]+$/.test(f.produtoId)) return null;
+  if (f.tipo !== "image/webp" && f.tipo !== "image/jpeg" && f.tipo !== "image/png") return null;
+  if (typeof f.dados !== "string" || f.dados.length === 0 || f.dados.length > Math.ceil(MAX_FOTO_BYTES / 3) * 4) return null;
+  return { produtoId: f.produtoId, fotoId: f.fotoId, tipo: f.tipo, dados: f.dados };
 }
 
 // ─── Estoque e prazos ───────────────────────────────────

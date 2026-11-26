@@ -33,7 +33,14 @@ export default defineConfig({
 			PDV_MOCK_ADMIN_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
 		},
 	},
-	adapter: vercel(),
+	// imagesConfig liga o otimizador da Vercel (/_vercel/image) para as fotos de produto no Vercel Blob
+	adapter: vercel({
+		imagesConfig: {
+			sizes: [240, 360, 480, 720, 960, 1440],
+			formats: ['image/avif', 'image/webp'],
+			remotePatterns: [{ protocol: 'https', hostname: '*.public.blob.vercel-storage.com' }],
+		},
+	}),
 	integrations: [
 		// Ícones resolvidos em build e inlinados como SVG: zero JS e zero requisições.
 		// `include` limita o bundle SSR aos glifos usados; adicione novos nomes aqui.
