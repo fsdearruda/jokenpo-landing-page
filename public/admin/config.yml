@@ -140,6 +140,20 @@ collections:
                 required: false
                 hint: "Ex.: 22:00 (deixe em branco se fechado)."
                 pattern: ['^([01]\d|2[0-3]):[0-5]\d$', 'Use o formato 24h HH:MM, ex.: 22:00']
+              - label: Dias para o Google
+                name: schemaDays
+                widget: select
+                multiple: true
+                required: false
+                hint: "Os dias que este horário cobre, para o Google Maps. Vazio = deduzido do texto dos dias."
+                options:
+                  - { label: "Segunda", value: Monday }
+                  - { label: "Terça", value: Tuesday }
+                  - { label: "Quarta", value: Wednesday }
+                  - { label: "Quinta", value: Thursday }
+                  - { label: "Sexta", value: Friday }
+                  - { label: "Sábado", value: Saturday }
+                  - { label: "Domingo", value: Sunday }
 
   - name: agenda_events
     label: "2. Agenda Semanal e Torneios"

@@ -1,10 +1,11 @@
 import type { APIRoute } from 'astro';
-import siteData from '../data/site.json';
+import { site as siteData } from '../lib/content';
+import { SITE_URL } from '../lib/site-url';
 
 export const prerender = true;
 
 export const GET: APIRoute = () => {
-	const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
+	const siteUrl = SITE_URL;
 	const { name, description, location, contact, hours, agenda, boardgamePasses, boardgames, extras, faq } =
 		siteData;
 

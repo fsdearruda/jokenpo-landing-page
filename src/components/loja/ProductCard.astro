@@ -1,0 +1,501 @@
+---
+import Icon from '../Icon.astro';
+import { CONDICOES, IDIOMAS, JOGOS, compareAtCents, formatPrice, nomeDe, pixPrice, promoBadge, type PaymentRules, type ProductVariant, type Tone } from '../../lib/catalog';
+import { remoteImage } from '../../lib/product-images';
+
+/** Card de um produto na vitrine da /loja. O comportamento (adicionar, quantidade, estoque ao vivo) fica em `scripts/loja.ts`. */
+interface Props {
+	variant: ProductVariant;
+	/** Nome da seção (grupo de categoria do PDV). */
+	category: string;
+	tone: Tone;
+	index: number;
+	payment: PaymentRules;
+	level: 'out' | 'low' | 'ok';
+	stockText: string;
+}
+
+const { variant, category, tone, index, payment, level, stockText } = Astro.props;
+const photos = variant.images ?? [];
+const before = compareAtCents(variant);
+const badge = promoBadge(variant);
+/** O preço do PDV é o do cartão; com desconto no Pix, o card mostra os dois. */
+const feeOn = payment.descontoPixBp > 0;
+/** Página do produto (o slug é criado no PDV quando o produto vai para o site). */
+const link = variant.slug ? `/loja/${variant.slug}` : null;
+---
+
+<article
+	class={`product-card tone-${tone}`}
+	data-id={variant.id}
+	data-price={variant.priceCents}
+	data-stock={variant.stock}
+	data-title={variant.title}
+	data-compare={before ?? undefined}
+	data-index={index}
+	aria-labelledby={`p-${variant.id}`}
+>
+	{photos.length > 0 ? (
+		<div class="product-visual product-photo">
+			{photos.slice(0, 2).map((photo, i) => {
+																			const alt = i === 0 ? photo.alt : '';
+				const cls = i === 0 ? undefined : 'photo-alt';
+				const img = remoteImage(photo.src, [240, 360, 480, 720]);
+				return (
+					<img
+						{...img}
+						sizes="(min-width: 640px) 260px, 50vw"
+						alt={alt}
+						class={cls}
+						width="720"
+						height="720"
+						loading="lazy"
+						decoding="async"
+					/>
+				);
+			})}
+			{badge && <strong class="promo-badge">{badge}</strong>}
+		</div>
+	) : (
+		variant.carta ? (
+			<div class="product-visual visual-carta" aria-hidden="true">
+				<span class="carta-jogo">{nomeDe(JOGOS, variant.carta.jogo)}</span>
+				<span class="carta-nome">{variant.carta.nomeCarta}</span>
+				<span class="carta-colecao">{variant.carta.numero ?? variant.carta.colecao}</span>
+				{badge && <strong class="promo-badge">{badge}</strong>}
+			</div>
+		) : (
+			<div class="product-visual visual-vazia" aria-hidden="true">
+				<span class="vazia-nome">{variant.title}</span>
+				{badge && <strong class="promo-badge">{badge}</strong>}
+			</div>
+		)
+	)}
+	<div class="card-body">
+		<p class="card-kicker">{category}</p>
+		<h3 class="card-title" id={`p-${variant.id}`}>
+			{link ? <a class="card-link" href={link}>{variant.title}</a> : variant.title}
+		</h3>
+		{variant.carta && (
+			<p class="card-carta">
+				{[
+					variant.carta.colecaoNome ?? variant.carta.colecao,
+					nomeDe(CONDICOES, variant.carta.condicao),
+					nomeDe(IDIOMAS, variant.carta.idioma),
+					variant.carta.acabamento !== 'normal' ? variant.carta.acabamento : null,
+				]
+					.filter(Boolean)
+					.join(' · ')}
+			</p>
+		)}
+		<div class="card-price" data-role="price">
+			<p class="price-before" data-role="price-before" hidden={!before}>
+				<span class="sr-only">De </span><s>{before ? formatPrice(pixPrice(before, payment)) : ''}</s>
+			</p>
+			<p class="price-main">
+				<span data-role="price-pix">{formatPrice(pixPrice(variant.priceCents, payment))}</span>
+				{feeOn && <small>no Pix</small>}
+			</p>
+			{feeOn && (
+				<p class="price-card">
+					ou <span data-role="price-card">{formatPrice(variant.priceCents)}</span> no cartão
+				</p>
+			)}
+		</div>
+		<p class="card-stock" data-role="stock" data-level={level}>
+			{stockText}
+		</p>
+		<div class="card-action">
+			<button type="button" class="add-btn" data-role="add" disabled={level === 'out'}>
+				{level === 'out' ? 'Esgotado' : 'Adicionar'}
+			</button>
+			<div class="card-qty" data-role="qty" role="group" aria-label={`${variant.title} na sacola`} hidden>
+				<button type="button" class="step-btn" data-step="-1" aria-label={`Tirar uma unidade de ${variant.title}`}>
+					<Icon name="lucide:minus" size={16} weight={3} />
+				</button>
+				<span class="card-qty-value" data-role="qty-value">1 na sacola</span>
+				<button type="button" class="step-btn" data-step="1" aria-label={`Adicionar mais uma unidade de ${variant.title}`}>
+					<Icon name="lucide:plus" size={16} weight={3} />
+				</button>
+			</div>
+		</div>
+	</div>
+</article>
+
+<style>
+	.product-card {
+		--tone: var(--cyan);
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		overflow: hidden;
+		border: 2px solid var(--ink-3);
+		border-radius: 16px;
+		background: var(--ink-2);
+		transition:
+			border-color var(--duration-fast) var(--ease-out),
+			box-shadow var(--duration-fast) var(--ease-out),
+			transform var(--duration-fast) var(--ease-out);
+	}
+
+	.product-card.tone-yellow {
+		--tone: var(--yellow);
+	}
+
+	.product-card.tone-pink {
+		--tone: var(--pink);
+	}
+
+	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.product-card:hover {
+				box-shadow: 5px 5px 0 var(--ink-3);
+				transform: translate(-2px, -2px);
+		}
+	}
+
+	/* Item já na sacola fica marcado na vitrine */
+	.product-card.is-in-cart {
+		border-color: var(--tone);
+		box-shadow: 5px 5px 0 color-mix(in oklch, var(--tone) 45%, var(--ink));
+	}
+
+	.product-card:has([data-level='out']) .product-visual {
+		filter: grayscale(1);
+		opacity: 0.55;
+	}
+
+	/* Moldura da foto (ou do cartão de texto) */
+	.product-visual {
+		position: relative;
+		display: grid;
+		place-items: center;
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+		border-bottom: 2px solid var(--ink-3);
+		background-color: var(--ink);
+		background-image: radial-gradient(color-mix(in oklch, var(--tone) 26%, transparent) 1.5px, transparent 2px);
+		background-size: 14px 14px;
+	}
+
+	/* Foto do produto: fundo branco das fotos de catálogo, enquadrada inteira */
+	.product-photo {
+		position: relative;
+		background: var(--white);
+	}
+
+	.product-photo img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		transition: opacity var(--duration-normal) var(--ease-out);
+	}
+
+	.product-photo .photo-alt {
+		opacity: 0;
+	}
+
+	@media (hover: hover) {
+		.product-card:hover .product-photo .photo-alt {
+				opacity: 1;
+		}
+	}
+
+	/* Produto sem foto no PDV: o nome em destaque sobre o fundo pontilhado da cor da seção */
+	.visual-vazia {
+		padding: 1rem;
+		text-align: center;
+	}
+
+	.vazia-nome {
+		max-width: 14ch;
+		font-family: var(--font-display);
+		font-size: clamp(1rem, 2.4vw, 1.375rem);
+		line-height: 1.05;
+		color: var(--white);
+		overflow-wrap: anywhere;
+	}
+
+	.card-body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		padding: 0.75rem 0.875rem 0.875rem;
+	}
+
+	.card-kicker {
+		margin-bottom: 0.25rem;
+		color: var(--tone);
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		line-height: 1.3;
+	}
+
+	.card-title {
+		margin-bottom: 0.5rem;
+		font-family: var(--font-body);
+		font-size: 0.9375rem;
+		font-weight: 700;
+		line-height: 1.3;
+		text-wrap: balance;
+	}
+
+	.card-price {
+		display: grid;
+		gap: 0.125rem;
+		margin: auto 0 0.25rem;
+	}
+
+	.card-price p {
+		margin: 0;
+	}
+
+	.price-before {
+		color: var(--mist-dim);
+		font-size: 0.75rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.price-before[hidden] {
+		display: none;
+	}
+
+	.price-main {
+		color: var(--yellow);
+		font-family: var(--font-display);
+		font-size: 1.375rem;
+		line-height: 1.1;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.price-main small {
+		display: block;
+		margin-top: 0.125rem;
+		font-family: var(--font-body);
+		font-size: 0.75rem;
+		font-weight: 700;
+	}
+
+	.price-card {
+		color: var(--mist-soft);
+		font-size: 0.75rem;
+		line-height: 1.35;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Selo de promoção no canto da foto */
+	.promo-badge {
+		position: absolute;
+		inset: 0.5rem auto auto 0.5rem;
+		z-index: 1;
+		padding: 0.25rem 0.5rem;
+		border: 2px solid var(--ink);
+		border-radius: 999px;
+		background: var(--pink);
+		color: var(--ink);
+		font: 800 0.75rem/1 var(--font-body);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		box-shadow: 2px 2px 0 var(--ink);
+	}
+
+	.card-stock {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		margin: 0 0 0.75rem;
+		color: var(--mist);
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.card-stock::before {
+		content: '';
+		width: 0.4375rem;
+		height: 0.4375rem;
+		border-radius: 50%;
+		background: var(--cyan);
+	}
+
+	.card-stock[data-level='low']::before {
+		border-radius: 1px;
+		background: var(--yellow);
+		transform: rotate(45deg);
+	}
+
+	.card-stock[data-level='out']::before {
+		width: 0.5625rem;
+		height: 2px;
+		border-radius: 0;
+		background: var(--mist);
+	}
+
+	.add-btn {
+		inline-size: 100%;
+		min-block-size: 2.75rem;
+		padding: 0.5rem 0.75rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-pill);
+		background: var(--yellow);
+		color: var(--ink);
+		font: 700 0.875rem/1.2 var(--font-body);
+		cursor: pointer;
+		touch-action: manipulation;
+		box-shadow: 3px 3px 0 var(--ink-3);
+		transition:
+			transform var(--duration-instant) var(--ease-out),
+			box-shadow var(--duration-fast) var(--ease-out);
+	}
+
+	.add-btn:active {
+		transform: translate(1px, 1px);
+		box-shadow: 1px 1px 0 var(--ink-3);
+	}
+
+	.add-btn:disabled {
+		border-color: var(--ink-3);
+		background: transparent;
+		color: var(--mist);
+		box-shadow: none;
+		cursor: not-allowed;
+	}
+
+	.add-btn[hidden],
+	.card-qty[hidden] {
+		display: none;
+	}
+
+	.card-qty {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border: 2px solid var(--tone, var(--ink));
+		border-radius: var(--radius-pill);
+	}
+
+	.card-qty {
+		min-block-size: 2.75rem;
+		background: color-mix(in oklch, var(--tone) 14%, var(--ink));
+	}
+
+	.card-qty-value {
+		font-size: 0.8125rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		text-align: center;
+	}
+
+	@media (hover: hover) {
+		.card-qty .step-btn:not(:disabled):hover {
+				color: var(--yellow);
+		}
+	}
+
+	@media (max-width: 480px) {
+		.card-body {
+				padding: 0.625rem 0.625rem 0.75rem;
+		}
+
+		.card-title {
+				font-size: 0.875rem;
+		}
+
+		.price-main {
+				font-size: 1.1875rem;
+		}
+
+		.card-qty-value {
+				font-size: 0.75rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.product-visual span,
+		.product-photo img {
+				transition: none;
+		}
+	}
+
+	@media (forced-colors: active) {
+		.product-card,
+		.card-qty {
+				border-color: CanvasText;
+		}
+
+		.product-card.is-in-cart {
+				outline: 3px solid Highlight;
+		}
+
+		.product-visual:not(.product-photo) {
+				display: none;
+		}
+	}
+
+	/* Cartas avulsas: cartão de texto (sem imagem das APIs de cartas) e filtros */
+	.visual-carta {
+		display: grid;
+		align-content: center;
+		justify-items: center;
+		gap: 0.375rem;
+		padding: 1rem;
+		text-align: center;
+		background:
+			repeating-linear-gradient(135deg, color-mix(in oklch, var(--tone) 22%, transparent) 0 6px, transparent 6px 14px),
+			var(--ink);
+		color: var(--white);
+	}
+
+	.carta-jogo {
+		font: 700 0.6875rem/1 var(--font-body);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--tone);
+	}
+
+	.carta-nome {
+		font-family: var(--font-display);
+		font-size: clamp(1rem, 2.4vw, 1.375rem);
+		line-height: 1.05;
+		overflow-wrap: anywhere;
+	}
+
+	.carta-colecao {
+		font: 600 0.75rem/1 var(--font-body);
+		padding: 0.25rem 0.5rem;
+		border: 1.5px solid currentColor;
+		border-radius: var(--radius-pill);
+	}
+
+	.card-carta {
+		margin: 0;
+		font-size: 0.75rem;
+		color: var(--mist);
+	}
+
+	.card-link {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.card-link:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.card-link:focus-visible {
+		outline: 3px solid var(--cyan);
+		outline-offset: 3px;
+		border-radius: 4px;
+	}
+
+	@media (forced-colors: active) {
+		.visual-carta {
+				border: 2px solid canvastext;
+		}
+	}
+</style>

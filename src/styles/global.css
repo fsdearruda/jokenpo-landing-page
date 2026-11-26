@@ -32,6 +32,11 @@
 	--surface-warm: oklch(0.98 0.02 85);
 	--ink-on-color: #18181c;
 	--ink-on-color: oklch(0.22 0.02 285);
+	/* Texto secundário sobre superfície clara (sacola, cards de pedido) */
+	--ink-muted: #4a4852;
+	/* Textos secundários sobre fundo escuro (vitrine) */
+	--mist-dim: #b9b7c2;
+	--mist-soft: #d6d4dd;
 
 	/* Raios e Sombras Táteis */
 	--radius-card: 20px;
@@ -241,5 +246,11 @@ p {
 	.button,
 	.button-outline {
 		border-color: ButtonText;
+	}
+	/* Filtros e miniaturas marcam o ativo só pela cor de fundo, que o modo de alto contraste apaga */
+	button[aria-pressed='true'] {
+		border-color: Highlight;
+		background: Highlight;
+		color: HighlightText;
 	}
 }

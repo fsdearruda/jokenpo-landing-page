@@ -1,5 +1,5 @@
 import type { ImageMetadata } from 'astro';
-import siteData from '../data/site.json';
+import { site as siteData } from './content';
 
 export type BannerPlacement = 'loja' | 'inicio';
 
@@ -73,7 +73,7 @@ export const isUpcoming = (banner: Banner) => Boolean(banner.startDate && banner
  */
 export const activeBanners = (placement: BannerPlacement, shapes?: BannerShape[]): Banner[] => {
 	const now = today();
-	return ((siteData as { banners?: Banner[] }).banners ?? []).filter(
+	return siteData.banners.filter(
 		(banner) =>
 			banner.active &&
 			banner.placement?.includes(placement) &&
