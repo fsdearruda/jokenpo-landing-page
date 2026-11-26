@@ -1,6 +1,6 @@
 import type { PaymentRules, ProductFamily, ProductVariant, Tone } from './catalog';
 import { getPdv, type ProdutoCatalogo } from './pdv';
-import { acrescimoCartaoDaLoja, ultimoContatoDaLoja } from './pdv/cloud';
+import { descontoPixDaLoja, ultimoContatoDaLoja } from './pdv/cloud';
 
 export interface Vitrine {
 	families: ProductFamily[];
@@ -8,8 +8,8 @@ export interface Vitrine {
 	disponivel: boolean;
 	/** Última vez que o PC da loja falou com o site. */
 	lojaVistaEm: string | null;
-	/** Acréscimo do cartão definido no PDV, em centésimos de % (null = o PDV ainda não mandou). */
-	acrescimoCartaoBp: number | null;
+	/** Desconto no Pix definido no PDV, em centésimos de % (null = o PDV ainda não mandou). */
+	descontoPixBp: number | null;
 }
 
 const TONS: Tone[] = ['cyan', 'yellow', 'pink'];
@@ -22,13 +22,10 @@ const slugify = (text: string) =>
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-|-$/g, '') || 'produtos';
 
-const VAZIA: Vitrine = { families: [], disponivel: false, lojaVistaEm: null, acrescimoCartaoBp: null };
+const VAZIA: Vitrine = { families: [], disponivel: false, lojaVistaEm: null, descontoPixBp: null };
 
-/** Acréscimo do cartão definido no PDV (Cadastros → Site); sem ele, cartão custa o mesmo que o Pix. */
-export const regrasPagamento = (acrescimoCartaoBp: number | null): PaymentRules => ({
-	cardFeeEnabled: (acrescimoCartaoBp ?? 0) > 0,
-	cardFeePercent: (acrescimoCartaoBp ?? 0) / 100,
-});
+/** Desconto no Pix definido no PDV (Cadastros → Site); sem ele, Pix e cartão custam o mesmo. */
+export const regrasPagamento = (descontoPixBp: number | null): PaymentRules => ({ pixDiscountPercent: (descontoPixBp ?? 0) / 100 });
 
 /** Card de um produto do PDV. */
 export function variante(p: ProdutoCatalogo): ProductVariant {
@@ -58,7 +55,7 @@ export function variante(p: ProdutoCatalogo): ProductVariant {
  */
 export async function carregarVitrine(): Promise<Vitrine> {
 	try {
-		const [catalogo, vistaEm, acrescimoCartaoBp] = await Promise.all([getPdv().listarCatalogo(), ultimoContatoDaLoja(), acrescimoCartaoDaLoja()]);
+		const [catalogo, vistaEm, descontoPixBp] = await Promise.all([getPdv().listarCatalogo(), ultimoContatoDaLoja(), descontoPixDaLoja()]);
 		// Loja que nunca sincronizou: vitrine vazia com o WhatsApp
 		if (!vistaEm) return VAZIA;
 
@@ -86,7 +83,7 @@ export async function carregarVitrine(): Promise<Vitrine> {
 				};
 			});
 
-		return { families, disponivel: true, lojaVistaEm: vistaEm.toISOString(), acrescimoCartaoBp };
+		return { families, disponivel: true, lojaVistaEm: vistaEm.toISOString(), descontoPixBp };
 	} catch (error) {
 		// Banco fora do ar: a CDN segue servindo a última página boa (stale-while-revalidate); sem ela, vitrine vazia
 		console.error('[vitrine] catálogo do PDV indisponível', error instanceof Error ? error.message : error);

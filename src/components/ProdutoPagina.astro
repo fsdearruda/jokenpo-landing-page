@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from './Icon.astro';
 import siteData from '../data/site.json';
-import { CONDICOES, IDIOMAS, JOGOS, LOW_STOCK_THRESHOLD, cardPrice, compareAtCents, formatPrice, nomeDe, promoBadge, type PaymentRules } from '../lib/catalog';
+import { CONDICOES, IDIOMAS, JOGOS, LOW_STOCK_THRESHOLD, compareAtCents, formatPrice, nomeDe, pixPrice, promoBadge, type PaymentRules } from '../lib/catalog';
 import { MAX_QUANTIDADE_POR_ITEM, type ProdutoCatalogo } from '../lib/pdv';
 import { remoteImage } from '../lib/product-images';
 import { variante } from '../lib/vitrine';
@@ -17,8 +17,10 @@ interface Props {
 const { produto, payment, slug } = Astro.props;
 const shop = siteData.shop;
 
-const feeOn = payment.cardFeeEnabled && payment.cardFeePercent > 0;
+/** O preço do PDV é o do cartão; com desconto no Pix, a página mostra os dois. */
+const feeOn = payment.pixDiscountPercent > 0;
 const v = variante(produto);
+const pix = pixPrice(v.priceCents, payment);
 const carta = v.carta;
 const before = compareAtCents(v);
 const badge = promoBadge(v);
@@ -43,7 +45,7 @@ const detalhesCarta = carta
 const descricao =
 	produto.descricao ??
 	(carta ? `${carta.nomeCarta}, ${detalhesCarta.map(([, valor]) => valor).join(', ')}.` : `${v.title} na Jokenpo, para retirar na loja.`);
-const metaDescription = `${v.title} por ${formatPrice(v.priceCents)} no Pix na Jokenpo (Natal/RN). ${descricao}`.slice(0, 160);
+const metaDescription = `${v.title} por ${formatPrice(pix)}${feeOn ? ' no Pix' : ''} na Jokenpo (Natal/RN). ${descricao}`.slice(0, 160);
 
 const jsonLd = [
 	{
@@ -138,15 +140,15 @@ const jsonLd = [
 						before && (
 							<p class="preco-antes">
 								<span class="sr-only">De </span>
-								<s>{formatPrice(before)}</s>
+								<s>{formatPrice(pixPrice(before, payment))}</s>
 							</p>
 						)
 					}
 					<p class="preco">
-						{formatPrice(v.priceCents)}
+						{formatPrice(pix)}
 						{feeOn && <small>no Pix</small>}
 					</p>
-					{feeOn && <p class="preco-cartao">ou {formatPrice(cardPrice(v.priceCents, payment))} no cartão</p>}
+					{feeOn && <p class="preco-cartao">ou {formatPrice(v.priceCents)} no cartão</p>}
 				</div>
 
 				<p class="estoque" data-level={level}>{stockText}</p>
