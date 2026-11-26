@@ -31,3 +31,4 @@ skills-lock.json
 .claude/
 agent/
 .env*.local
+.lighthouseci/

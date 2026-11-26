@@ -85,6 +85,10 @@ banners ficam em `src/data/site.json`, editados pelo Decap CMS em `/admin` (OAut
 Os banners (coleção 6) giram em carrossel na página inicial e na `/loja`, com datas de início e fim conferidas também
 no navegador. Produtos, fotos, preços e promoções não passam pelo CMS: são editados no PDV.
 
+O CMS commita direto no `main`. O conteúdo passa pelo schema de `src/lib/content.ts` no build: um campo apagado ou
+fora das opções falha o deploy, e o site no ar continua o anterior. Os componentes leem de `content.ts`, nunca do JSON
+direto. Campo novo no CMS precisa entrar também no schema (`src/lib/content.test.ts` confere os dois).
+
 ## Stack
 
 - Astro 7 (`output: 'server'` com `@astrojs/vercel`) e TypeScript em modo estrito
@@ -117,8 +121,9 @@ pnpm exec astro dev stop
 Para validar tipos, testes e build de produção:
 
 ```bash
-pnpm check   # inclui a conferência da cópia do contrato do PDV
-pnpm test
+pnpm check             # inclui a conferência da cópia do contrato do PDV
+pnpm test              # regras puras: contrato, estoque, Pix, saúde, conteúdo, sacola
+pnpm test:integracao   # com banco: Postgres em memória (PGlite), sem Docker nem rede
 pnpm build
 ```
 
@@ -142,6 +147,12 @@ Consulte [.env.example](.env.example). Nunca versione chaves ou segredos reais n
 | `IP_HASH_SECRET` | Sal do hash de IP do limite de pedidos (sem ele, usa `PDV_SYNC_TOKEN`) | Recomendado |
 | `RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN` | E-mail de alerta para contato@jokenpo.cards (integração Resend da Vercel; domínio verificado no DNS) | Sim, para os alertas |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob das fotos de produto enviadas pelo PDV | Sim (criada pela integração) |
+| `DATABASE_URL_UNPOOLED` | Conexão direta do Neon, usada só pelas migrações (`scripts/db-migrate.mjs`) | Não (criada pela integração; sem ela usa `DATABASE_URL`) |
+| `PDV_REPO_DIR` | Pasta local do repositório do PDV para `pnpm sync:contract` | Não (padrão `../jokenpo-pdv`) |
+
+Segredos do GitHub Actions: `PDV_CONTRACT_TOKEN` (leitura do repositório do PDV, para o CI comparar a cópia do
+contrato) e `VERCEL_AUTOMATION_BYPASS_SECRET` (Protection Bypass for Automation da Vercel, para o Lighthouse medir o
+preview protegido).
 
 Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desativado localmente. Enquanto `PUBLIC_BLIP_APP_KEY` estiver vazia, o botão do Blip Chat não é renderizado. Ao configurar o Blip, libere os domínios do site (`localhost` e `jokenpo.cards`) em `Canais > Blip Chat > Configurações` no portal da Blip.
 
@@ -156,7 +167,12 @@ Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desati
 | `src/components/PromoBanners.astro`, `src/lib/banners.ts` | Banners de eventos e promoções em carrossel |
 | `src/pages/api/pdv/`, `src/pages/api/pdv-sync/` | API pública do PDV e rotas de sincronização do PC da loja |
 | `src/lib/catalog.ts`, `src/lib/vitrine.ts`, `src/lib/pdv/` | Tipos e preços da vitrine, seções a partir do PDV, contrato `PdvClient` e ponte com o PDV (Postgres e Vercel Blob) |
-| `db/migrations/` | Tabelas da ponte site ↔ PDV (aplicadas no build da Vercel; à mão: `pnpm db:migrate`) |
+| `db/migrations/` | Tabelas da ponte site ↔ PDV (aplicadas no build da Vercel; à mão: `pnpm db:migrate`). Só acrescente: editar uma migração aplicada falha o build |
+| `src/lib/content.ts` | Schema do `site.json`: conteúdo do CMS conferido no build |
+| `src/components/loja/`, `src/scripts/sacola.ts` | Card de produto e sacola da `/loja`; sacola e pedido guardados no navegador |
+| `scripts/` | `db-migrate.mjs` (migrações) e `sync-contract.mjs` (cópia do contrato do PDV) |
+| `contract-fixtures/` | Exemplos de mensagens do contrato, copiados do PDV e lidos pelos testes dos dois lados |
+| `test/` | Infraestrutura dos testes de integração (PGlite e substituto do `astro:env`) |
 | `src/pages/admin.astro` | Painel do Decap CMS em `/admin` |
 | `src/pages/llms.txt.ts` | Geração do arquivo `/llms.txt` a partir de `site.json` |
 | `src/pages/404.astro` | Página de erro 404 |
@@ -167,7 +183,8 @@ Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desati
 | `src/assets/games/` | Capas locais dos jogos otimizadas no build |
 | `public/` | Vetores SVG da marca, `og-image.png`, `site.webmanifest`, `robots.txt` e configuração do CMS em `admin/` |
 | `docs/` | Documentação da marca (`style-guide.md`, `brand-content.md`, `ui-ux-guidelines.md`) e capturas do site em `images/` |
-| `vercel.json` | Cabeçalhos HTTP de segurança, cache e descoberta |
+| `vercel.json` | Cabeçalhos HTTP de segurança, cache e descoberta; Vercel Schedules (`saude-pdv`, `manutencao-pdv`) |
+| `.github/workflows/` | CI (tipos, testes, integração, contrato, build) e Lighthouse no deploy da Vercel |
 
 ## Agentes
 

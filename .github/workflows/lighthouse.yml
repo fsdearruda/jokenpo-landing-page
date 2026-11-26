@@ -1,0 +1,46 @@
+name: Lighthouse
+
+# A Vercel avisa o GitHub quando um deploy fica pronto (repository_dispatch). Só dispara com este
+# arquivo no main; antes disso, rode à mão em Actions → Lighthouse → Run workflow com a URL.
+on:
+  repository_dispatch:
+    types: ["vercel.deployment.success"]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL do deploy (preview ou produção)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_URL: ${{ github.event.client_payload.url || inputs.url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Lighthouse (95+ nas quatro categorias)
+        env:
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        # Não use variáveis LHCI_*: o lhci lê todas como opções e elas sobrescrevem o lighthouserc
+        run: |
+          case "$DEPLOY_URL" in http*) ;; *) export DEPLOY_URL="https://$DEPLOY_URL" ;; esac
+          echo "Medindo $DEPLOY_URL"
+          npx -y @lhci/cli@0.16.1 autorun --config=lighthouserc.cjs
+
+      - name: Relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse
+          path: .lighthouseci
+          retention-days: 14

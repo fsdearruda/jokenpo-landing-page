@@ -7,13 +7,14 @@ Vercel. Estrutura, rotas e variáveis: `README.md`.
 
 ```bash
 pnpm check        # confere a cópia do contrato do PDV + astro check
-pnpm test         # vitest (contrato com o PDV e cálculo de estoque)
+pnpm test         # vitest: regras puras (contrato, estoque, Pix, saúde, conteúdo, sacola)
+pnpm test:integracao  # banco em memória (PGlite): pedidos, estoque, faxina e rotas /api
 pnpm build
 vercel env pull .env.local          # banco e Blob de preview: sem isso a /loja fica vazia no dev
 pnpm exec astro dev --background   # dev em segundo plano; `astro dev status|logs|stop`
 ```
 
-Rode `pnpm check`, `pnpm test` e `pnpm build` depois de mudar código. Ao terminar, informe os arquivos
+Rode `pnpm check`, `pnpm test`, `pnpm test:integracao` (se mexer em banco ou rotas) e `pnpm build` depois de mudar código. Ao terminar, informe os arquivos
 alterados, o resultado da validação e placeholders pendentes.
 
 ## Fontes da verdade
