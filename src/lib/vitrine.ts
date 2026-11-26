@@ -1,6 +1,6 @@
-import { families as buildFamilies, type ProductFamily, type Tone } from './catalog';
-import { getPdv, pdvMode } from './pdv';
-import { ultimoContatoDaLoja } from './pdv/cloud';
+import { families as buildFamilies, variantsById, type ProductFamily, type ProductVariant, type Tone } from './catalog';
+import { getPdv, pdvMode, type ProdutoCatalogo } from './pdv';
+import { acrescimoCartaoDaLoja, ultimoContatoDaLoja } from './pdv/cloud';
 
 export interface Vitrine {
 	families: ProductFamily[];
@@ -8,6 +8,8 @@ export interface Vitrine {
 	fonte: 'pdv' | 'build';
 	/** Última vez que o PC da loja falou com o site (só no modo `live`). */
 	lojaVistaEm: string | null;
+	/** Acréscimo do cartão definido no PDV, em centésimos de % (null = vale o do CMS). */
+	acrescimoCartaoBp: number | null;
 }
 
 const TONS: Tone[] = ['cyan', 'yellow', 'pink'];
@@ -20,77 +22,78 @@ const slugify = (text: string) =>
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-|-$/g, '') || 'produtos';
 
+const BUILD: Vitrine = { families: buildFamilies, fonte: 'build', lojaVistaEm: null, acrescimoCartaoBp: null };
+
+/** Card de um produto do PDV. Sem foto no PDV ainda, usa a do CMS antigo pelo id (transição; sai na limpeza da fase 4). */
+function variante(p: ProdutoCatalogo): ProductVariant {
+	const titulo = p.nomeSite ?? p.nome;
+	const antigo = variantsById.get(p.produtoId);
+	const fotos = p.fotos ?? [];
+	return {
+		id: p.produtoId,
+		sku: p.sku,
+		label: titulo,
+		title: titulo,
+		pdvName: p.nome,
+		priceCents: p.precoCentavos,
+		stock: p.disponivel,
+		pdvPromo: p.promocao ?? null,
+		images: fotos.length ? fotos.map((src, i) => ({ src, alt: i === 0 ? titulo : '' })) : antigo?.variant.images,
+		swatch: antigo?.variant.swatch,
+		visual: antigo?.family.type ?? 'generic',
+		description: p.descricao ?? null,
+		slug: p.slug ?? null,
+		featured: p.destaque ?? false,
+	};
+}
+
 /**
- * Monta as seções da vitrine.
- *
- * No modo `live`, o que aparece é decidido no PDV (Cadastros → Site): produto marcado lá
- * entra aqui com preço e estoque do PDV. As famílias de `products.json` continuam valendo
- * só como apresentação (título, rótulo, ilustração) para os ids que elas conhecem; os
- * demais produtos entram numa seção por categoria do PDV.
+ * Monta as seções da vitrine a partir do PDV (modo `live`): uma seção por grupo de categoria, na ordem das
+ * categorias do PDV; dentro da seção, destaques primeiro. O que aparece, o nome, a descrição e as fotos são
+ * decididos no PDV (Cadastros → Produtos e Cadastros → Site).
  */
 export async function carregarVitrine(): Promise<Vitrine> {
 	const pdv = getPdv();
-	if (pdvMode !== 'live' || !pdv) return { families: buildFamilies, fonte: 'build', lojaVistaEm: null };
+	if (pdvMode !== 'live' || !pdv) return BUILD;
 
 	try {
-		const [catalogo, vistaEm] = await Promise.all([pdv.listarCatalogo(), ultimoContatoDaLoja()]);
+		const [catalogo, vistaEm, acrescimoCartaoBp] = await Promise.all([pdv.listarCatalogo(), ultimoContatoDaLoja(), acrescimoCartaoDaLoja()]);
 		// Loja ainda não sincronizou nenhuma vez: mostra o catálogo do build (pedido pelo WhatsApp)
-		if (!catalogo || !vistaEm) return { families: buildFamilies, fonte: 'build', lojaVistaEm: null };
-		const porId = new Map(catalogo.map((p) => [p.produtoId, p]));
-		const usados = new Set<string>();
+		if (!catalogo || !vistaEm) return BUILD;
 
-		const curadas = buildFamilies
-			.map((family) => ({
-				...family,
-				variants: family.variants
-					.filter((v) => porId.has(v.id))
-					.map((v) => {
-						const p = porId.get(v.id)!;
-						usados.add(v.id);
-						return { ...v, pdvName: p.nome, priceCents: p.precoCentavos, stock: p.disponivel, pdvPromo: p.promocao ?? null };
-					}),
-			}))
-			.filter((family) => family.variants.length > 0);
-
-		const grupos = new Map<string, typeof catalogo>();
+		const grupos = new Map<string, ProdutoCatalogo[]>();
 		for (const p of catalogo) {
-			if (usados.has(p.produtoId)) continue;
 			const grupo = p.grupo ?? 'Outros produtos';
 			grupos.set(grupo, [...(grupos.get(grupo) ?? []), p]);
 		}
-		const slugs = new Set(curadas.map((f) => f.slug));
-		const doPdv: ProductFamily[] = [...grupos.entries()]
-			.sort(([a], [b]) => a.localeCompare(b, 'pt-BR'))
+		const ordem = (produtos: ProdutoCatalogo[]) => Math.min(...produtos.map((p) => p.ordemGrupo ?? Number.MAX_SAFE_INTEGER));
+		const slugs = new Set<string>();
+		const families: ProductFamily[] = [...grupos.entries()]
+			.sort(([a, pa], [b, pb]) => ordem(pa) - ordem(pb) || a.localeCompare(b, 'pt-BR'))
 			.map(([grupo, produtos], index) => {
 				let slug = slugify(grupo);
 				while (slugs.has(slug)) slug += '-2';
 				slugs.add(slug);
+				const variants = produtos
+					.map(variante)
+					.sort((a, b) => Number(b.featured) - Number(a.featured) || a.title.localeCompare(b.title, 'pt-BR'));
 				return {
 					slug,
 					type: 'generic',
-					tone: TONS[(curadas.length + index) % TONS.length],
+					tone: TONS[index % TONS.length],
 					name: grupo,
 					category: grupo,
 					subtitle: grupo,
 					description: '',
 					variantLabel: 'Produto',
-					variants: produtos.map((p) => ({
-						id: p.produtoId,
-						sku: p.sku,
-						label: p.nome,
-						title: p.nome,
-						pdvName: p.nome,
-						priceCents: p.precoCentavos,
-						stock: p.disponivel,
-						pdvPromo: p.promocao ?? null,
-					})),
+					variants,
 				};
 			});
 
-		return { families: [...curadas, ...doPdv], fonte: 'pdv', lojaVistaEm: vistaEm?.toISOString() ?? null };
+		return { families, fonte: 'pdv', lojaVistaEm: vistaEm.toISOString(), acrescimoCartaoBp };
 	} catch (error) {
 		// Banco fora do ar: a página continua com o catálogo do build e o pedido pelo WhatsApp
 		console.error('[vitrine] catálogo do PDV indisponível', error instanceof Error ? error.message : error);
-		return { families: buildFamilies, fonte: 'build', lojaVistaEm: null };
+		return BUILD;
 	}
 }

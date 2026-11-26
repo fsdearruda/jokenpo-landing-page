@@ -22,6 +22,12 @@ export interface ProductVariant {
 	promo?: ProductPromo;
 	/** Promoção criada no PDV (modo `live`). Tem prioridade sobre a do CMS. */
 	pdvPromo?: { nome: string; precoOriginalCentavos: number; terminaEm: string } | null;
+	/** Conteúdo editado no PDV (modo `live`). */
+	description?: string | null;
+	slug?: string | null;
+	featured?: boolean;
+	/** Ilustração quando não há foto (sem isto, a do tipo da família). */
+	visual?: ProductType;
 }
 
 export interface ProductImage {

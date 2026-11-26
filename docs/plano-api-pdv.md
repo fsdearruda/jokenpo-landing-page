@@ -25,10 +25,11 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 | `src/lib/pdv/cloud.ts` | `CloudPdvClient` (catálogo, estoque, criar e buscar pedido) e as operações da sincronização |
 | `src/lib/pdv/estoque.ts` | Regras puras do disponível no site e do selo de promoção (testadas) |
 | `src/lib/pdv/sync-auth.ts` | Confere a assinatura do PC da loja |
+| `src/lib/pdv/fotos.ts`, `src/pages/api/pdv-sync/foto.ts` | Fotos de produto enviadas pelo PDV, guardadas no Vercel Blob (`jokenpo-fotos`, público, `gru1`, uma pasta por ambiente) |
 | `src/lib/pdv/limite.ts` | Limite de pedidos por IP |
 | `src/pages/api/pdv-sync/*` | Rotas chamadas pelo PC da loja |
 | `src/lib/pdv/index.ts`, `types.ts`, `mock.ts` | `PUBLIC_PDV_MODE = live \| mock \| off`, contrato público e mock |
-| `src/lib/vitrine.ts` | Seções da vitrine |
+| `src/lib/vitrine.ts` | Seções da vitrine: uma por grupo de categoria do PDV, destaques primeiro, nome/descrição/fotos do PDV |
 | `astro.config.mjs` | Com `PUBLIC_PDV_MODE=live`, `/loja` vira rota sob demanda (`s-maxage=60`) |
 
 ## Ambientes
@@ -38,19 +39,16 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 | Postgres Neon (plano gratuito, `sa-east-1`) | `jokenpo-pdv-ponte` | `jokenpo-pdv-ponte-preview` |
 | `DATABASE_URL` e afins | integração da Vercel | integração da Vercel |
 | `PDV_SYNC_TOKEN` | cópia local em `~/.config/jokenpo/site-sync-token` (vai para o PC da loja) | outro valor: `~/.config/jokenpo/site-sync-token-preview` |
-| `PUBLIC_PDV_MODE` | não definido até o passo 4 abaixo | `live` (só Preview) |
+| `PUBLIC_PDV_MODE` | `live` | `live` (só Preview) |
+| `BLOB_READ_WRITE_TOKEN` | integração do Vercel Blob | integração do Vercel Blob |
 
 `vercel env pull` em desenvolvimento aponta para o banco de preview. Funções da Vercel em `gru1`
 (`vercel.json`), ao lado dos bancos. Segredos lidos em tempo de execução via `astro:env` (`getSecret`).
 
-## Ligar em produção
+## Produção
 
-1. No PC da loja, rodar `scripts\loja\atualizar.cmd` (aplica a migração do PDV).
-2. No `.env` do PC: `SITE_SYNC_URL="https://jokenpo.cards"` e `SITE_SYNC_TOKEN` com o token de produção.
-   Reiniciar e marcar os produtos em Cadastros → Site.
-3. Conferir na aba Pedidos o selo "Site sincronizado".
-4. `vercel env add PUBLIC_PDV_MODE production` com `live` e novo deploy. Até a primeira sincronização,
-   a vitrine usa o catálogo do build com pedido pelo WhatsApp, então ligar antes não quebra a página.
+Ligado desde 25/11/2026: o PC da loja sincroniza e `/loja` usa o catálogo do PDV. Fotos de produto
+otimizadas pelo `/_vercel/image` (`imagesConfig` no `astro.config.mjs`) a partir do Blob.
 
 ## Loja sem conexão
 
