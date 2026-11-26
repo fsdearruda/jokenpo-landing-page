@@ -29,7 +29,7 @@ const slugify = (text: string) =>
 const VAZIA: Vitrine = { families: [], disponivel: false, erro: false, lojaVistaEm: null, lojaEstoqueEm: null, descontoPixBp: null };
 
 /** Desconto no Pix definido no PDV (Cadastros → Site); sem ele, Pix e cartão custam o mesmo. */
-export const regrasPagamento = (descontoPixBp: number | null): PaymentRules => ({ pixDiscountPercent: (descontoPixBp ?? 0) / 100 });
+export const regrasPagamento = (descontoPixBp: number | null): PaymentRules => ({ descontoPixBp: descontoPixBp ?? 0 });
 
 /** Card de um produto do PDV. */
 export function variante(p: ProdutoCatalogo): ProductVariant {

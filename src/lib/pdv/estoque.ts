@@ -1,4 +1,5 @@
 import type { ComponenteKit, PromocaoFoto } from './sync';
+import type { StatusPedido } from './types';
 
 /**
  * Regras puras do estoque mostrado no site (sem banco, testadas em estoque.test.ts).
@@ -73,3 +74,26 @@ export const lojaOffline = ({ vistaEm, estoqueEm }: ContatoLoja, agora = Date.no
 	if (agora - ms(estoqueEm) > LOJA_OFFLINE_HORAS * 3_600_000) return true;
 	return vistaEm != null && ms(vistaEm) - ms(estoqueEm) > ESTOQUE_PARADO_MINUTOS * 60_000;
 };
+
+/** Ordem do pedido no site. RECUSADO, CANCELADO, EXPIRADO e ENTREGUE encerram: depois deles nada muda. */
+const ORDEM_STATUS: Record<StatusPedido, number> = {
+	AGUARDANDO_CONFIRMACAO: 0,
+	PAGAMENTO_PENDENTE: 1,
+	PAGO: 2,
+	ENTREGUE: 3,
+	RECUSADO: 3,
+	CANCELADO: 3,
+	EXPIRADO: 3,
+};
+const encerrado = (s: StatusPedido) => ORDEM_STATUS[s] === 3;
+
+/**
+ * Status vindo do PDV só anda para frente: um envio atrasado ou repetido não volta PAGO para
+ * PAGAMENTO_PENDENTE, nem reabre pedido encerrado. O mesmo status passa (atualiza prazo e número).
+ */
+export const podeMudarStatus = (atual: StatusPedido, novo: StatusPedido) =>
+	atual === novo || (!encerrado(atual) && ORDEM_STATUS[novo] >= ORDEM_STATUS[atual]);
+
+/** Pedido esperando a loja além do prazo conta como expirado, mesmo antes da faxina gravar. */
+export const expirouSemConfirmacao = (status: StatusPedido, criadoEm: Date, prazoHoras: number, agora = Date.now()) =>
+	status === 'AGUARDANDO_CONFIRMACAO' && agora - criadoEm.getTime() > prazoHoras * 3_600_000;

@@ -18,7 +18,7 @@ const { produto, payment, slug } = Astro.props;
 const shop = siteData.shop;
 
 /** O preço do PDV é o do cartão; com desconto no Pix, a página mostra os dois. */
-const feeOn = payment.pixDiscountPercent > 0;
+const feeOn = payment.descontoPixBp > 0;
 const v = variante(produto);
 const pix = pixPrice(v.priceCents, payment);
 const carta = v.carta;

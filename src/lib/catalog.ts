@@ -52,13 +52,17 @@ export const formatPrice = (cents: number) => {
 };
 
 export interface PaymentRules {
-	/** Desconto no Pix, em %, sobre o preço do PDV (que é o preço no cartão). 0 = um preço só. */
-	pixDiscountPercent: number;
+	/** Desconto no Pix em centésimos de % (500 = 5%), sobre o preço do PDV (que é o do cartão). 0 = um preço só. */
+	descontoPixBp: number;
 }
 
-/** O preço do PDV é o do cartão; o Pix leva o desconto definido no PDV, arredondado ao centavo. */
+/**
+ * O preço do PDV é o do cartão; o Pix leva o desconto definido no PDV, arredondado ao centavo.
+ * Mesma conta e mesma unidade de `precoPix` do contrato (`pdv/sync.ts`, que não entra no navegador por usar
+ * node:crypto); `estoque.test.ts` confere que as duas dão o mesmo resultado.
+ */
 export const pixPrice = (cents: number, rules: PaymentRules) =>
-	rules.pixDiscountPercent > 0 ? Math.round(cents * (1 - rules.pixDiscountPercent / 100)) : cents;
+	rules.descontoPixBp > 0 ? Math.round(cents * (1 - rules.descontoPixBp / 10_000)) : cents;
 
 type PromoFields = Pick<ProductVariant, 'pdvPromo' | 'priceCents'>;
 

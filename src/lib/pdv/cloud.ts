@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type postgres from 'postgres';
 import { sql } from '../db';
-import { calcularDemanda, disponivelNoSite, lojaOffline, promocaoVigente } from './estoque';
+import { calcularDemanda, disponivelNoSite, expirouSemConfirmacao, lojaOffline, podeMudarStatus, promocaoVigente } from './estoque';
 import { apagarFotos } from './fotos';
 import type { CartaFoto, ComponenteKit, EnvioEstoque, PromocaoFoto, ResultadoEvento, StatusPedidoSite } from './sync';
 import {
@@ -77,6 +77,7 @@ async function demandaPendente(tx: Tx) {
 		tx<{ itens: { produtoId: string; quantidade: number }[] }[]>`
 			SELECT itens FROM pdv_pedido
 			WHERE status NOT IN ('RECUSADO', 'CANCELADO', 'EXPIRADO')
+				AND NOT (status = 'AGUARDANDO_CONFIRMACAO' AND criado_em < now() - make_interval(hours => ${PRAZO_CONFIRMACAO_HORAS}))
 				AND evento_id > (SELECT eventos_aplicados_ate FROM pdv_sync WHERE id = 1)`,
 		tx<{ produto_id: string; componentes: ComponenteKit[] }[]>`SELECT produto_id, componentes FROM pdv_produto WHERE componentes IS NOT NULL`,
 	]);
@@ -86,6 +87,8 @@ async function demandaPendente(tx: Tx) {
 /**
  * Pedido que a loja não confirmou em 72 h expira aqui e para de segurar unidades.
  * Se o PC da loja receber esse evento depois, ele também não separa nada (ver PDV).
+ * As leituras públicas não gravam: `demandaPendente` e `publico` já tratam o pedido vencido como expirado,
+ * e a faxina diária (`manutencao`) grava o status.
  */
 async function expirarNaoConfirmados(tx: Tx) {
 	await tx`
@@ -114,23 +117,25 @@ const paraCatalogo = (p: LinhaProduto, demanda: Map<string, number>): ProdutoCat
 	carta: p.carta ?? null,
 });
 
-const publico = (p: LinhaPedido): PedidoPublico => ({
+const publico = (p: LinhaPedido): PedidoPublico => {
+	const vencido = expirouSemConfirmacao(p.status, p.criado_em, PRAZO_CONFIRMACAO_HORAS);
+	return {
 	id: p.id,
 	numero: p.numero,
-	status: p.status,
+	status: vencido ? 'EXPIRADO' : p.status,
 	itens: p.itens,
 	totalCentavos: p.total_centavos,
 	nomeContato: mascararNome(p.nome_contato),
 	telefoneContato: mascararTelefone(p.telefone_contato),
 	validoAte: p.valido_ate?.toISOString() ?? null,
-	motivo: p.motivo,
+	motivo: vencido ? 'A loja não confirmou a tempo' : p.motivo,
 	criadoEm: p.criado_em.toISOString(),
-});
+	};
+};
 
 class CloudPdv implements PdvClient {
 	async listarCatalogo(): Promise<ProdutoCatalogo[]> {
 		const db = sql();
-		await expirarNaoConfirmados(db);
 		const [produtos, demanda] = await Promise.all([
 			db<LinhaProduto[]>`
 				SELECT ${db.unsafe(COLUNAS_CATALOGO)} FROM pdv_produto WHERE visivel ORDER BY grupo, nome`,
@@ -231,7 +236,6 @@ class CloudPdv implements PdvClient {
 
 	async buscarPedido(id: string): Promise<PedidoPublico> {
 		if (!UUID.test(id)) throw new PdvError('PEDIDO_NAO_ENCONTRADO', 'Pedido não encontrado.', 404);
-		await expirarNaoConfirmados(sql());
 		const [p] = await sql()<LinhaPedido[]>`SELECT * FROM pdv_pedido WHERE id = ${id}`;
 		if (!p) throw new PdvError('PEDIDO_NAO_ENCONTRADO', 'Pedido não encontrado.', 404);
 		return publico(p);
@@ -280,6 +284,8 @@ export async function registrarAlerta(chave: string) {
 // ─── Lado do PDV (rotas /api/pdv-sync/*) ────────────────
 
 async function atualizarPedido(tx: Tx, p: StatusPedidoSite) {
+	const [atual] = await tx<{ status: StatusPedido }[]>`SELECT status FROM pdv_pedido WHERE id = ${p.pedidoId} FOR UPDATE`;
+	if (!atual || !podeMudarStatus(atual.status, p.status)) return;
 	await tx`
 		UPDATE pdv_pedido SET status = ${p.status}, numero_pdv = ${p.numeroPdv}, valido_ate = ${p.validoAte}, motivo = ${p.motivo ?? null}, atualizado_em = now()
 		WHERE id = ${p.pedidoId}`;
@@ -371,17 +377,41 @@ export async function confirmarEventos(resultados: ResultadoEvento[]) {
 			else if (r.status === 'RECUSADO' && !antes.aplicado_em) {
 				await tx`
 					UPDATE pdv_pedido SET status = 'RECUSADO', motivo = ${r.motivo}, atualizado_em = now()
-					WHERE id = (SELECT pedido_id FROM pdv_evento WHERE id = ${r.eventoId})`;
+					WHERE id = (SELECT pedido_id FROM pdv_evento WHERE id = ${r.eventoId}) AND status = 'AGUARDANDO_CONFIRMACAO'`;
 			}
 		}
-		// LGPD: um dia depois de a loja receber, o site guarda só primeiro nome e 4 dígitos
-		await tx`
-			UPDATE pdv_evento SET payload = payload - 'nomeContato' - 'telefoneContato'
-			WHERE aplicado_em < now() - interval '1 day' AND payload ? 'telefoneContato'`;
-		await tx`
+		await tx`UPDATE pdv_sync SET ultimo_contato_em = now() WHERE id = 1`;
+	});
+}
+
+// ─── Faxina diária (Vercel Schedules `manutencao-pdv`) ────────────────
+
+/**
+ * Grava a expiração dos pedidos vencidos, mascara contatos antigos (LGPD) e limpa o limite por IP.
+ * Antes rodava só quando o PC da loja mandava dados; agora roda todo dia, com ou sem a loja.
+ * Devolve as fotos ainda usadas, para a faxina do Blob.
+ */
+export async function manutencao() {
+	return sql().begin(async (tx) => {
+		await expirarNaoConfirmados(tx);
+		// LGPD: um dia depois de encerrado, o site guarda só primeiro nome e 4 dígitos. Evento só depois que a
+		// loja recebeu, ou quando o pedido dele já encerrou (expirado sem a loja ver).
+		const eventos = await tx`
+			UPDATE pdv_evento e SET payload = payload - 'nomeContato' - 'telefoneContato'
+			WHERE payload ? 'telefoneContato'
+				AND (aplicado_em < now() - interval '1 day'
+					OR EXISTS (SELECT 1 FROM pdv_pedido p WHERE p.id = e.pedido_id AND p.contato_mascarado))`;
+		const pedidos = await tx`
 			UPDATE pdv_pedido SET nome_contato = split_part(nome_contato, ' ', 1), telefone_contato = right(telefone_contato, 4), contato_mascarado = true
 			WHERE NOT contato_mascarado AND status NOT IN ('AGUARDANDO_CONFIRMACAO', 'PAGAMENTO_PENDENTE')
 				AND atualizado_em < now() - interval '1 day'`;
-		await tx`UPDATE pdv_sync SET ultimo_contato_em = now() WHERE id = 1`;
+		const limites = await tx`DELETE FROM pdv_limite_ip WHERE janela < now() - interval '1 day'`;
+		const fotos = await tx<{ url: string }[]>`SELECT DISTINCT jsonb_array_elements_text(fotos) AS url FROM pdv_produto WHERE fotos IS NOT NULL`;
+		return {
+			contatosMascarados: pedidos.count,
+			eventosLimpos: eventos.count,
+			limitesApagados: limites.count,
+			fotosEmUso: new Set(fotos.map((f) => f.url)),
+		};
 	});
 }

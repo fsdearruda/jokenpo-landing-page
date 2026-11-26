@@ -88,6 +88,18 @@ avisado em `pdv_sync.alerta_chave`. Se o envio falhar, nada é gravado e a próx
 É alvo `path` (e não função privada) porque o Astro junta todas as rotas numa função só. Testar em produção:
 `vercel schedules invoke saude-pdv`.
 
+## Faxina diária
+
+O Vercel Schedules `manutencao-pdv` chama `GET /api/pdv-sync/manutencao` às 4h (America/Fortaleza), com o mesmo
+`CRON_SECRET`. Ele grava como `EXPIRADO` os pedidos que a loja não confirmou em 72 h, mascara contatos (LGPD)
+um dia depois de o pedido encerrar, limpa o limite por IP e apaga do Blob as fotos da pasta do ambiente que
+nenhum produto usa há mais de 7 dias. Antes disso rodava só quando o PC mandava dados; as leituras públicas
+(`/api/pdv/estoque`, `/api/pdv/pedidos/<id>`, vitrine) não gravam mais nada e já tratam o pedido vencido como
+expirado.
+
+Status vindo do PDV só anda para frente (`podeMudarStatus` em `src/lib/pdv/estoque.ts`): um envio atrasado não
+volta `PAGO` para `PAGAMENTO_PENDENTE` nem reabre pedido encerrado.
+
 ## Robôs
 
 `POST /api/pdv/pedidos` passa pelo Vercel BotID (nível Basic, grátis): a sacola chama `initBotId` só quando o

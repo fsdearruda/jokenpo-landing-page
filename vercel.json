@@ -57,6 +57,12 @@
 			"timezone": "America/Fortaleza",
 			"path": "/api/pdv-sync/saude",
 			"requestMethod": "GET"
+		},
+		"manutencao-pdv": {
+			"schedule": "0 4 * * *",
+			"timezone": "America/Fortaleza",
+			"path": "/api/pdv-sync/manutencao",
+			"requestMethod": "GET"
 		}
 	}
 }
