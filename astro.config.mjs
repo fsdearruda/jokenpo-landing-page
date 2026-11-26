@@ -9,7 +9,6 @@ try {
 } catch {
 	/* sem .env */
 }
-const pdvLive = process.env.PUBLIC_PDV_MODE === 'live';
 
 // https://astro.build/config
 export default defineConfig({
@@ -50,16 +49,6 @@ export default defineConfig({
 				'simple-icons': ['whatsapp'],
 			},
 		}),
-		// Com o PDV real (`PUBLIC_PDV_MODE=live`), /loja é gerada sob demanda para mostrar o
-		// catálogo escolhido no PDV; nos outros modos continua estática.
-		{
-			name: 'jokenpo:loja-sob-demanda',
-			hooks: {
-				'astro:route:setup': ({ route }) => {
-					if (pdvLive && route.component.endsWith('src/pages/loja.astro')) route.prerender = false;
-				},
-			},
-		},
 		decapCmsOauth({
 			adminDisabled: true,
 			oauthDisabled: !process.env.OAUTH_GITHUB_CLIENT_ID || !process.env.OAUTH_GITHUB_CLIENT_SECRET,

@@ -11,12 +11,12 @@ import { remoteImage, resolveProductImage } from '../lib/product-images';
 import PromoBanners from '../components/PromoBanners.astro';
 import { activeBanners } from '../lib/banners';
 
-// Estática por padrão. No modo `live`, o astro.config.mjs a torna sob demanda (com cache
-// curto na CDN) para mostrar o catálogo escolhido no PDV.
-export const prerender = true;
+// Sob demanda, com cache curto na CDN: mostra o catálogo, o estoque e as fotos do PDV de agora,
+// não os do último deploy. (O Astro só aceita valor fixo aqui, então vale para todos os modos.)
+export const prerender = false;
 
 const { families, fonte, lojaVistaEm, acrescimoCartaoBp } = await carregarVitrine();
-if (pdvMode === 'live') Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
 const pageUrl = `${siteUrl}/loja`;
