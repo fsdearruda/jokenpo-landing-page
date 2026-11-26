@@ -21,7 +21,7 @@ const feeOn = payment.cardFeeEnabled && payment.cardFeePercent > 0;
 const v = variante(produto);
 const carta = v.carta;
 const before = compareAtCents(v);
-const badge = promoBadge(v, shop.promoBadgeDefault);
+const badge = promoBadge(v);
 const level = v.stock <= 0 ? 'out' : v.stock <= LOW_STOCK_THRESHOLD ? 'low' : 'ok';
 const stockText = { out: 'Esgotado', low: 'Últimas unidades', ok: 'Em estoque' }[level];
 const fotos = (produto.fotos ?? []).slice(0, 5);

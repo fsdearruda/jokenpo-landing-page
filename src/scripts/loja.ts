@@ -617,8 +617,8 @@ if (root) {
 		}
 	}
 
-	// Com o PDV ligado (real ou simulado), a vitrine atualiza estoque e preço ao vivo.
-	if (mode === 'mock' || mode === 'live') {
+	// Com pedido no site, a vitrine atualiza estoque e preço ao vivo.
+	if (mode === 'live') {
 		const schedule = (cb: () => void) =>
 			'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 300);
 		schedule(() => void refreshStock());

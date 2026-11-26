@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getPdv, handle, json, readJson, type CriarPedidoInput } from '../../../../lib/pdv';
+import { handle, json, pedidosNoSite, readJson, type CriarPedidoInput } from '../../../../lib/pdv';
 import { dentroDoLimite, hashIp } from '../../../../lib/pdv/limite';
 
 export const prerender = false;
@@ -16,11 +16,12 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 	} catch {
 		/* adaptador sem IP do cliente */
 	}
-	if (getPdv()) {
-		const permitido = await dentroDoLimite(ip).catch(() => true); // limite fora do ar não bloqueia venda
-		if (!permitido) {
-			return json({ erro: { codigo: 'MUITAS_TENTATIVAS', mensagem: 'Muitos pedidos seguidos. Espera uns minutos ou chama a gente no WhatsApp.' } }, 429);
-		}
+	if (!pedidosNoSite) {
+		return json({ erro: { codigo: 'LOJA_OFFLINE', mensagem: 'Os pedidos estão indo pelo WhatsApp agora. Manda por lá que a gente separa.' } }, 503);
+	}
+	const permitido = await dentroDoLimite(ip).catch(() => true); // limite fora do ar não bloqueia venda
+	if (!permitido) {
+		return json({ erro: { codigo: 'MUITAS_TENTATIVAS', mensagem: 'Muitos pedidos seguidos. Espera uns minutos ou chama a gente no WhatsApp.' } }, 429);
 	}
 	if (!request.headers.get('content-type')?.includes('application/json')) {
 		return json({ erro: { codigo: 'FORMATO_INVALIDO', mensagem: 'Envie JSON.' } }, 415);

@@ -20,7 +20,6 @@ export type StatusPedido =
 	| 'RECUSADO'
 	| 'CANCELADO'
 	| 'EXPIRADO';
-export type MetodoPagamento = 'PIX' | 'DEBITO' | 'CREDITO' | 'DINHEIRO';
 
 export interface EstoqueItem {
 	produtoId: string;
@@ -91,8 +90,7 @@ export type PdvErrorCode =
 	| 'PEDIDO_NAO_ENCONTRADO'
 	| 'STATUS_INVALIDO'
 	| 'LIMITE_PEDIDOS'
-	| 'LOJA_OFFLINE'
-	| 'OPERACAO_NO_PDV';
+	| 'LOJA_OFFLINE';
 
 export class PdvError extends Error {
 	constructor(
@@ -105,21 +103,18 @@ export class PdvError extends Error {
 	}
 }
 
-/** Operações que o site precisa do PDV. O mock e a ponte com o PDV real implementam a mesma interface. */
+/** Operações que o site precisa do PDV (implementadas pela ponte no Postgres, `cloud.ts`). */
 export interface PdvClient {
 	listarEstoque(): Promise<EstoqueItem[]>;
-	/** `null` quando a fonte não tem catálogo próprio (o mock usa o `products.json`). */
-	listarCatalogo(): Promise<ProdutoCatalogo[] | null>;
+	listarCatalogo(): Promise<ProdutoCatalogo[]>;
 	/** Produto pelo endereço da página (/loja/<slug>); `null` se não existe ou saiu da vitrine. */
 	buscarPorSlug(slug: string): Promise<ProdutoCatalogo | null>;
 	/** `origem.ipHash` (hash do IP, nunca o IP) limita pedidos em aberto por aparelho. */
 	criarPedido(input: CriarPedidoInput, origem?: { ipHash?: string }): Promise<PedidoPublico>;
 	buscarPedido(id: string): Promise<PedidoPublico>;
-	confirmarPagamento(id: string, metodo: MetodoPagamento): Promise<PedidoPublico>;
-	cancelarPedido(id: string): Promise<PedidoPublico>;
 }
 
-// ─── Regras comuns ao mock e à ponte ────────────────────
+// ─── Regras do pedido ───────────────────────────────────
 
 // Limites e prazos do protocolo: definidos no contrato (cópia do PDV, ver scripts/sync-contract.mjs)
 export { MAX_ITENS_POR_PEDIDO, MAX_QUANTIDADE_POR_ITEM, PRAZO_CONFIRMACAO_HORAS, PRAZO_PAGAMENTO_HORAS } from './sync';

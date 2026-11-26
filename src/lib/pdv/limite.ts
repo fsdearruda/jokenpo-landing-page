@@ -1,13 +1,10 @@
 import { createHash } from 'node:crypto';
 import { getSecret } from 'astro:env/server';
 import { sql } from '../db';
-import { pdvMode } from './index';
 
 /** Tentativas de pedido por IP a cada janela. Folgado para quem erra o WhatsApp ou esbarra no estoque. */
 export const LIMITE_PEDIDOS = 10;
 export const JANELA_MS = 10 * 60_000;
-
-const memoria = new Map<string, number>();
 
 /** Hash do IP com o segredo do site: identifica repetição sem guardar o IP (LGPD). */
 export const hashIp = (ip: string) =>
@@ -15,7 +12,7 @@ export const hashIp = (ip: string) =>
 
 /**
  * Conta uma tentativa de pedido do IP e diz se ainda está dentro do limite.
- * No modo `live` a contagem fica no Postgres (as funções da Vercel não compartilham memória);
+ * A contagem fica no Postgres (as funções da Vercel não compartilham memória);
  * o IP vira um hash com o segredo do site, nunca é guardado. Sem IP conhecido, não limita.
  */
 export async function dentroDoLimite(ip: string | undefined, agora = Date.now()): Promise<boolean> {
@@ -23,13 +20,6 @@ export async function dentroDoLimite(ip: string | undefined, agora = Date.now())
 	const janela = Math.floor(agora / JANELA_MS) * JANELA_MS;
 	const chave = hashIp(ip);
 
-	if (pdvMode !== 'live') {
-		const k = `${chave}:${janela}`;
-		const n = (memoria.get(k) ?? 0) + 1;
-		memoria.set(k, n);
-		if (memoria.size > 5_000) memoria.clear();
-		return n <= LIMITE_PEDIDOS;
-	}
 
 	const db = sql();
 	const [linha] = await db<{ contagem: number }[]>`

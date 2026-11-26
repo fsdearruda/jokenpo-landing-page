@@ -4,7 +4,6 @@ interface ImportMetaEnv {
 	readonly PUBLIC_SITE_URL?: string;
 	readonly PUBLIC_BLIP_APP_KEY?: string;
 	readonly PUBLIC_BLIP_COMMON_URL?: string;
-	readonly PUBLIC_PDV_MODE?: 'live' | 'mock' | 'off';
 }
 
 interface ImportMeta {
