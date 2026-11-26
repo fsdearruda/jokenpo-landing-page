@@ -592,6 +592,7 @@ if (root) {
 					totalCentavos: created.totalCentavos,
 					validoAte: created.validoAte,
 					motivo: created.motivo,
+					descontoPixBp: created.descontoPixBp ?? null,
 				};
 				saveOrder();
 				cart.clear();
