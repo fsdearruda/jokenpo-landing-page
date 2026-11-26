@@ -47,7 +47,7 @@ const openHours = siteData.hours.filter((hours) => !hours.closed);
 			<div class="map-label" aria-hidden="true">LOJA 24<br /><strong>NEW WAY</strong></div>
 		</div>
 
-		<a class="button button-yellow map-cta" href={location.mapsUrl} target="_blank" rel="noopener noreferrer">
+		<a class="button button-yellow map-cta" data-umami-event="rota" data-umami-event-local="visite" href={location.mapsUrl} target="_blank" rel="noopener noreferrer">
 			<span>Traçar rota no Google Maps</span>
 			<ArrowIcon size={16} />
 		</a>

@@ -72,7 +72,7 @@ const many = banner.slides.length > 1;
 					aria-label={many ? `${i + 1} de ${banner.slides.length}` : undefined}
 				>
 					{banner.link ? (
-						<a href={banner.link} {...(/^https?:/.test(banner.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+						<a href={banner.link} data-umami-event="banner" data-umami-event-banner={banner.title} {...(/^https?:/.test(banner.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
 							{img}
 						</a>
 					) : (

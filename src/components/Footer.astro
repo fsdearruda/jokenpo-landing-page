@@ -22,15 +22,15 @@ const { location, contact } = siteData;
 		<p class="footer-tagline"><strong>Jokenpo</strong> · Feito para quem gosta de jogar</p>
 		<p>{location.venue} · {location.street} · {location.neighborhood}</p>
 		<p class="footer-meta">
-			<a href={`mailto:${contact.email}`}>{contact.email}</a>
+			<a data-umami-event="email" data-umami-event-local="rodape" href={`mailto:${contact.email}`}>{contact.email}</a>
 			{contact.cnpj && <span> · CNPJ: {contact.cnpj}</span>}
 		</p>
 		<p class="footer-copy">© 2026 Jokenpo</p>
 	</div>
 	<ul class="footer-links" aria-label="Links de contato e redes sociais">
-		<li><a href={contact.communityWhatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
-		<li><a href={contact.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></li>
-		<li><a href={`mailto:${contact.email}`}>E-mail</a></li>
+		<li><a data-umami-event="comunidade" data-umami-event-local="rodape" href={contact.communityWhatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+		<li><a data-umami-event="instagram" data-umami-event-local="rodape" href={contact.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></li>
+		<li><a data-umami-event="email" data-umami-event-local="rodape" href={`mailto:${contact.email}`}>E-mail</a></li>
 	</ul>
 </footer>
 

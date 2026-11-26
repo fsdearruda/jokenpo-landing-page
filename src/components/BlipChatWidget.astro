@@ -18,6 +18,7 @@ const commonUrl = import.meta.env.PUBLIC_BLIP_COMMON_URL?.trim() ?? '';
 }
 
 <script>
+	import { registrar } from '../scripts/analytics';
 	const configEl = document.getElementById('blip-chat-config');
 	const lancador = document.getElementById('blip-lancador');
 
@@ -54,6 +55,7 @@ const commonUrl = import.meta.env.PUBLIC_BLIP_COMMON_URL?.trim() ?? '';
 			});
 
 		const abrirChat = async () => {
+			registrar('chat-abrir');
 			lancador.disabled = true;
 			lancador.setAttribute('aria-busy', 'true');
 			try {

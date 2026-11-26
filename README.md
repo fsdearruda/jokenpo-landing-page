@@ -27,6 +27,35 @@ Visualmente, o lançador no canto inferior direito segue o estilo Arcade 2.0, co
 
 Para ativar o bot em desenvolvimento ou produção, preencha `PUBLIC_BLIP_APP_KEY` (obtida em `Canais > Blip Chat > Instalação` no portal da Blip), informe `PUBLIC_BLIP_COMMON_URL` se o contrato usar domínio dedicado e inclua `localhost` e `jokenpo.cards` na lista de domínios autorizados em `Canais > Blip Chat > Configurações`.
 
+## Analytics com Umami
+
+Visitas e cliques vão para o [Umami Cloud](https://umami.is) (plano gratuito), sem cookie e sem dado pessoal, pelo
+componente [src/components/Analytics.astro](src/components/Analytics.astro), incluído no `BaseLayout` e na página 404.
+Ele só carrega com `PUBLIC_UMAMI_WEBSITE_ID` preenchida (variável de build: mudar exige novo deploy), só conta em
+`jokenpo.cards` (preview e `localhost` ficam de fora) e entra depois do `load`, num momento ocioso, para não pesar no
+Lighthouse. Da URL saem só o caminho e os parâmetros `utm_*`; o `#hash` não é enviado. Com `data-performance`, o
+Umami também mede LCP, INP e CLS de quem visita.
+
+| Evento | Quando | Dados |
+|---|---|---|
+| `whatsapp` | Link para o número da loja | `local`: `reserva-mesa`, `torneios`, `duvidas`, `sacola` (pedido pelo WhatsApp), `pedido` (combinar pagamento), `loja-vazia`, `produto-offline` |
+| `comunidade` | Link para o grupo da comunidade | `local`: `hero`, `agenda`, `duvidas`, `rodape` |
+| `rota` / `instagram` / `email` | Google Maps, Instagram, e-mail | `local` |
+| `banner` | Clique num banner ou no botão do destaque | `banner` (título) |
+| `chat-abrir` | Botão do chat do Blip | — |
+| `jogos-ver-todos` | Expandir a estante de jogos | — |
+| `duvida-abrir` | Abrir uma pergunta do FAQ | `pergunta` |
+| `loja-filtro` | Filtro da `/loja` | `tipo` (`categoria`, `jogo`, …), `valor` |
+| `sacola-adicionar` | Primeiro item de um produto na sacola | `origem` (`vitrine` ou `produto`), `produto`, `categoria` |
+| `sacola-abrir` | Gaveta da sacola no celular | — |
+| `pedido-iniciar` | Primeiro foco no formulário do pedido | — |
+| `pedido-erro` | Pedido não enviado | `codigo` (`NOME`, `TELEFONE`, códigos da API como `ESTOQUE_INSUFICIENTE`, `SEM_CONEXAO`) |
+| `pedido-criado` | Pedido aceito pelo site | `itens`, `revenue` (preço no cartão), `currency` |
+
+Para um evento novo: atributo `data-umami-event="nome"` (com `data-umami-event-<campo>`) em links, ou
+`registrar('nome', { … })` de `src/scripts/analytics.ts` no script. Nunca envie nome, telefone, id do pedido ou o
+texto do WhatsApp. O que acontece depois do pedido (confirmação, Pix, retirada) é medido no banco e no PDV.
+
 ## Loja e integração com o PDV
 
 O PDV da loja (repositório `jokenpo-pdv`) é o único lugar onde se edita a loja do site: quais produtos aparecem

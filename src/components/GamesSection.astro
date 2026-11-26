@@ -214,6 +214,7 @@ const counts = {
 </section>
 
 <script>
+	import { registrar } from '../scripts/analytics';
 	const INITIAL_ROWS = 2;
 	let isExpanded = false;
 	let currentFilter = 'all';
@@ -343,6 +344,7 @@ const counts = {
 	if (expandBtn) {
 		expandBtn.addEventListener('click', () => {
 			isExpanded = !isExpanded;
+			if (isExpanded) registrar('jogos-ver-todos');
 			const initialLimit = getInitialLimit();
 			const msg = isExpanded
 				? 'Lista expandida: todos os jogos estão visíveis.'

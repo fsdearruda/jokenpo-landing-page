@@ -47,6 +47,8 @@ const banners = activeBanners(placement, shapes);
 							{banner.link && (
 								<a
 									class="button button-yellow feature-cta"
+									data-umami-event="banner"
+									data-umami-event-banner={banner.title}
 									href={banner.link}
 									{...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
 								>

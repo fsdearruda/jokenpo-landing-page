@@ -193,6 +193,7 @@ const jsonLd = [
 <script>
 	// Mesma sacola da /loja: adiciona e leva o cliente para lá
 	import { adicionarNaSacola } from '../scripts/sacola';
+	import { registrar } from '../scripts/analytics';
 
 	const botao = document.querySelector<HTMLButtonElement>('[data-role="adicionar"]');
 	const aviso = document.querySelector<HTMLElement>('[data-role="aviso"]');
@@ -206,6 +207,7 @@ const jsonLd = [
 			if (aviso) aviso.textContent = 'Não deu para salvar a sacola neste navegador.';
 			return;
 		}
+		registrar('sacola-adicionar', { origem: 'produto', produto: document.querySelector('h1')?.textContent?.trim().slice(0, 200) ?? '' });
 		window.location.href = '/loja#sacola';
 	});
 
