@@ -12,7 +12,8 @@
           { "produtoId": "kit-turno", "descricao": "Kit Turno", "quantidade": 2, "precoUnitarioCentavos": 1000 }
         ],
         "nomeContato": "Ana Souza",
-        "telefoneContato": "84999990000"
+        "telefoneContato": "84999990000",
+        "descontoPixBp": 500
       }
     }
   ]
