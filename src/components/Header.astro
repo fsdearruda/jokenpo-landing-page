@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 
 const isHome = Astro.url.pathname === '/';
 const sectionHref = (id: string) => (isHome ? `#${id}` : `/#${id}`);
-const isProducts = Astro.url.pathname.replace(/\/$/, '') === '/produtos';
+const isProducts = Astro.url.pathname.replace(/\/$/, '') === '/loja';
 ---
 
 <header class="site-header">
@@ -37,7 +37,7 @@ const isProducts = Astro.url.pathname.replace(/\/$/, '') === '/produtos';
 				<li><a href={sectionHref('como-funciona')}>Como funciona</a></li>
 				<li><a href={sectionHref('jogar')}>Jogos</a></li>
 				<li><a href={sectionHref('agenda')}>Agenda</a></li>
-				<li><a href="/produtos" aria-current={isProducts ? 'page' : undefined}>Produtos</a></li>
+				<li><a href="/loja" aria-current={isProducts ? 'page' : undefined}>Loja</a></li>
 				<li><a href={sectionHref('duvidas')}>Dúvidas</a></li>
 				<li><a href={sectionHref('visite')}>Visite</a></li>
 			</ul>
@@ -58,6 +58,14 @@ const isProducts = Astro.url.pathname.replace(/\/$/, '') === '/produtos';
 		};
 		updateScrolledState();
 		window.addEventListener('scroll', updateScrolledState, { passive: true });
+
+		// Altura real do cabeçalho (muda ao rolar e por tamanho de tela), para barras fixas
+		// abaixo dele, como o filtro da loja, encostarem sem fresta.
+		const syncHeaderHeight = () => {
+			document.documentElement.style.setProperty('--header-h', `${siteHeader.getBoundingClientRect().height}px`);
+		};
+		syncHeaderHeight();
+		new ResizeObserver(syncHeaderHeight).observe(siteHeader);
 	}
 
 	if (siteHeader && siteMenu && menuButton) {

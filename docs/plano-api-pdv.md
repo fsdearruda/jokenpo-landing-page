@@ -38,7 +38,7 @@ Cliente paga por Pix no WhatsApp
                                     loja cancela → CANCELADO (estoque volta)
 ```
 
-O cliente acompanha o status na própria sacola de `/produtos`. O pedido fica
+O cliente acompanha o status na própria sacola de `/loja`. O pedido fica
 salvo no navegador e é consultado a cada 20 s em `GET /api/pdv/pedidos/:id`.
 
 ## 3. Quanto aparece disponível no site
@@ -89,8 +89,8 @@ foto completa. Sem resposta do site, as tentativas vão espaçando de 15 s até 
 | `src/pages/api/pdv-sync/*` | Rotas chamadas pelo PC da loja |
 | `src/lib/pdv/index.ts`, `types.ts`, `mock.ts` | `PUBLIC_PDV_MODE = live \| mock \| off`, contrato público e mock |
 | `src/lib/vitrine.ts` | Seções da vitrine: famílias de `products.json` para os ids conhecidos, mais uma seção por categoria do PDV |
-| `src/pages/produtos.astro` | Formulário de pedido (nome + WhatsApp) e painel de status na sacola |
-| `astro.config.mjs` | Com `PUBLIC_PDV_MODE=live`, `/produtos` vira rota sob demanda (`s-maxage=60`); nos outros modos continua estática |
+| `src/pages/loja.astro` | Formulário de pedido (nome + WhatsApp) e painel de status na sacola |
+| `astro.config.mjs` | Com `PUBLIC_PDV_MODE=live`, `/loja` vira rota sob demanda (`s-maxage=60`); nos outros modos continua estática |
 
 ## 6. Conflitos e limites
 

@@ -414,15 +414,15 @@ collections:
               - { label: Resposta, name: answer, widget: text }
 
   - name: shop_page
-    label: "5. Produtos: Página, Pix e Cartão"
-    description: "Textos da página /produtos, taxa do cartão e selo padrão das promoções. Preço (no Pix) e estoque vêm do PDV."
+    label: "5. Loja: Página, Pix e Cartão"
+    description: "Textos da página /loja, taxa do cartão e selo padrão das promoções. Preço (no Pix) e estoque vêm do PDV."
     files:
       - name: shop_file
-        label: "Página de Produtos e Pagamento"
+        label: "Página da Loja e Pagamento"
         file: src/data/site.json
         format: json
         fields:
-          - label: Página de Produtos
+          - label: Página da Loja
             name: shop
             widget: object
             collapsed: false
@@ -472,16 +472,7 @@ collections:
                 collapsed: true
                 hint: "Usados quando o site cria o pedido e a loja confirma o estoque pelo PDV."
                 fields: &shopModeFields
-                  - { label: "Kicker (Eyebrow)", name: eyebrow, widget: string, hint: "Ex.: PRODUTOS · RETIRADA NA LOJA" }
-                  - { label: "Texto de Apresentação", name: lead, widget: text }
-                  - label: Vantagens (3 itens abaixo do título)
-                    name: perks
-                    widget: list
-                    max: 3
-                    summary: "{{fields.title}} — {{fields.text}}"
-                    fields:
-                      - { label: Título, name: title, widget: string }
-                      - { label: Texto, name: text, widget: string }
+                  - { label: "Frase Abaixo do Título", name: lead, widget: string, hint: "Uma frase curta. Ex.: Monte a sacola, mande no WhatsApp e retire na loja 24." }
                   - { label: "Texto Abaixo do Botão da Sacola", name: cartHint, widget: text }
               - label: Textos com Pedido pelo WhatsApp (PDV desligado)
                 name: orderOnWhatsapp
@@ -495,7 +486,7 @@ collections:
                 hint: "Aparece com um botão para o WhatsApp quando nenhum produto está no site."
 
   - name: products_catalog
-    label: "6. Produtos: Fotos, Textos e Promoções"
+    label: "6. Loja: Fotos, Textos e Promoções"
     description: "Fotos, nomes de vitrine e promoções de cada produto. Preço e estoque são definidos no PDV da loja."
     files:
       - name: products_file
@@ -505,26 +496,26 @@ collections:
         fields:
           - { label: Origem dos Dados, name: source, widget: hidden }
           - { label: Data da Extração, name: extractedAt, widget: hidden }
-          - label: Famílias de Produtos (Seções da Página)
+          - label: Categorias de Produtos
             name: families
             widget: list
             allow_add: false
             summary: "{{fields.category}}"
-            hint: "Produtos novos entram pelo PDV (Cadastros → Site). Aqui você edita como eles aparecem."
+            hint: "Produtos novos entram pelo PDV (Cadastros → Site). Aqui você edita como eles aparecem. A loja mostra os produtos numa grade só, na ordem desta lista: arraste as categorias para mudar a ordem."
             fields:
               - { label: Identificador, name: slug, widget: hidden }
-              - label: Título da Seção
+              - label: Nome da Categoria
                 name: category
                 widget: string
-                hint: "Ex.: Deck boxes. Também é o nome do filtro."
+                hint: "Ex.: Deck boxes. Aparece no filtro e acima do nome no card."
               - label: Nome do Produto
                 name: name
                 widget: string
-              - label: Linha Acima do Nome no Card
+              - label: Descrição Curta (Google)
                 name: subtitle
                 widget: string
                 hint: "Ex.: Caixa para guardar o deck"
-              - label: Descrição da Seção
+              - label: Descrição da Categoria (Google)
                 name: description
                 widget: text
                 required: false
@@ -603,3 +594,90 @@ collections:
                         widget: string
                         required: false
                         hint: "Ex.: Black Friday. Vazio mostra o desconto em % (ou o selo padrão)."
+
+  - name: banners
+    label: "7. Banners de Eventos e Promoções"
+    description: "Banners com fotos que giram em carrossel na página inicial e na loja. O formato do banner segue o tamanho da foto enviada."
+    files:
+      - name: banners_file
+        label: "Banners"
+        file: src/data/site.json
+        format: json
+        fields:
+          - label: Banners
+            name: banners
+            widget: list
+            required: false
+            summary: "{{fields.title}}"
+            hint: "Arraste para mudar a ordem dos banners na página."
+            fields:
+              - label: Nome do Banner
+                name: title
+                widget: string
+                hint: "Ex.: Black Friday: 10% off em todos os produtos. Aparece como título ao lado da arte na página inicial."
+              - label: Banner ligado?
+                name: active
+                widget: boolean
+                default: true
+              - label: Onde mostrar
+                name: placement
+                widget: select
+                multiple: true
+                min: 1
+                default: [loja]
+                options:
+                  - { label: "Loja (/loja)", value: loja }
+                  - { label: "Página inicial", value: inicio }
+              - label: Começa em
+                name: startDate
+                widget: datetime
+                required: false
+                date_format: "DD/MM/YYYY"
+                time_format: false
+                format: "YYYY-MM-DD"
+                picker_utc: true
+                hint: "Vazio mostra desde já. O banner aparece sozinho neste dia."
+              - label: Termina em
+                name: endDate
+                widget: datetime
+                required: false
+                date_format: "DD/MM/YYYY"
+                time_format: false
+                format: "YYYY-MM-DD"
+                picker_utc: true
+                hint: "Último dia do banner. Ele some sozinho à meia-noite. Vazio deixa o banner sem fim."
+              - label: Link ao tocar no banner
+                name: link
+                widget: string
+                required: false
+                hint: "Opcional. Ex.: /loja, /#agenda ou o link de inscrição do torneio."
+              - label: Texto do Botão (página inicial)
+                name: cta
+                widget: string
+                required: false
+                hint: "Na página inicial, banner em pé ou quadrado aparece ao lado do nome, do período e deste botão (precisa de link). Ex.: Ver produtos. Vazio usa 'Saiba mais'."
+              - label: Tempo de cada foto (segundos)
+                name: interval
+                widget: number
+                value_type: int
+                default: 5
+                min: 3
+                max: 20
+                hint: "Só vale quando o banner tem mais de uma foto."
+              - label: Fotos (carrossel)
+                name: slides
+                widget: list
+                min: 1
+                summary: "{{fields.alt}}"
+                hint: "Arraste as fotos para mudar a ordem do carrossel. O formato do banner segue a 1ª foto: em pé (ex.: 1080×1350 do feed) ou quadrada fica na lateral da loja e ao lado do texto na página inicial; larga (ex.: 1920×600) vira faixa na largura toda. Use o mesmo tamanho em todas as fotos do banner."
+                fields:
+                  - label: Foto
+                    name: src
+                    widget: image
+                    media_folder: /src/assets/banners
+                    public_folder: /src/assets/banners
+                    choose_url: false
+                  - label: Texto da Foto (acessibilidade)
+                    name: alt
+                    widget: string
+                    hint: "Escreva o que a arte diz. Ex.: 10% off em todos os produtos de 26/11 até 28/11."

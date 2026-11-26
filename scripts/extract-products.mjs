@@ -53,7 +53,7 @@ const labelOverrides = {
 };
 
 /**
- * Famílias exibidas em /produtos. `category` é o título da seção na vitrine, `match` decide quais produtos do PDV entram
+ * Famílias exibidas em /loja. `category` é o nome da categoria (filtro e card) na vitrine, `match` decide quais produtos do PDV entram
  * `label` dá o nome curto da variação e `title` o nome do card.
  */
 const families = [
