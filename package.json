@@ -15,7 +15,8 @@
     "astro": "astro",
     "db:migrate": "node scripts/db-migrate.mjs",
     "test": "vitest run",
-    "sync:contract": "node scripts/sync-contract.mjs"
+    "sync:contract": "node scripts/sync-contract.mjs",
+    "vercel-build": "node scripts/db-migrate.mjs --se-houver && astro build"
   },
   "dependencies": {
     "@astrojs/vercel": "^11.0.20",

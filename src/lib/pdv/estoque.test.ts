@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularDemanda, disponivelNoSite, promocaoVigente } from './estoque';
+import { calcularDemanda, disponivelNoSite, lojaOffline, promocaoVigente } from './estoque';
 import type { ComponenteKit } from './sync';
 
 const kit: ComponenteKit[] = [
@@ -38,5 +38,16 @@ describe('selo de promoção', () => {
 	it('aparece enquanto vale e some no fim, mesmo sem novo envio do PDV', () => {
 		expect(promocaoVigente(promo, Date.parse('2026-11-29T00:00:00Z'))).toBe(promo);
 		expect(promocaoVigente(promo, Date.parse('2026-11-30T03:00:00Z'))).toBeNull();
+	});
+});
+
+describe('loja sem contato', () => {
+	const agora = Date.parse('2026-11-28T20:00:00Z');
+	it('pausa os pedidos depois de 6 h sem o PC da loja falar com o site', () => {
+		expect(lojaOffline('2026-11-28T15:00:00Z', agora)).toBe(false);
+		expect(lojaOffline('2026-11-28T13:59:00Z', agora)).toBe(true);
+	});
+	it('sem nenhum contato conta como offline', () => {
+		expect(lojaOffline(null, agora)).toBe(true);
 	});
 });

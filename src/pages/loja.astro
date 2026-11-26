@@ -5,6 +5,7 @@ import Icon from '../components/Icon.astro';
 import siteData from '../data/site.json';
 import { LOW_STOCK_THRESHOLD, catalog, cardPrice, compareAtCents, formatPrice, promoBadge, toneOf, type PaymentRules } from '../lib/catalog';
 import { MAX_QUANTIDADE_POR_ITEM, pdvMode } from '../lib/pdv';
+import { lojaOffline } from '../lib/pdv/estoque';
 import { carregarVitrine } from '../lib/vitrine';
 import { resolveProductImage } from '../lib/product-images';
 import PromoBanners from '../components/PromoBanners.astro';
@@ -14,18 +15,20 @@ import { activeBanners } from '../lib/banners';
 // curto na CDN) para mostrar o catálogo escolhido no PDV.
 export const prerender = true;
 
-const { families, fonte } = await carregarVitrine();
+const { families, fonte, lojaVistaEm } = await carregarVitrine();
 if (pdvMode === 'live') Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
 const pageUrl = `${siteUrl}/loja`;
 const whatsappNumber = siteData.contact.whatsapp.replace(/\D/g, '');
 const catalogDate = catalog.extractedAt.split('-').reverse().join('/');
+/** PC da loja sem falar com o site há horas: catálogo continua, pedido vai pelo WhatsApp. */
+const lojaPausada = fonte === 'pdv' && lojaOffline(lojaVistaEm);
 /**
  * Modo efetivo da página: com o PDV real fora do ar (ou antes da primeira sincronização da
  * loja), a vitrine volta ao catálogo do build com pedido pelo WhatsApp.
  */
-const effectiveMode = pdvMode === 'live' && fonte !== 'pdv' ? 'off' : pdvMode;
+const effectiveMode = pdvMode === 'live' && (fonte !== 'pdv' || lojaPausada) ? 'off' : pdvMode;
 /** Com o PDV (real ou simulado), o pedido é criado no site e a loja confirma o estoque. */
 const orderApi = effectiveMode !== 'off';
 
@@ -253,9 +256,11 @@ const jsonLd = [
 				}
 				<p class="catalog-note">
 					{
-						fonte === 'pdv'
-							? 'Preço e estoque direto do sistema da loja.'
-							: `Preços e estoque de ${catalogDate}.`
+						lojaPausada
+							? 'O sistema da loja está sem conexão agora: o estoque pode ter mudado, e o pedido vai pelo WhatsApp.'
+							: fonte === 'pdv'
+								? 'Preço e estoque direto do sistema da loja.'
+								: `Preços e estoque de ${catalogDate}.`
 					}
 				</p>
 			</div>
@@ -946,7 +951,7 @@ const jsonLd = [
 							return showError(`${erro.mensagem ?? 'Um item acabou.'} A sacola foi ajustada: confere e tenta de novo.`);
 						}
 						if (erro?.codigo === 'CONTATO_INVALIDO') return showError(erro.mensagem ?? 'Confere seu nome e WhatsApp.', phoneInput);
-						if ((erro?.codigo === 'MUITAS_TENTATIVAS' || erro?.codigo === 'LIMITE_PEDIDOS') && erro.mensagem) return showError(erro.mensagem);
+						if ((erro?.codigo === 'MUITAS_TENTATIVAS' || erro?.codigo === 'LIMITE_PEDIDOS' || erro?.codigo === 'LOJA_OFFLINE') && erro.mensagem) return showError(erro.mensagem);
 						return showError('Não deu pra enviar agora. Tenta de novo em instantes ou chama a gente no WhatsApp.');
 					}
 					const created = data as SavedOrder;

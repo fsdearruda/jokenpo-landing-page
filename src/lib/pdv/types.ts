@@ -82,6 +82,7 @@ export type PdvErrorCode =
 	| 'PEDIDO_NAO_ENCONTRADO'
 	| 'STATUS_INVALIDO'
 	| 'LIMITE_PEDIDOS'
+	| 'LOJA_OFFLINE'
 	| 'OPERACAO_NO_PDV';
 
 export class PdvError extends Error {
