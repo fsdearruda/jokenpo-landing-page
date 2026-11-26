@@ -182,6 +182,8 @@ const jsonLd = [
 
 				{
 					families.length > 0 && (
+						<>
+						<h2 class="sr-only">Produtos</h2>
 						<ul class="product-grid" role="list" aria-label="Produtos">
 							{families.flatMap((family) => {
 								const tone = toneOf(family);
@@ -215,7 +217,7 @@ const jsonLd = [
 															const src = resolveProductImage(photo.src);
 															const alt = i === 0 ? photo.alt : '';
 															const cls = i === 0 ? undefined : 'photo-alt';
-															const img = typeof src === 'string' ? remoteImage(src, [240, 360, 480, 720]) : { src: src.src };
+															const img = remoteImage(typeof src === 'string' ? src : src.src, [240, 360, 480, 720]);
 															return (
 																<img
 																	{...img}
@@ -303,6 +305,7 @@ const jsonLd = [
 								});
 							})}
 						</ul>
+						</>
 					)
 				}
 				{

@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import { remoteImage } from '../lib/product-images';
 import Icon from './Icon.astro';
 import { bannerFrame, isUpcoming, resolveBannerImage, type Banner } from '../lib/banners';
 
@@ -40,6 +41,18 @@ const many = banner.slides.length > 1;
 			const img =
 				typeof src === 'string' ? (
 					<img src={src} alt={slide.alt} loading={loading} decoding="async" />
+				) : !Astro.isPrerendered ? (
+					// Página sob demanda (ex.: /loja): o /_image do Astro não existe na Vercel
+					<img
+						{...remoteImage(src.src, [360, 540, 720, 1080, 1440].filter((w) => w <= src.width))}
+						sizes={sizes}
+						alt={slide.alt}
+						width={src.width}
+						height={src.height}
+						loading={loading}
+						decoding="async"
+						fetchpriority={loading === 'eager' ? 'high' : undefined}
+					/>
 				) : (
 					<Image
 						src={src}
