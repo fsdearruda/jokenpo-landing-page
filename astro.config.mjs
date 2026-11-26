@@ -35,7 +35,7 @@ export default defineConfig({
 	// imagesConfig liga o otimizador da Vercel (/_vercel/image) para as fotos de produto no Vercel Blob
 	adapter: vercel({
 		imagesConfig: {
-			sizes: [240, 360, 480, 720, 960, 1440],
+			sizes: [240, 360, 480, 540, 720, 960, 1080, 1440], // = REMOTE_IMAGE_SIZES em src/lib/product-images.ts
 			formats: ['image/avif', 'image/webp'],
 			remotePatterns: [{ protocol: 'https', hostname: '*.public.blob.vercel-storage.com' }],
 		},
