@@ -1,11 +1,11 @@
 {
 	"origem": "larissarruda/jokenpo-pdv",
 	"arquivos": {
-		"src/lib/pdv/sync.ts": "5040870dbd5265fb5b86f0cee5301637abd5cb653d17c3b7d2d3b8ac31199d3c",
-		"contract-fixtures/README.md": "305f1b89aa61d95288f2121f98a85f31153458876b2da2a2eee544d59aa93088",
+		"src/lib/pdv/sync.ts": "7914b07233294f18500802e24d4f6d60bc05ed0af4e464481eb6b30a2b325f15",
+		"contract-fixtures/README.md": "33604dfda881b42aa512c207bf62a12655a9897ac83eb16d4715c3dade106677",
 		"contract-fixtures/ack.json": "f9ff746600a5d8e421a0f46a598dc93888eb9c3468b51b98ec6a10780bedfb2c",
 		"contract-fixtures/envio-estoque-pdv-antigo.json": "92dcb0f7495dbdb26ae9b6bea060de2ee52e6a28eef90b45ec1b2fa02ea7e82d",
-		"contract-fixtures/envio-estoque.json": "bff7faf0287fe96a5ad610ba9cc1406cbc5743a6f7cc512b360654250cf3e4a2",
+		"contract-fixtures/envio-estoque.json": "8ef9583dc9337c00814c45199617c72fe97af77b6e98b5adb0408a857cc68910",
 		"contract-fixtures/envio-foto.json": "213800873a863578fa097e7559d5b68229eb9fd646217b3118568c35771e902a",
 		"contract-fixtures/eventos.json": "f53dd03bdc9c7912932cca2f9eac36d6ef7074376f117e248e7ead7b0863583a"
 	}

@@ -1,4 +1,4 @@
-import { families as buildFamilies, variantsById, type ProductFamily, type ProductVariant, type Tone } from './catalog';
+import { families as buildFamilies, variantsById, type PaymentRules, type ProductFamily, type ProductVariant, type Tone } from './catalog';
 import { getPdv, pdvMode, type ProdutoCatalogo } from './pdv';
 import { acrescimoCartaoDaLoja, ultimoContatoDaLoja } from './pdv/cloud';
 
@@ -24,8 +24,12 @@ const slugify = (text: string) =>
 
 const BUILD: Vitrine = { families: buildFamilies, fonte: 'build', lojaVistaEm: null, acrescimoCartaoBp: null };
 
+/** Acréscimo do cartão: o do PDV (Cadastros → Site) quando ele já mandou; senão o do CMS. */
+export const regrasPagamento = (acrescimoCartaoBp: number | null, cms: PaymentRules): PaymentRules =>
+	acrescimoCartaoBp === null ? cms : { cardFeeEnabled: acrescimoCartaoBp > 0, cardFeePercent: acrescimoCartaoBp / 100 };
+
 /** Card de um produto do PDV. Sem foto no PDV ainda, usa a do CMS antigo pelo id (transição; sai na limpeza da fase 4). */
-function variante(p: ProdutoCatalogo): ProductVariant {
+export function variante(p: ProdutoCatalogo): ProductVariant {
 	const titulo = p.nomeSite ?? p.nome;
 	const antigo = variantsById.get(p.produtoId);
 	const fotos = p.fotos ?? [];
@@ -40,7 +44,8 @@ function variante(p: ProdutoCatalogo): ProductVariant {
 		pdvPromo: p.promocao ?? null,
 		images: fotos.length ? fotos.map((src, i) => ({ src, alt: i === 0 ? titulo : '' })) : antigo?.variant.images,
 		swatch: antigo?.variant.swatch,
-		visual: antigo?.family.type ?? 'generic',
+		visual: p.carta ? 'carta' : (antigo?.family.type ?? 'generic'),
+		carta: p.carta ?? null,
 		description: p.descricao ?? null,
 		slug: p.slug ?? null,
 		featured: p.destaque ?? false,

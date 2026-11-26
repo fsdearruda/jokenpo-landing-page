@@ -105,6 +105,21 @@ export interface ConteudoFoto {
   destaque: boolean;          // aparece primeiro na seção
   fotos: string[];            // URLs públicas (Vercel Blob), na ordem; a 1ª é a capa
   ordemGrupo: number | null;  // ordem da seção (Categoria.ordem do grupo)
+  /** Só em carta avulsa: dados para os filtros do site. Ausente (PDV antigo) = null. */
+  carta?: CartaFoto | null;
+}
+
+/** Carta avulsa: o que diferencia uma da outra na vitrine. Sem imagem das APIs de cartas (licença). */
+export interface CartaFoto {
+  jogo: string;            // MAGIC, POKEMON, YUGIOH, ONE_PIECE, LORCANA
+  nomeCarta: string;
+  colecao: string;         // código, ex.: "OP01"
+  colecaoNome: string | null;
+  numero: string | null;
+  raridade: string | null;
+  condicao: string;        // NM, SP, MP, HP, DMG
+  idioma: string;          // PT, EN, JP...
+  acabamento: string;      // normal, foil...
 }
 
 /** Selo de promoção de um produto no site: preço antigo riscado, nome e até quando vale. */
@@ -325,7 +340,21 @@ export function lerConteudoFoto(bruto: unknown): ConteudoFoto | null {
     fotos.push(f);
   }
   if (c.ordemGrupo !== null && c.ordemGrupo !== undefined && ordemGrupo === null) return null;
-  return { nomeSite, descricao, slug, destaque: c.destaque, fotos, ordemGrupo };
+  const carta = c.carta === undefined || c.carta === null ? null : lerCartaFoto(c.carta);
+  if (carta === undefined) return null;
+  return { nomeSite, descricao, slug, destaque: c.destaque, fotos, ordemGrupo, ...(c.carta !== undefined ? { carta } : {}) };
+}
+
+/** undefined = inválida (recusa o conteúdo inteiro). */
+function lerCartaFoto(bruto: unknown): CartaFoto | undefined {
+  const c = bruto as Record<string, unknown> | null;
+  if (!c || typeof c !== "object") return undefined;
+  const curto = (v: unknown) => (textoExato(v, 40) ? v : undefined);
+  const jogo = curto(c.jogo), colecao = curto(c.colecao), condicao = curto(c.condicao), idioma = curto(c.idioma), acabamento = curto(c.acabamento);
+  const nomeCarta = textoExato(c.nomeCarta, 200) ? c.nomeCarta : undefined;
+  const colecaoNome = textoOpcional(c.colecaoNome, 120), numero = textoOpcional(c.numero, 40), raridade = textoOpcional(c.raridade, 80);
+  if (!jogo || !colecao || !condicao || !idioma || !acabamento || !nomeCarta || colecaoNome === undefined || numero === undefined || raridade === undefined) return undefined;
+  return { jogo, nomeCarta, colecao, colecaoNome, numero, raridade, condicao, idioma, acabamento };
 }
 
 /** Confere o envio de uma foto. null = recusa. */

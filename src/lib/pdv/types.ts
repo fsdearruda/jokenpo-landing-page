@@ -10,7 +10,7 @@
  *    Sem pagamento em 48 h: `EXPIRADO`. A loja pode cancelar: `CANCELADO`.
  */
 
-import { MAX_ITENS_POR_PEDIDO, type PromocaoFoto } from './sync';
+import { MAX_ITENS_POR_PEDIDO, type CartaFoto, type PromocaoFoto } from './sync';
 
 export type StatusPedido =
 	| 'AGUARDANDO_CONFIRMACAO'
@@ -43,6 +43,8 @@ export interface ProdutoCatalogo extends EstoqueItem {
 	destaque?: boolean;
 	fotos?: string[];
 	ordemGrupo?: number | null;
+	/** Só carta avulsa: jogo, coleção, condição, idioma… */
+	carta?: CartaFoto | null;
 }
 
 /** Promoção criada no PDV: o preço promocional já está em `precoCentavos`. */
@@ -108,6 +110,8 @@ export interface PdvClient {
 	listarEstoque(): Promise<EstoqueItem[]>;
 	/** `null` quando a fonte não tem catálogo próprio (o mock usa o `products.json`). */
 	listarCatalogo(): Promise<ProdutoCatalogo[] | null>;
+	/** Produto pelo endereço da página (/loja/<slug>); `null` se não existe ou saiu da vitrine. */
+	buscarPorSlug(slug: string): Promise<ProdutoCatalogo | null>;
 	/** `origem.ipHash` (hash do IP, nunca o IP) limita pedidos em aberto por aparelho. */
 	criarPedido(input: CriarPedidoInput, origem?: { ipHash?: string }): Promise<PedidoPublico>;
 	buscarPedido(id: string): Promise<PedidoPublico>;

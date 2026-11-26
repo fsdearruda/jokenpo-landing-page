@@ -31,7 +31,7 @@ export const GET: APIRoute = () => {
 		`- [Comunidade Oficial no WhatsApp](${contact.communityWhatsapp}): Grupo de jogadores para combinar partidas e avisos de torneios.`,
 		`- [WhatsApp Direto da Loja](${whatsappUrl}): Canal direto para dúvidas de balcão e reservas de mesa.`,
 		`- [Instagram Oficial @jokenpoficial](${contact.instagram}): Atualizações, fotos de eventos e avisos gerais.`,
-		`- [Sitemap XML](${siteUrl}/sitemap.xml): Mapa estruturado de URLs do site.`,
+		`- [Sitemap XML](${siteUrl}/sitemap.xml): Mapa de URLs do site, inclusive a página de cada produto da loja (/loja/<produto>), com preço, estoque e descrição.`,
 		'',
 		'## Localização e Contato',
 		`- Endereço: ${location.venue} — ${location.street}, ${location.neighborhood}, CEP ${location.postalCode}`,

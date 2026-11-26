@@ -44,6 +44,10 @@ class MockPdv implements PdvClient {
 		}));
 	}
 
+	async buscarPorSlug() {
+		return null;
+	}
+
 	async listarCatalogo() {
 		return null;
 	}

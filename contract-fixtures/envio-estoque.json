@@ -74,6 +74,37 @@
       "noCatalogo": false,
       "atualizadoEm": "2026-11-27T09:00:00.000Z",
       "promocao": null
+    },
+    {
+      "produtoId": "single-op01-120-pt-nm",
+      "sku": "OP-OP01-120-PT-NM",
+      "nome": "Shanks (OP01-120) · PT · NM",
+      "categoria": "One Piece",
+      "grupo": "Cartas avulsas",
+      "precoCentavos": 4500,
+      "disponivel": 1,
+      "noCatalogo": true,
+      "atualizadoEm": "2026-11-28T10:00:00.000Z",
+      "promocao": null,
+      "conteudo": {
+        "nomeSite": null,
+        "descricao": null,
+        "slug": "op-op01-120-pt-nm",
+        "destaque": false,
+        "fotos": [],
+        "ordemGrupo": 90,
+        "carta": {
+          "jogo": "ONE_PIECE",
+          "nomeCarta": "Shanks",
+          "colecao": "OP01",
+          "colecaoNome": "Romance Dawn",
+          "numero": "OP01-120",
+          "raridade": "SEC",
+          "condicao": "NM",
+          "idioma": "PT",
+          "acabamento": "foil"
+        }
+      }
     }
   ],
   "pedidos": [
