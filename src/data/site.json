@@ -1,4 +1,19 @@
 {
+  "shop": {
+    "seoTitle": "Loja: shields, deck boxes e triple packs | Jokenpo",
+    "seoDescription": "Shields, deck boxes e triple packs de Pokémon TCG com preço de balcão. Monte o pedido, mande pelo WhatsApp e retire na Jokenpo, no Shopping New Way Center em Natal/RN.",
+    "titleLine": "TUDO PRO",
+    "titleHighlight": "SEU DECK",
+    "orderOnSite": {
+      "lead": "Faça o pedido aqui, a gente separa e você retira na loja.",
+      "cartHint": "A loja confere o estoque e você paga por Pix no WhatsApp em até 48 h. Retirada na loja."
+    },
+    "orderOnWhatsapp": {
+      "lead": "Monte a sacola, mande no WhatsApp e retire na loja.",
+      "cartHint": "A conversa abre com o pedido escrito. É só tocar em enviar."
+    },
+    "emptyCatalog": "Nenhum produto no site agora. Chama a gente no WhatsApp que a gente te conta o que tem na loja."
+  },
   "contact": {
     "instagram": "https://instagram.com/jokenpoficial",
     "communityWhatsapp": "https://chat.whatsapp.com/H54CHkicHSOAjOj5bvdNwH",
@@ -53,6 +68,27 @@
       }
     ]
   },
+  "banners": [
+    {
+      "slides": [
+        {
+          "src": "/src/assets/banners/black-friday-10-off.jpg",
+          "alt": "10% off em todos os produtos de 26/11 até 28/11. Exceto lanchonete, promoção não acumulativa."
+        }
+      ],
+      "interval": 5,
+      "placement": [
+        "loja",
+        "inicio"
+      ],
+      "active": true,
+      "endDate": "2026-11-28",
+      "cta": "Ver produtos",
+      "startDate": "2026-11-26",
+      "title": "Black Friday: 10% off em todos os produtos",
+      "link": "/loja"
+    }
+  ],
   "name": "Jokenpo",
   "agenda": [
     {
@@ -388,41 +424,5 @@
       "category": "grandes"
     }
   ],
-  "description": "Jokenpo: card games, jogos de tabuleiro, espaço para jogar e torneios na Zona Norte de Natal. Vem jogar com a gente!",
-  "shop": {
-    "seoTitle": "Loja: shields, deck boxes e triple packs | Jokenpo",
-    "seoDescription": "Shields, deck boxes e triple packs de Pokémon TCG com preço de balcão. Monte o pedido, mande pelo WhatsApp e retire na Jokenpo, no Shopping New Way Center em Natal/RN.",
-    "titleLine": "TUDO PRO",
-    "titleHighlight": "SEU DECK",
-    "orderOnSite": {
-      "lead": "Faça o pedido aqui, a gente separa e você retira na loja 24.",
-      "cartHint": "A loja confere o estoque e você paga por Pix no WhatsApp em até 48 h. Retirada na loja 24."
-    },
-    "orderOnWhatsapp": {
-      "lead": "Monte a sacola, mande no WhatsApp e retire na loja 24.",
-      "cartHint": "A conversa abre com o pedido escrito. É só tocar em enviar."
-    },
-    "emptyCatalog": "Nenhum produto no site agora. Chama a gente no WhatsApp que a gente te conta o que tem na loja."
-  },
-  "banners": [
-    {
-      "title": "Black Friday: 10% off em todos os produtos",
-      "active": true,
-      "placement": [
-        "loja",
-        "inicio"
-      ],
-      "startDate": "2026-11-26",
-      "endDate": "2026-11-28",
-      "link": "/loja",
-      "interval": 5,
-      "slides": [
-        {
-          "src": "/src/assets/banners/black-friday-10-off.jpg",
-          "alt": "10% off em todos os produtos de 26/11 até 28/11. Exceto lanchonete, promoção não acumulativa."
-        }
-      ],
-      "cta": "Ver produtos"
-    }
-  ]
+  "description": "Jokenpo: card games, jogos de tabuleiro, espaço para jogar e torneios na Zona Norte de Natal. Vem jogar com a gente!"
 }
