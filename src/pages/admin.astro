@@ -1,7 +1,10 @@
 ---
 export const prerender = true;
 
-const cmsScriptSrc = 'https://unpkg.com/decap-cms@^3.16.3/dist/decap-cms.js';
+// Versão exata com hash (SRI): o navegador recusa o script se o CDN servir outra coisa. Para atualizar,
+// troque a versão e recalcule: curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+const cmsScriptSrc = 'https://unpkg.com/decap-cms@3.17.0/dist/decap-cms.js';
+const cmsScriptIntegrity = 'sha384-uh1IAMxJHPiQw7HR3dq6Nf1B/f7b5/Tj3XkNWpRWZhDsxZSqWZPbzWx+STgCBKQJ';
 ---
 
 <!doctype html>
@@ -70,7 +73,7 @@ const cmsScriptSrc = 'https://unpkg.com/decap-cms@^3.16.3/dist/decap-cms.js';
 		</div>
 
 		<!-- Script principal do Decap CMS -->
-		<script is:inline src={cmsScriptSrc}></script>
+		<script is:inline src={cmsScriptSrc} integrity={cmsScriptIntegrity} crossorigin="anonymous"></script>
 
 		<!-- Registro de estilos, idioma PT-BR e templates de Live Preview da Jokenpô -->
 		<script is:inline>

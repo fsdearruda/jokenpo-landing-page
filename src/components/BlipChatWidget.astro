@@ -5,59 +5,71 @@ const commonUrl = import.meta.env.PUBLIC_BLIP_COMMON_URL?.trim() ?? '';
 
 {
 	appKey && (
-		<div
-			id="blip-chat-config"
-			data-app-key={appKey}
-			data-common-url={commonUrl || undefined}
-			hidden
-		/>
+		<>
+			<div id="blip-chat-config" data-app-key={appKey} data-common-url={commonUrl || undefined} hidden />
+			{/* Botão próprio: o widget do Blip (script + iframe) só carrega quando alguém pede o chat, não a cada visita */}
+			<button type="button" class="blip-lancador" id="blip-lancador" aria-label="Abrir chat de atendimento da Jokenpo">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true" width="28" height="28">
+					<path d="M4 5.5C4 4.12 5.12 3 6.5 3h11C18.88 3 20 4.12 20 5.5v8c0 1.38-1.12 2.5-2.5 2.5H10l-4.5 3.6c-.66.53-1.5.06-1.5-.78V5.5Z" fill="currentColor" />
+				</svg>
+			</button>
+		</>
 	)
 }
 
 <script>
 	const configEl = document.getElementById('blip-chat-config');
+	const lancador = document.getElementById('blip-lancador');
 
-	if (configEl instanceof HTMLElement && !document.getElementById('blip-chat-container')) {
-		const appKey = configEl.dataset.appKey?.trim();
+	if (configEl instanceof HTMLElement && lancador instanceof HTMLButtonElement) {
+		const appKey = configEl.dataset.appKey?.trim() ?? '';
+		const commonUrl = configEl.dataset.commonUrl?.trim();
+		const chatIconSvg =
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M4 5.5C4 4.12 5.12 3 6.5 3h11C18.88 3 20 4.12 20 5.5v8c0 1.38-1.12 2.5-2.5 2.5H10l-4.5 3.6c-.66.53-1.5.06-1.5-.78V5.5Z" fill="#0E0E10"/></svg>';
+		const buttonIcon = `data:image/svg+xml;utf8,${encodeURIComponent(chatIconSvg)}`;
 
-		if (appKey) {
-			const commonUrl = configEl.dataset.commonUrl?.trim();
-			const chatIconSvg =
-				'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M4 5.5C4 4.12 5.12 3 6.5 3h11C18.88 3 20 4.12 20 5.5v8c0 1.38-1.12 2.5-2.5 2.5H10l-4.5 3.6c-.66.53-1.5.06-1.5-.78V5.5Z" fill="#0E0E10"/></svg>';
-			const buttonIcon = `data:image/svg+xml;utf8,${encodeURIComponent(chatIconSvg)}`;
+		const syncLauncherState = (isOpen: boolean) => {
+			const launcher = document.getElementById('blip-chat-open-iframe');
+			if (!launcher) return;
+			launcher.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+			launcher.setAttribute('aria-label', isOpen ? 'Fechar chat de atendimento da Jokenpo' : 'Abrir chat de atendimento da Jokenpo');
+		};
 
-			const initBlipChat = async () => {
+		/** Espera o botão do Blip aparecer (o widget monta o DOM depois do build). */
+		const esperarLauncher = () =>
+			new Promise<HTMLElement | null>((resolve) => {
+				const achar = () => document.getElementById('blip-chat-open-iframe');
+				if (achar()) return resolve(achar());
+				const obs = new MutationObserver(() => {
+					if (achar()) {
+						obs.disconnect();
+						resolve(achar());
+					}
+				});
+				obs.observe(document.body, { childList: true, subtree: true });
+				setTimeout(() => {
+					obs.disconnect();
+					resolve(achar());
+				}, 8000);
+			});
+
+		const abrirChat = async () => {
+			lancador.disabled = true;
+			lancador.setAttribute('aria-busy', 'true');
+			try {
 				const { BlipChat } = await import('blip-chat-widget');
-				if (document.getElementById('blip-chat-container')) return;
-
-				const syncLauncherState = (isOpen: boolean) => {
-					const launcher = document.getElementById('blip-chat-open-iframe');
-					if (!launcher) return;
-					launcher.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-					launcher.setAttribute(
-						'aria-label',
-						isOpen ? 'Fechar chat de atendimento da Jokenpo' : 'Abrir chat de atendimento da Jokenpo',
-					);
-				};
-
 				const client = new BlipChat()
 					.withAppKey(appKey)
 					.withButton({ color: '#ffd400', icon: buttonIcon })
 					.withEventHandler(BlipChat.ENTER_EVENT, () => syncLauncherState(true))
 					.withEventHandler(BlipChat.LEAVE_EVENT, () => syncLauncherState(false));
-
-				if (commonUrl) {
-					client.withCustomCommonUrl(commonUrl);
-				}
-
+				if (commonUrl) client.withCustomCommonUrl(commonUrl);
 				client.build();
 
-				const launcher = document.getElementById('blip-chat-open-iframe');
+				const launcher = await esperarLauncher();
 				if (launcher) {
 					launcher.setAttribute('role', 'button');
 					launcher.setAttribute('tabindex', '0');
-					syncLauncherState(launcher.classList.contains('opened'));
-
 					launcher.addEventListener('keydown', (event) => {
 						if (event.key === 'Enter' || event.key === ' ') {
 							event.preventDefault();
@@ -65,18 +77,58 @@ const commonUrl = import.meta.env.PUBLIC_BLIP_COMMON_URL?.trim() ?? '';
 						}
 					});
 				}
-			};
-
-			if (document.readyState === 'complete') {
-				void initBlipChat();
-			} else {
-				window.addEventListener('load', () => void initBlipChat(), { once: true });
+				// O botão do Blip assume o lugar do nosso, com o chat já aberto e o foco nele
+				lancador.remove();
+				client.toogleChat();
+				launcher?.focus();
+			} catch (error) {
+				console.error('[blip] não deu para abrir o chat', error);
+				lancador.disabled = false;
+				lancador.removeAttribute('aria-busy');
 			}
-		}
+		};
+
+		lancador.addEventListener('click', () => void abrirChat(), { once: true });
 	}
 </script>
 
 <style is:global>
+	.blip-lancador {
+		position: fixed;
+		right: 25px;
+		bottom: 25px;
+		z-index: 2147483000;
+		display: grid;
+		place-items: center;
+		width: 60px;
+		height: 60px;
+		padding: 0;
+		border: 3px solid var(--ink);
+		border-radius: 50%;
+		background: var(--yellow);
+		color: var(--ink);
+		box-shadow: 5px 5px 0 var(--ink), 0 12px 24px rgba(0, 0, 0, 0.35);
+		cursor: pointer;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	.blip-lancador:hover {
+		transform: translate(-2px, -2px);
+		box-shadow: 7px 7px 0 var(--ink), 0 14px 28px rgba(0, 0, 0, 0.4);
+	}
+
+	.blip-lancador:focus-visible {
+		outline: 3px solid var(--yellow);
+		outline-offset: 4px;
+	}
+
+	.blip-lancador[aria-busy='true'] {
+		cursor: progress;
+		opacity: 0.7;
+	}
+
 	#blip-chat-container #blip-chat-open-iframe {
 		border: 3px solid var(--ink);
 		box-shadow: 5px 5px 0 var(--ink), 0 12px 24px rgba(0, 0, 0, 0.35);
@@ -120,6 +172,7 @@ const commonUrl = import.meta.env.PUBLIC_BLIP_COMMON_URL?.trim() ?? '';
 	}
 
 	@media (max-width: 800px) {
+		.blip-lancador,
 		#blip-chat-container #blip-chat-open-iframe {
 			right: 20px;
 			bottom: 20px;
@@ -127,12 +180,14 @@ const commonUrl = import.meta.env.PUBLIC_BLIP_COMMON_URL?.trim() ?? '';
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.blip-lancador,
 		#blip-chat-container #blip-chat-open-iframe {
 			transition: none;
 		}
 	}
 
 	@media (forced-colors: active) {
+		.blip-lancador,
 		#blip-chat-container #blip-chat-open-iframe {
 			border: 2px solid ButtonText;
 			background: ButtonFace;

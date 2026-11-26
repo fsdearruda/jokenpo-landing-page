@@ -1,50 +1,16 @@
 ---
 import { Image } from 'astro:assets';
-import siteData from '../data/site.json';
+import { site as siteData } from '../lib/content';
 import SectionHeading from './SectionHeading.astro';
 import ArrowIcon from './ArrowIcon.astro';
 
-import unoImg from '../assets/games/uno.jpg';
-import tacoImg from '../assets/games/taco.jpg';
-import knockKnockImg from '../assets/games/knock-knock-dungeon.png';
-import nemAPatoImg from '../assets/games/nem-a-pato.png';
-import naoTestamosImg from '../assets/games/nao-testamos-esse-troco.jpg';
-import naoPode2Img from '../assets/games/nao-pode-2.png';
-import bangImg from '../assets/games/bang.jpg';
-import coupImg from '../assets/games/coup.png';
-import skyTeamImg from '../assets/games/sky-team.jpg';
-import explodingKittensImg from '../assets/games/exploding-kittens.jpg';
-import catanImg from '../assets/games/catan.png';
-import ticketToRideImg from '../assets/games/ticket-to-ride.jpg';
-import zombicideImg from '../assets/games/zombicide.jpg';
-
-const imageMap: Record<string, ImageMetadata> = {
-	'uno.jpg': unoImg,
-	'taco.jpg': tacoImg,
-	'taco.png': tacoImg,
-	'knock-knock-dungeon.png': knockKnockImg,
-	'nem-a-pato.png': nemAPatoImg,
-	'nao-testamos-esse-troco.jpg': naoTestamosImg,
-	'nao-pode-2.png': naoPode2Img,
-	'bang.jpg': bangImg,
-	'bang.png': bangImg,
-	'coup.png': coupImg,
-	'sky-team.jpg': skyTeamImg,
-	'exploding-kittens.jpg': explodingKittensImg,
-	'exploding-kittens.png': explodingKittensImg,
-	'catan.png': catanImg,
-	'ticket-to-ride.jpg': ticketToRideImg,
-	'zombicide.jpg': zombicideImg,
-};
-
+// Capas em src/assets/games são otimizadas no build. O CMS envia para public/uploads (de onde a prévia do CMS
+// lê); arquivo que só existe lá aparece sem otimização, pelo <img> abaixo. Mesmo nome nas duas pastas = otimizada.
 const assetGlob = import.meta.glob<{ default: ImageMetadata }>('../assets/games/*.{jpg,jpeg,png,webp,avif,svg}', {
 	eager: true,
 });
 
-const dynamicImageMap: Record<string, ImageMetadata> = {
-	...imageMap,
-};
-
+const dynamicImageMap: Record<string, ImageMetadata> = {};
 for (const [filePath, mod] of Object.entries(assetGlob)) {
 	const filename = filePath.split('/').pop();
 	if (filename && mod.default) {

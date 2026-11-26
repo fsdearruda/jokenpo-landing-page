@@ -1,5 +1,6 @@
 ---
-import siteData from '../data/site.json';
+import { SITE_URL } from '../lib/site-url';
+import { site as siteData } from '../lib/content';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import archivoBlackLatinWoff2 from '@fontsource/archivo-black/files/archivo-black-latin-400-normal.woff2?url';
@@ -32,7 +33,7 @@ const {
 
 const isHome = path === '/';
 
-const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
+const siteUrl = SITE_URL;
 const homeUrl = `${siteUrl}/`;
 const canonicalUrl = `${siteUrl}${path}`;
 const socialImageUrl = image ?? `${siteUrl}/og-image.png`;

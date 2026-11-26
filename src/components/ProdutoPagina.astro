@@ -1,7 +1,8 @@
 ---
+import { SITE_URL } from '../lib/site-url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from './Icon.astro';
-import siteData from '../data/site.json';
+import { site as siteData } from '../lib/content';
 import { CONDICOES, IDIOMAS, JOGOS, LOW_STOCK_THRESHOLD, compareAtCents, formatPrice, nomeDe, pixPrice, promoBadge, type PaymentRules } from '../lib/catalog';
 import { MAX_QUANTIDADE_POR_ITEM, type ProdutoCatalogo } from '../lib/pdv';
 import { remoteImage } from '../lib/product-images';
@@ -15,7 +16,6 @@ interface Props {
 
 /** Página de um produto da vitrine (/loja/<slug>): conteúdo, preço e estoque vêm do PDV. */
 const { produto, payment, slug } = Astro.props;
-const shop = siteData.shop;
 
 /** O preço do PDV é o do cartão; com desconto no Pix, a página mostra os dois. */
 const feeOn = payment.descontoPixBp > 0;
@@ -29,7 +29,7 @@ const stockText = { out: 'Esgotado', low: 'Últimas unidades', ok: 'Em estoque' 
 const fotos = (produto.fotos ?? []).slice(0, 5);
 const grupo = produto.grupo ?? 'Produtos';
 
-const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
+const siteUrl = SITE_URL;
 const pageUrl = `${siteUrl}/loja/${slug}`;
 const detalhesCarta = carta
 	? [
@@ -191,31 +191,18 @@ const jsonLd = [
 </BaseLayout>
 
 <script>
-	// Mesma sacola da /loja (localStorage `jokenpo:sacola`): adiciona e leva o cliente para lá
-	const STORAGE_KEY = 'jokenpo:sacola';
-	type Line = { id: string; qty: number };
+	// Mesma sacola da /loja: adiciona e leva o cliente para lá
+	import { adicionarNaSacola } from '../scripts/sacola';
 
 	const botao = document.querySelector<HTMLButtonElement>('[data-role="adicionar"]');
 	const aviso = document.querySelector<HTMLElement>('[data-role="aviso"]');
 	botao?.addEventListener('click', () => {
-		const id = botao.dataset.id!;
-		const max = Number(botao.dataset.max ?? 0);
-		let linhas: Line[] = [];
-		try {
-			linhas = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') as Line[];
-		} catch {
-			linhas = [];
-		}
-		const linha = linhas.find((l) => l.id === id);
-		if (linha && linha.qty >= max) {
+		const resultado = adicionarNaSacola(botao.dataset.id!, Number(botao.dataset.max ?? 0));
+		if (resultado === 'no-maximo') {
 			if (aviso) aviso.textContent = 'Você já tem o máximo disponível na sacola.';
 			return;
 		}
-		if (linha) linha.qty += 1;
-		else linhas.push({ id, qty: 1 });
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(linhas));
-		} catch {
+		if (resultado === 'sem-armazenamento') {
 			if (aviso) aviso.textContent = 'Não deu para salvar a sacola neste navegador.';
 			return;
 		}

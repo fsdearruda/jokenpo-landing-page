@@ -59,6 +59,8 @@
   - `--purple` (alt dark surface): `oklch(0.28 0.11 285)` | `#2a1e5c`
   - `--surface-warm` (light card surface): `oklch(0.98 0.02 85)` | `#fff7e6`
   - `--ink-on-color` (muted text on yellow/cyan/pink): `oklch(0.22 0.02 285)` | `#18181c`
+  - `--ink-muted` (secondary text on light surfaces: bag, order cards): `#4a4852`
+  - `--mist-dim` / `--mist-soft` (secondary text on dark storefront cards): `#b9b7c2` / `#d6d4dd`
   - Semantic states:
     - `--success`: `oklch(0.72 0.17 150)` | `#22c55e`
     - `--warning`: `oklch(0.88 0.18 95)` | `#ffd400`

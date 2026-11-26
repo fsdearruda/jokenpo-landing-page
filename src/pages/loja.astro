@@ -1,13 +1,15 @@
 ---
+import { SITE_URL } from '../lib/site-url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
-import siteData from '../data/site.json';
-import { CONDICOES, IDIOMAS, JOGOS, LOW_STOCK_THRESHOLD, compareAtCents, formatPrice, nomeDe, pixPrice, promoBadge, type PaymentRules } from '../lib/catalog';
+import { site as siteData } from '../lib/content';
+import { CONDICOES, IDIOMAS, JOGOS, LOW_STOCK_THRESHOLD, nomeDe, type PaymentRules } from '../lib/catalog';
 import { MAX_QUANTIDADE_POR_ITEM, pedidosNoSite } from '../lib/pdv';
 import { lojaOffline } from '../lib/pdv/estoque';
 import { carregarVitrine, regrasPagamento } from '../lib/vitrine';
-import { remoteImage } from '../lib/product-images';
 import PromoBanners from '../components/PromoBanners.astro';
+import ProductCard from '../components/loja/ProductCard.astro';
+import Sacola from '../components/loja/Sacola.astro';
 import { activeBanners } from '../lib/banners';
 
 // Sob demanda, com cache curto na CDN: mostra o catálogo, o estoque e as fotos do PDV de agora,
@@ -24,7 +26,7 @@ if (erro) {
 	Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
 }
 
-const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
+const siteUrl = SITE_URL;
 const pageUrl = `${siteUrl}/loja`;
 const whatsappNumber = siteData.contact.whatsapp.replace(/\D/g, '');
 /** PC da loja sem mandar estoque há horas (ou estoque parado): catálogo continua, pedido vai pelo WhatsApp. */
@@ -51,8 +53,6 @@ const filtrosCarta = cartas.length
 			{ campo: 'idioma', rotulo: 'Idioma', valores: opcoes(cartas.map((c) => c.idioma)).map((v) => [v, nomeDe(IDIOMAS, v)]) },
 		].filter((f) => f.valores.length > 1)
 	: [];
-/** Página do produto (o slug é criado no PDV quando o produto vai para o site). */
-const linkProduto = (slug: string | null | undefined) => (slug ? `/loja/${slug}` : null);
 
 /** Banner em pé ou quadrado vai para a coluna da sacola no desktop, sem empurrar os produtos. */
 const hasSideBanner = activeBanners('loja', ['tall', 'square']).length > 0;
@@ -179,9 +179,6 @@ const jsonLd = [
 								const tone = family.tone;
 								return family.variants.map((variant, index) => {
 									const level = stockLevel(variant.stock);
-									const photos = variant.images ?? [];
-									const before = compareAtCents(variant);
-									const badge = promoBadge(variant);
 									return (
 										<li
 											data-category={family.slug}
@@ -190,102 +187,15 @@ const jsonLd = [
 											data-condicao={variant.carta?.condicao}
 											data-idioma={variant.carta?.idioma}
 										>
-											<article
-												class={`product-card tone-${tone}`}
-												data-id={variant.id}
-												data-price={variant.priceCents}
-												data-stock={variant.stock}
-												data-title={variant.title}
-												data-compare={before ?? undefined}
-												data-index={index}
-												aria-labelledby={`p-${variant.id}`}
-											>
-												{photos.length > 0 ? (
-													<div class="product-visual product-photo">
-														{photos.slice(0, 2).map((photo, i) => {
-																														const alt = i === 0 ? photo.alt : '';
-															const cls = i === 0 ? undefined : 'photo-alt';
-															const img = remoteImage(photo.src, [240, 360, 480, 720]);
-															return (
-																<img
-																	{...img}
-																	sizes="(min-width: 640px) 260px, 50vw"
-																	alt={alt}
-																	class={cls}
-																	width="720"
-																	height="720"
-																	loading="lazy"
-																	decoding="async"
-																/>
-															);
-														})}
-														{badge && <strong class="promo-badge">{badge}</strong>}
-													</div>
-												) : (
-													variant.carta ? (
-														<div class="product-visual visual-carta" aria-hidden="true">
-															<span class="carta-jogo">{nomeDe(JOGOS, variant.carta.jogo)}</span>
-															<span class="carta-nome">{variant.carta.nomeCarta}</span>
-															<span class="carta-colecao">{variant.carta.numero ?? variant.carta.colecao}</span>
-															{badge && <strong class="promo-badge">{badge}</strong>}
-														</div>
-													) : (
-														<div class="product-visual visual-vazia" aria-hidden="true">
-															<span class="vazia-nome">{variant.title}</span>
-															{badge && <strong class="promo-badge">{badge}</strong>}
-														</div>
-													)
-												)}
-												<div class="card-body">
-													<p class="card-kicker">{family.category}</p>
-													<h3 class="card-title" id={`p-${variant.id}`}>
-														{linkProduto(variant.slug) ? <a class="card-link" href={linkProduto(variant.slug)}>{variant.title}</a> : variant.title}
-													</h3>
-													{variant.carta && (
-														<p class="card-carta">
-															{[
-																variant.carta.colecaoNome ?? variant.carta.colecao,
-																nomeDe(CONDICOES, variant.carta.condicao),
-																nomeDe(IDIOMAS, variant.carta.idioma),
-																variant.carta.acabamento !== 'normal' ? variant.carta.acabamento : null,
-															]
-																.filter(Boolean)
-																.join(' · ')}
-														</p>
-													)}
-													<div class="card-price" data-role="price">
-														<p class="price-before" data-role="price-before" hidden={!before}>
-															<span class="sr-only">De </span><s>{before ? formatPrice(pixPrice(before, payment)) : ''}</s>
-														</p>
-														<p class="price-main">
-															<span data-role="price-pix">{formatPrice(pixPrice(variant.priceCents, payment))}</span>
-															{feeOn && <small>no Pix</small>}
-														</p>
-														{feeOn && (
-															<p class="price-card">
-																ou <span data-role="price-card">{formatPrice(variant.priceCents)}</span> no cartão
-															</p>
-														)}
-													</div>
-													<p class="card-stock" data-role="stock" data-level={level}>
-														{stockText[level]}
-													</p>
-													<div class="card-action">
-														<button type="button" class="add-btn" data-role="add" disabled={level === 'out'}>
-															{level === 'out' ? 'Esgotado' : 'Adicionar'}
-														</button>
-														<div class="card-qty" data-role="qty" role="group" aria-label={`${variant.title} na sacola`} hidden>
-															<button type="button" class="step-btn" data-step="-1" aria-label={`Tirar uma unidade de ${variant.title}`}>
-																<Icon name="lucide:minus" size={16} weight={3} />
-															</button>
-															<span class="card-qty-value" data-role="qty-value">1 na sacola</span>
-															<button type="button" class="step-btn" data-step="1" aria-label={`Adicionar mais uma unidade de ${variant.title}`}>
-																<Icon name="lucide:plus" size={16} weight={3} />
-															</button>
-														</div>
-													</div>
-												</div>
-											</article>
+											<ProductCard
+												variant={variant}
+												category={family.category}
+												tone={tone}
+												index={index}
+												payment={payment}
+												level={level}
+												stockText={stockText[level]}
+											/>
 										</li>
 									);
 								});
@@ -311,118 +221,7 @@ const jsonLd = [
 				</p>
 			</div>
 
-			<aside class="cart" id="sacola" aria-labelledby="cart-heading">
-				<div class="cart-panel">
-					<div class="cart-head">
-						<h2 id="cart-heading" class="cart-heading" tabindex="-1">Sua sacola <span class="cart-count" data-role="cart-count"></span></h2>
-						<button type="button" class="cart-close" data-role="cart-close" aria-label="Fechar sacola">
-							<Icon name="lucide:x" size={18} weight={3} />
-						</button>
-					</div>
-
-					<div class="cart-scroll">
-						{
-							orderApi && (
-								<section class="order-status" data-role="order-status" aria-labelledby="order-title" hidden>
-									<p class="order-kicker">Seu pedido</p>
-									<h3 class="order-title" id="order-title" tabindex="-1">Pedido #<span data-role="order-number"></span></h3>
-									<p class="order-state" data-role="order-state" data-state="AGUARDANDO_CONFIRMACAO" role="status"></p>
-									<ul class="order-items" data-role="order-items" role="list"></ul>
-									<a
-										class="button button-pink cart-cta"
-										data-role="order-whatsapp"
-										href={`https://wa.me/${whatsappNumber}`}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										<Icon name="simple-icons:whatsapp" class="whatsapp-icon" size={20} />
-										<span data-role="order-whatsapp-label">Combinar o pagamento</span>
-										<span class="sr-only">(abre o WhatsApp em nova aba)</span>
-									</a>
-									<button type="button" class="cart-clear" data-role="order-dismiss">Fechar e fazer outro pedido</button>
-								</section>
-							)
-						}
-						<div class="cart-empty" data-role="cart-empty">
-							<p class="cart-empty-title">Tá vazia por enquanto</p>
-							<p>Toque em <strong>Adicionar</strong> num produto e ele aparece aqui.</p>
-						</div>
-						<ul class="cart-list" data-role="cart-list" role="list"></ul>
-						<template data-role="line-template">
-							<li class="cart-line">
-								<div class="line-info">
-									<span class="line-name"></span>
-									<span class="line-unit"></span>
-								</div>
-								<div class="line-qty" role="group">
-									<button type="button" class="step-btn" data-step="-1"><Icon name="lucide:minus" size={16} weight={3} /></button>
-									<span class="line-qty-value"></span>
-									<button type="button" class="step-btn" data-step="1"><Icon name="lucide:plus" size={16} weight={3} /></button>
-								</div>
-								<span class="line-price"></span>
-								<button type="button" class="line-remove">Remover</button>
-							</li>
-						</template>
-					</div>
-
-					<div class="cart-foot" data-role="cart-foot" hidden>
-						<p class="cart-total">
-							<span>Total <small data-role="cart-items"></small></span>
-							<strong data-role="cart-total">R$ 0</strong>
-						</p>
-						{feeOn && <p class="cart-pix" data-role="cart-card"></p>}
-						{
-							orderApi ? (
-								<form class="order-form" data-role="order-form" novalidate>
-									<div class="field">
-										<label for="order-name">Seu nome</label>
-										<input id="order-name" name="nome" type="text" autocomplete="name" maxlength="80" required />
-									</div>
-									<div class="field">
-										<label for="order-phone">WhatsApp com DDD</label>
-										<input
-											id="order-phone"
-											name="telefone"
-											type="tel"
-											inputmode="tel"
-											autocomplete="tel-national"
-											placeholder="(84) 9 0000-0000"
-											maxlength="16"
-											required
-										/>
-									</div>
-									<p class="order-error" data-role="order-error" role="alert" hidden></p>
-									<button type="submit" class="button button-pink cart-cta" data-role="order-submit">Fazer pedido</button>
-									<p class="cart-hint">{modeText.cartHint}</p>
-								</form>
-							) : (
-								<>
-									<a
-										class="button button-pink cart-cta"
-										data-role="whatsapp-link"
-										href={`https://wa.me/${whatsappNumber}`}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										<Icon name="simple-icons:whatsapp" class="whatsapp-icon" size={20} />
-										Enviar pedido no WhatsApp
-										<span class="sr-only">(abre o WhatsApp em nova aba)</span>
-									</a>
-									<p class="cart-hint">{modeText.cartHint}</p>
-									<details class="cart-preview">
-										<summary>Ver a mensagem</summary>
-										<pre data-role="message"></pre>
-									</details>
-									<div class="cart-sent" data-role="cart-sent" role="status" hidden>
-										<p>Mandou a mensagem? A loja confirma o estoque e avisa quando estiver separado.</p>
-										<button type="button" class="cart-clear" data-role="cart-clear">Esvaziar sacola</button>
-									</div>
-								</>
-							)
-						}
-					</div>
-				</div>
-			</aside>
+			<Sacola orderApi={orderApi} whatsappNumber={whatsappNumber} feeOn={feeOn} cartHint={modeText.cartHint} />
 		</div>
 
 		<button type="button" class="cart-bar" data-role="cart-bar" aria-controls="sacola" aria-expanded="false" hidden>
@@ -490,9 +289,9 @@ const jsonLd = [
 
 	/* Vitrine + sacola */
 	/*
-	 * Desktop: título e vitrine à esquerda, sacola à direita. Com banner em pé, ele ocupa o
-	 * topo da coluna da sacola e a sacola (fixa ao rolar) vem logo abaixo.
-	 */
+	* Desktop: título e vitrine à esquerda, sacola à direita. Com banner em pé, ele ocupa o
+	* topo da coluna da sacola e a sacola (fixa ao rolar) vem logo abaixo.
+	*/
 	.shop-layout {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 22.5rem;
@@ -518,10 +317,6 @@ const jsonLd = [
 
 	.shop-catalog {
 		grid-area: catalog;
-	}
-
-	.cart {
-		grid-area: cart;
 	}
 
 	/* Encosta no cabeçalho (altura medida em Header.astro); -1px evita fresta de subpixel */
@@ -571,8 +366,8 @@ const jsonLd = [
 
 	@media (hover: hover) {
 		.filter-btn:hover {
-			border-color: var(--mist);
-			color: var(--white);
+				border-color: var(--mist);
+				color: var(--white);
 		}
 	}
 
@@ -586,12 +381,15 @@ const jsonLd = [
 		color: var(--ink);
 		box-shadow: 3px 3px 0 var(--ink-3);
 	}
+
 	.filter-btn.tone-cyan.is-active {
 		background: var(--cyan);
 	}
+
 	.filter-btn.tone-yellow.is-active {
 		background: var(--yellow);
 	}
+
 	.filter-btn.tone-pink.is-active {
 		background: var(--pink);
 	}
@@ -611,265 +409,12 @@ const jsonLd = [
 		display: none;
 	}
 
-	.product-card {
-		--tone: var(--cyan);
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		overflow: hidden;
-		border: 2px solid var(--ink-3);
-		border-radius: 16px;
-		background: var(--ink-2);
-		transition:
-			border-color var(--duration-fast) var(--ease-out),
-			box-shadow var(--duration-fast) var(--ease-out),
-			transform var(--duration-fast) var(--ease-out);
-	}
-
-	.product-card.tone-yellow {
-		--tone: var(--yellow);
-	}
-	.product-card.tone-pink {
-		--tone: var(--pink);
-	}
-
-	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-		.product-card:hover {
-			box-shadow: 5px 5px 0 var(--ink-3);
-			transform: translate(-2px, -2px);
-		}
-	}
-
-	/* Item já na sacola fica marcado na vitrine */
-	.product-card.is-in-cart {
-		border-color: var(--tone);
-		box-shadow: 5px 5px 0 color-mix(in oklch, var(--tone) 45%, var(--ink));
-	}
-
-	.product-card:has([data-level='out']) .product-visual {
-		filter: grayscale(1);
-		opacity: 0.55;
-	}
-
-	/* Moldura da foto (ou do cartão de texto) */
-	.product-visual {
-		position: relative;
-		display: grid;
-		place-items: center;
-		aspect-ratio: 4 / 3;
-		overflow: hidden;
-		border-bottom: 2px solid var(--ink-3);
-		background-color: var(--ink);
-		background-image: radial-gradient(color-mix(in oklch, var(--tone) 26%, transparent) 1.5px, transparent 2px);
-		background-size: 14px 14px;
-	}
-
-	/* Foto do produto: fundo branco das fotos de catálogo, enquadrada inteira */
-	.product-photo {
-		position: relative;
-		background: var(--white);
-	}
-	.product-photo img {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		transition: opacity var(--duration-normal) var(--ease-out);
-	}
-	.product-photo .photo-alt {
-		opacity: 0;
-	}
-	@media (hover: hover) {
-		.product-card:hover .product-photo .photo-alt {
-			opacity: 1;
-		}
-	}
-
-	/* Produto sem foto no PDV: o nome em destaque sobre o fundo pontilhado da cor da seção */
-	.visual-vazia {
-		padding: 1rem;
-		text-align: center;
-	}
-	.vazia-nome {
-		max-width: 14ch;
-		font-family: var(--font-display);
-		font-size: clamp(1rem, 2.4vw, 1.375rem);
-		line-height: 1.05;
-		color: var(--white);
-		overflow-wrap: anywhere;
-	}
-
-	.card-body {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		padding: 0.75rem 0.875rem 0.875rem;
-	}
-
-	.card-kicker {
-		margin-bottom: 0.25rem;
-		color: var(--tone);
-		font-size: 0.6875rem;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		line-height: 1.3;
-	}
-
-	.card-title {
-		margin-bottom: 0.5rem;
-		font-family: var(--font-body);
-		font-size: 0.9375rem;
-		font-weight: 700;
-		line-height: 1.3;
-		text-wrap: balance;
-	}
-
-	.card-price {
-		display: grid;
-		gap: 0.125rem;
-		margin: auto 0 0.25rem;
-	}
-
-	.card-price p {
-		margin: 0;
-	}
-
-	.price-before {
-		color: #b9b7c2;
-		font-size: 0.75rem;
-		font-weight: 600;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.price-before[hidden] {
-		display: none;
-	}
-
-	.price-main {
-		color: var(--yellow);
-		font-family: var(--font-display);
-		font-size: 1.375rem;
-		line-height: 1.1;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.price-main small {
-		display: block;
-		margin-top: 0.125rem;
-		font-family: var(--font-body);
-		font-size: 0.75rem;
-		font-weight: 700;
-	}
-
-	.price-card {
-		color: #d6d4dd;
-		font-size: 0.75rem;
-		line-height: 1.35;
-		font-variant-numeric: tabular-nums;
-	}
-
-	/* Selo de promoção no canto da foto */
-	.promo-badge {
-		position: absolute;
-		inset: 0.5rem auto auto 0.5rem;
-		z-index: 1;
-		padding: 0.25rem 0.5rem;
-		border: 2px solid var(--ink);
-		border-radius: 999px;
-		background: var(--pink);
-		color: var(--ink);
-		font: 800 0.75rem/1 var(--font-body);
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		box-shadow: 2px 2px 0 var(--ink);
-	}
-
-	.card-stock {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.375rem;
-		margin: 0 0 0.75rem;
-		color: var(--mist);
-		font-size: 0.75rem;
-		font-weight: 600;
-	}
-
-	.card-stock::before {
-		content: '';
-		width: 0.4375rem;
-		height: 0.4375rem;
-		border-radius: 50%;
-		background: var(--cyan);
-	}
-	.card-stock[data-level='low']::before {
-		border-radius: 1px;
-		background: var(--yellow);
-		transform: rotate(45deg);
-	}
-	.card-stock[data-level='out']::before {
-		width: 0.5625rem;
-		height: 2px;
-		border-radius: 0;
-		background: var(--mist);
-	}
-
-	.add-btn {
-		inline-size: 100%;
-		min-block-size: 2.75rem;
-		padding: 0.5rem 0.75rem;
-		border: 2px solid var(--ink);
-		border-radius: var(--radius-pill);
-		background: var(--yellow);
-		color: var(--ink);
-		font: 700 0.875rem/1.2 var(--font-body);
-		cursor: pointer;
-		touch-action: manipulation;
-		box-shadow: 3px 3px 0 var(--ink-3);
-		transition:
-			transform var(--duration-instant) var(--ease-out),
-			box-shadow var(--duration-fast) var(--ease-out);
-	}
-
-	.add-btn:active {
-		transform: translate(1px, 1px);
-		box-shadow: 1px 1px 0 var(--ink-3);
-	}
-
-	.add-btn:disabled {
-		border-color: var(--ink-3);
-		background: transparent;
-		color: var(--mist);
-		box-shadow: none;
-		cursor: not-allowed;
-	}
-
-	.add-btn[hidden],
-	.card-qty[hidden] {
-		display: none;
-	}
-
-	.card-qty,
 	:global(.line-qty) {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		border: 2px solid var(--tone, var(--ink));
 		border-radius: var(--radius-pill);
-	}
-
-	.card-qty {
-		min-block-size: 2.75rem;
-		background: color-mix(in oklch, var(--tone) 14%, var(--ink));
-	}
-
-	.card-qty-value {
-		font-size: 0.8125rem;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-		text-align: center;
 	}
 
 	:global(.shop .step-btn) {
@@ -892,123 +437,15 @@ const jsonLd = [
 		cursor: not-allowed;
 	}
 
-	@media (hover: hover) {
-		.card-qty .step-btn:not(:disabled):hover {
-			color: var(--yellow);
-		}
-	}
-
-
 	.catalog-note {
 		margin: 0;
 		color: var(--mist);
 		font-size: 0.8125rem;
 	}
 
-	/* Sacola: coluna fixa à direita no desktop */
-	.cart {
-		position: sticky;
-		top: 5.5rem;
-		z-index: 6;
-	}
-
-	.cart-panel {
-		display: flex;
-		flex-direction: column;
-		max-block-size: calc(100dvh - 7rem);
-		border: 2px solid var(--ink);
-		border-radius: 22px;
-		background: var(--surface-warm);
-		color: var(--ink);
-		box-shadow: 7px 7px 0 var(--pink);
-		overflow: hidden;
-	}
-
-	.cart-head {
-		display: flex;
-		flex: none;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		padding: 1.125rem 1.25rem 0.75rem;
-		border-bottom: 2px solid color-mix(in oklch, var(--ink) 12%, transparent);
-	}
-
-	.cart-heading {
-		margin: 0;
-		color: var(--ink);
-		font-size: 1.5rem;
-		line-height: 1;
-	}
-
-	.cart-heading:focus-visible {
-		outline: 3px solid var(--pink);
-		outline-offset: 3px;
-	}
-
-	.cart-count {
-		color: var(--ink);
-		font-family: var(--font-body);
-		font-size: 1rem;
-		font-weight: 700;
-		letter-spacing: 0;
-		vertical-align: middle;
-	}
-
-	.cart-close {
-		display: none;
-		place-items: center;
-		inline-size: 2.75rem;
-		block-size: 2.75rem;
-		padding: 0;
-		border: 2px solid var(--ink);
-		border-radius: 50%;
-		background: var(--white);
-		color: var(--ink);
-		cursor: pointer;
-	}
-
-	.cart-panel,
-	.cart-scroll {
-		scrollbar-width: thin;
-	}
-
-	.cart-scroll {
-		flex: 1 1 auto;
-		min-block-size: 0;
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		padding: 0.25rem 1.25rem;
-	}
-
-	.cart-empty {
-		padding: 1.25rem 0 1.5rem;
-		color: #4a4852;
-		font-size: 0.875rem;
-	}
-
-	.cart-empty p {
-		margin: 0;
-	}
-
-	.cart-empty .cart-empty-title {
-		margin-bottom: 0.25rem;
-		color: var(--ink);
-		font-weight: 700;
-	}
-
-	.cart-empty[hidden],
-	.cart-foot[hidden],
-	.cart-sent[hidden],
 	.cart-bar[hidden],
 	.cart-backdrop[hidden] {
 		display: none;
-	}
-
-	.cart-list {
-		margin: 0;
-		padding: 0;
-		list-style: none;
 	}
 
 	:global(.cart-line) {
@@ -1041,7 +478,7 @@ const jsonLd = [
 	}
 
 	:global(.line-unit) {
-		color: #4a4852;
+		color: var(--ink-muted);
 		font-size: 0.75rem;
 	}
 
@@ -1078,7 +515,7 @@ const jsonLd = [
 		padding: 0 0.25rem;
 		border: 0;
 		background: transparent;
-		color: #4a4852;
+		color: var(--ink-muted);
 		font: 600 0.75rem/1 var(--font-body);
 		text-decoration: underline;
 		text-underline-offset: 3px;
@@ -1087,136 +524,8 @@ const jsonLd = [
 
 	@media (hover: hover) {
 		:global(.line-remove:hover) {
-			color: var(--ink);
+				color: var(--ink);
 		}
-	}
-
-	.cart-foot {
-		flex: none;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 0.75rem;
-		padding: 1rem 1.25rem 1.25rem;
-		border-top: 2px solid var(--ink);
-		background: var(--white);
-	}
-
-	.cart-total {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 1rem;
-		margin: 0;
-		font-size: 0.8125rem;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-
-	.cart-pix {
-		margin: -0.25rem 0 0;
-		color: #4a4852;
-		font-size: 0.8125rem;
-		text-align: end;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.cart-pix strong {
-		color: var(--ink);
-	}
-
-	.cart-pix[hidden] {
-		display: none;
-	}
-
-	.cart-total small {
-		color: #4a4852;
-		font-size: 0.75rem;
-		letter-spacing: 0;
-		text-transform: none;
-	}
-
-	.cart-total strong {
-		font-family: var(--font-display);
-		font-size: 1.625rem;
-		font-weight: 400;
-		letter-spacing: 0;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.cart-cta {
-		inline-size: 100%;
-		min-inline-size: 0;
-		box-shadow: 4px 4px 0 var(--ink);
-	}
-
-	.cart-cta:disabled {
-		cursor: progress;
-		opacity: 0.75;
-	}
-
-	.cart-hint {
-		margin: 0;
-		color: #4a4852;
-		font-size: 0.75rem;
-		line-height: 1.45;
-		text-align: center;
-	}
-
-	.cart-preview {
-		font-size: 0.8125rem;
-	}
-
-	.cart-preview summary {
-		inline-size: fit-content;
-		margin-inline: auto;
-		padding: 0.375rem 0.5rem;
-		border-radius: 8px;
-		font-weight: 600;
-		text-decoration: underline;
-		text-underline-offset: 3px;
-		cursor: pointer;
-	}
-
-	.cart-preview pre {
-		max-block-size: 12rem;
-		margin: 0.5rem 0 0;
-		padding: 0.75rem;
-		overflow: auto;
-		border: 2px dashed color-mix(in oklch, var(--ink) 30%, transparent);
-		border-radius: 12px;
-		background: var(--surface-warm);
-		font: 500 0.8125rem/1.5 var(--font-body);
-		white-space: pre-wrap;
-		overflow-wrap: anywhere;
-	}
-
-	.cart-sent {
-		display: grid;
-		gap: 0.5rem;
-		padding: 0.75rem;
-		border-radius: 12px;
-		background: color-mix(in srgb, var(--cyan) 16%, var(--white));
-		font-size: 0.8125rem;
-		font-weight: 600;
-		line-height: 1.45;
-	}
-
-	.cart-sent p {
-		margin: 0;
-	}
-
-	.cart-clear {
-		justify-self: start;
-		min-block-size: 2.5rem;
-		padding: 0 0.25rem;
-		border: 0;
-		background: transparent;
-		color: var(--ink);
-		font: 700 0.8125rem/1 var(--font-body);
-		text-decoration: underline;
-		text-underline-offset: 3px;
-		cursor: pointer;
 	}
 
 	.catalog-empty {
@@ -1232,129 +541,6 @@ const jsonLd = [
 		text-underline-offset: 3px;
 	}
 
-	/* Pedido pelo site */
-	.order-form {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 0.75rem;
-		min-inline-size: 0;
-	}
-
-	.field {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 0.25rem;
-	}
-
-	.field label {
-		font-size: 0.8125rem;
-		font-weight: 700;
-	}
-
-	.field input {
-		inline-size: 100%;
-		min-inline-size: 0;
-		min-block-size: 2.75rem;
-		padding: 0.5rem 0.75rem;
-		border: 2px solid var(--ink);
-		border-radius: 10px;
-		background: var(--white);
-		color: var(--ink);
-		font: 500 1rem/1.3 var(--font-body);
-	}
-
-	.field input:focus-visible {
-		outline: 3px solid var(--cyan);
-		outline-offset: 2px;
-	}
-
-	.field input[aria-invalid] {
-		border-color: var(--pink);
-	}
-
-	.order-error {
-		margin: 0;
-		padding: 0.625rem 0.75rem;
-		border-left: 4px solid var(--pink);
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--pink) 12%, var(--white));
-		font-size: 0.8125rem;
-		font-weight: 600;
-		line-height: 1.45;
-	}
-
-	.order-status {
-		display: grid;
-		gap: 0.625rem;
-		margin-block-end: 1rem;
-		padding: 1rem;
-		border: 2px solid var(--ink);
-		border-radius: 14px;
-		background: var(--white);
-		box-shadow: 4px 4px 0 var(--ink);
-	}
-
-	.order-kicker {
-		margin: 0;
-		color: #4a4852;
-		font-size: 0.6875rem;
-		font-weight: 700;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-	}
-
-	.order-title {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: 1.5rem;
-		font-weight: 400;
-	}
-
-	.order-title:focus-visible {
-		outline: 3px solid var(--cyan);
-		outline-offset: 4px;
-	}
-
-	.order-state {
-		margin: 0;
-		padding: 0.625rem 0.75rem;
-		border-radius: 10px;
-		background: color-mix(in srgb, var(--cyan) 16%, var(--white));
-		font-size: 0.875rem;
-		font-weight: 600;
-		line-height: 1.45;
-	}
-
-	.order-state[data-state='PAGAMENTO_PENDENTE'] {
-		background: color-mix(in srgb, var(--yellow) 30%, var(--white));
-	}
-
-	.order-state[data-state='RECUSADO'],
-	.order-state[data-state='CANCELADO'],
-	.order-state[data-state='EXPIRADO'] {
-		background: color-mix(in srgb, var(--pink) 14%, var(--white));
-	}
-
-	.order-items {
-		display: grid;
-		gap: 0.125rem;
-		margin: 0;
-		padding: 0;
-		font-size: 0.8125rem;
-		list-style: none;
-	}
-
-	.order-items .order-total {
-		margin-block-start: 0.25rem;
-		font-weight: 700;
-	}
-
-	.order-status[hidden],
-	.order-error[hidden],
-	.order-status .cart-cta[hidden] {
-		display: none;
-	}
-
 	/* Barra e gaveta no celular/tablet */
 	.cart-bar,
 	.cart-backdrop {
@@ -1363,123 +549,88 @@ const jsonLd = [
 
 	@media (max-width: 1023px) {
 		.shop-layout,
-		.shop-layout.has-side-banner {
-			grid-template-columns: minmax(0, 1fr);
-			grid-template-rows: auto;
-			grid-template-areas: 'intro' 'side' 'catalog';
+			.shop-layout.has-side-banner {
+				grid-template-columns: minmax(0, 1fr);
+				grid-template-rows: auto;
+				grid-template-areas: 'intro' 'side' 'catalog';
 		}
 
 		.shop-side {
-			margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
+				margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
 		}
 
 		.shop-side :global(.promo-banner) {
-			--max-h: min(80svh, 36rem);
-			inline-size: min(100%, calc(var(--max-h) * (var(--ratio))));
-			margin-inline: auto;
-		}
-
-		.cart {
-			position: fixed;
-			inset: auto 0 0;
-			z-index: 30;
-			max-inline-size: 34rem;
-			margin-inline: auto;
-			visibility: hidden;
-			transform: translateY(105%);
-			transition:
-				transform var(--duration-slow) var(--ease-out),
-				visibility 0s linear var(--duration-slow);
-		}
-
-		.cart.is-open {
-			visibility: visible;
-			transform: translateY(0);
-			transition: transform var(--duration-slow) var(--ease-out);
-		}
-
-		.cart-panel {
-			max-block-size: 88dvh;
-			border-bottom: 0;
-			border-radius: 22px 22px 0 0;
-			box-shadow: 0 -6px 0 var(--pink);
-		}
-
-		.cart-close {
-			display: grid;
-		}
-
-		.cart-foot {
-			padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+				--max-h: min(80svh, 36rem);
+				inline-size: min(100%, calc(var(--max-h) * (var(--ratio))));
+				margin-inline: auto;
 		}
 
 		.cart-backdrop:not([hidden]) {
-			position: fixed;
-			inset: 0;
-			z-index: 29;
-			display: block;
-			background: oklch(0.16 0.006 285 / 0.7);
+				position: fixed;
+				inset: 0;
+				z-index: 29;
+				display: block;
+				background: oklch(0.16 0.006 285 / 0.7);
 		}
 
 		.cart-bar:not([hidden]) {
-			position: fixed;
-			left: 1rem;
-			right: 5.5rem;
-			bottom: max(1rem, env(safe-area-inset-bottom));
-			z-index: 26;
-			display: flex;
-			align-items: center;
-			gap: 0.75rem;
-			max-inline-size: 28rem;
-			min-block-size: 3.25rem;
-			padding: 0.5rem 1rem 0.5rem 0.5rem;
-			border: 2px solid var(--ink);
-			border-radius: var(--radius-pill);
-			background: var(--pink);
-			color: var(--ink);
-			font: 700 0.9375rem/1.2 var(--font-body);
-			box-shadow: 4px 4px 0 var(--ink);
-			cursor: pointer;
+				position: fixed;
+				left: 1rem;
+				right: 5.5rem;
+				bottom: max(1rem, env(safe-area-inset-bottom));
+				z-index: 26;
+				display: flex;
+				align-items: center;
+				gap: 0.75rem;
+				max-inline-size: 28rem;
+				min-block-size: 3.25rem;
+				padding: 0.5rem 1rem 0.5rem 0.5rem;
+				border: 2px solid var(--ink);
+				border-radius: var(--radius-pill);
+				background: var(--pink);
+				color: var(--ink);
+				font: 700 0.9375rem/1.2 var(--font-body);
+				box-shadow: 4px 4px 0 var(--ink);
+				cursor: pointer;
 		}
 
 		.cart-bar-count {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			gap: 0.3rem;
-			min-inline-size: 2.25rem;
-			block-size: 2.25rem;
-			padding: 0 0.5rem;
-			border-radius: var(--radius-pill);
-			background: var(--ink);
-			color: var(--white);
-			font-variant-numeric: tabular-nums;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				gap: 0.3rem;
+				min-inline-size: 2.25rem;
+				block-size: 2.25rem;
+				padding: 0 0.5rem;
+				border-radius: var(--radius-pill);
+				background: var(--ink);
+				color: var(--white);
+				font-variant-numeric: tabular-nums;
 		}
 
 		.cart-bar-label {
-			flex: 1;
-			text-align: left;
+				flex: 1;
+				text-align: left;
 		}
 
 		.cart-bar-total {
-			font-variant-numeric: tabular-nums;
+				font-variant-numeric: tabular-nums;
 		}
 
 		.shop {
-			padding-bottom: 7rem;
+				padding-bottom: 7rem;
 		}
-
 	}
 
 	@media (max-width: 1023px) and (prefers-reduced-motion: no-preference) {
 		.cart-bar.is-pulse {
-			animation: barPulse 420ms var(--ease-out);
+				animation: barPulse 420ms var(--ease-out);
 		}
 
 		@keyframes barPulse {
-			40% {
-				transform: scale(1.04);
-			}
+				40% {
+					transform: scale(1.04);
+				}
 		}
 	}
 
@@ -1492,33 +643,15 @@ const jsonLd = [
 		display: none;
 	}
 
-
 	@media (max-width: 480px) {
 		.product-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 0.75rem;
-		}
-
-		.card-body {
-			padding: 0.625rem 0.625rem 0.75rem;
-		}
-
-		.card-title {
-			font-size: 0.875rem;
-		}
-
-		.price-main {
-			font-size: 1.1875rem;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 0.75rem;
 		}
 
 		:global(.shop .card-qty .step-btn) {
-			inline-size: 2.25rem;
+				inline-size: 2.25rem;
 		}
-
-		.card-qty-value {
-			font-size: 0.75rem;
-		}
-
 	}
 
 	.sr-only {
@@ -1533,78 +666,6 @@ const jsonLd = [
 		border: 0;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.product-visual span,
-		.product-photo img,
-		.cart,
-		.cart.is-open {
-			transition: none;
-		}
-	}
-
-	@media (forced-colors: active) {
-		.product-card,
-		.cart-panel,
-		.card-qty {
-			border-color: CanvasText;
-		}
-		.product-card.is-in-cart {
-			outline: 3px solid Highlight;
-		}
-		.product-visual:not(.product-photo) {
-			display: none;
-		}
-	}
-
-	/* Cartas avulsas: cartão de texto (sem imagem das APIs de cartas) e filtros */
-	.visual-carta {
-		display: grid;
-		align-content: center;
-		justify-items: center;
-		gap: 0.375rem;
-		padding: 1rem;
-		text-align: center;
-		background:
-			repeating-linear-gradient(135deg, color-mix(in oklch, var(--tone) 22%, transparent) 0 6px, transparent 6px 14px),
-			var(--ink);
-		color: var(--white);
-	}
-	.carta-jogo {
-		font: 700 0.6875rem/1 var(--font-body);
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--tone);
-	}
-	.carta-nome {
-		font-family: var(--font-display);
-		font-size: clamp(1rem, 2.4vw, 1.375rem);
-		line-height: 1.05;
-		overflow-wrap: anywhere;
-	}
-	.carta-colecao {
-		font: 600 0.75rem/1 var(--font-body);
-		padding: 0.25rem 0.5rem;
-		border: 1.5px solid currentColor;
-		border-radius: var(--radius-pill);
-	}
-	.card-carta {
-		margin: 0;
-		font-size: 0.75rem;
-		color: var(--mist);
-	}
-	.card-link {
-		color: inherit;
-		text-decoration: none;
-	}
-	.card-link:hover {
-		text-decoration: underline;
-		text-underline-offset: 3px;
-	}
-	.card-link:focus-visible {
-		outline: 3px solid var(--cyan);
-		outline-offset: 3px;
-		border-radius: 4px;
-	}
 	.carta-filtros {
 		display: flex;
 		flex-wrap: wrap;
@@ -1613,17 +674,20 @@ const jsonLd = [
 		padding: 0;
 		border: 0;
 	}
+
 	.carta-filtros legend {
 		margin-bottom: 0.5rem;
 		font-size: 0.8125rem;
 		font-weight: 700;
 	}
+
 	.carta-filtro {
 		display: grid;
 		gap: 0.25rem;
 		font-size: 0.75rem;
 		font-weight: 600;
 	}
+
 	.carta-filtro select {
 		min-block-size: 2.75rem;
 		padding: 0 0.75rem;
@@ -1633,13 +697,9 @@ const jsonLd = [
 		color: var(--white);
 		font: 500 0.9375rem/1 var(--font-body);
 	}
+
 	.carta-filtro select:focus-visible {
 		outline: 3px solid var(--cyan);
 		outline-offset: 2px;
-	}
-	@media (forced-colors: active) {
-		.visual-carta {
-			border: 2px solid canvastext;
-		}
 	}
 </style>

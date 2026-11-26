@@ -4,20 +4,19 @@
  */
 import { initBotId } from 'botid/client/core';
 import { formatPrice, pixPrice, type PaymentRules } from '../lib/catalog';
-
-type Line = { id: string; qty: number };
-type OrderStatus = 'AGUARDANDO_CONFIRMACAO' | 'PAGAMENTO_PENDENTE' | 'PAGO' | 'ENTREGUE' | 'RECUSADO' | 'CANCELADO' | 'EXPIRADO';
-type SavedOrder = {
-	id: string;
-	numero: number;
-	status: OrderStatus;
-	itens: { descricao: string; quantidade: number; precoUnitarioCentavos?: number }[];
-	totalCentavos: number;
-	validoAte: string | null;
-	motivo: string | null;
-	/** Desconto no Pix gravado no pedido; ausente/null = pedido antigo, vale o da página. */
-	descontoPixBp?: number | null;
-};
+import {
+	ehEstoque,
+	ehFalta,
+	ehPedido,
+	erroDa,
+	gravarPedido,
+	gravarSacola,
+	lerPedido,
+	lerSacola,
+	type Line,
+	type OrderStatus,
+	type SavedOrder,
+} from './sacola';
 
 const root = document.querySelector<HTMLElement>('.shop');
 if (root) {
@@ -28,10 +27,15 @@ if (root) {
 	if (root.dataset.orderApi) initBotId({ protect: [{ path: '/api/pdv/pedidos', method: 'POST' }] });
 	const maxQty = Number(root.dataset.maxQty) || 5;
 	const lowStock = Number(root.dataset.lowStock) || 3;
-	const STORAGE_KEY = 'jokenpo:sacola';
-	const ORDER_KEY = 'jokenpo:pedido';
 	const optional = <T extends Element = HTMLElement>(selector: string) => root.querySelector<T>(selector);
-	const payment = JSON.parse(root.dataset.payment ?? '{}') as PaymentRules;
+	const payment: PaymentRules = (() => {
+		try {
+			const bp = (JSON.parse(root.dataset.payment ?? '{}') as Partial<PaymentRules>).descontoPixBp;
+			return { descontoPixBp: Number.isInteger(bp) ? (bp as number) : 0 };
+		} catch {
+			return { descontoPixBp: 0 };
+		}
+	})();
 	/** Total do pedido no Pix: desconto sobre o preço de cada item gravado no pedido (o preço do PDV é o do cartão). */
 	const orderPix = (o: SavedOrder) => {
 		// O desconto do momento do pedido (gravado nele) vale mesmo que a loja mude o desconto depois
@@ -83,25 +87,13 @@ if (root) {
 	};
 
 	/* Persistência local: a sacola sobrevive a um recarregamento. */
-	const save = () => {
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify([...cart.values()]));
-		} catch {
-			/* Navegação privada ou armazenamento bloqueado. */
-		}
-	};
+	const save = () => void gravarSacola([...cart.values()]);
 	const restore = () => {
-		try {
-			const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') as Line[];
-			saved.forEach((line) => {
-				if (cards.has(line.id) && Number.isInteger(line.qty) && line.qty > 0) {
-					const qty = Math.min(line.qty, limit(line.id));
-					if (qty > 0) cart.set(line.id, { id: line.id, qty });
-				}
-			});
-		} catch {
-			/* Ignora dado corrompido. */
-		}
+		lerSacola().forEach((line) => {
+			if (!cards.has(line.id)) return;
+			const qty = Math.min(line.qty, limit(line.id));
+			if (qty > 0) cart.set(line.id, { id: line.id, qty });
+		});
 	};
 
 	const pulseBar = () => {
@@ -342,7 +334,8 @@ if (root) {
 		try {
 			const response = await fetch('/api/pdv/estoque', { headers: { accept: 'application/json' } });
 			if (!response.ok) return;
-			const items = (await response.json()) as { produtoId: string; disponivel: number; precoCentavos?: number }[];
+			const body: unknown = await response.json();
+			const items = Array.isArray(body) ? body.filter(ehEstoque) : [];
 			const seen = new Set<string>();
 			items.forEach(({ produtoId, disponivel, precoCentavos }) => {
 				const card = cards.get(produtoId);
@@ -412,14 +405,8 @@ if (root) {
 		}).format(new Date(iso));
 	}
 
-	const saveOrder = () => {
-		try {
-			if (order) localStorage.setItem(ORDER_KEY, JSON.stringify(order));
-			else localStorage.removeItem(ORDER_KEY);
-		} catch {
-			/* Armazenamento bloqueado: o pedido continua valendo, só não reaparece ao recarregar. */
-		}
-	};
+	/* Armazenamento bloqueado: o pedido continua valendo, só não reaparece ao recarregar. */
+	const saveOrder = () => void gravarPedido(order);
 
 	function renderOrder() {
 		const panel = optional('[data-role="order-status"]');
@@ -459,7 +446,8 @@ if (root) {
 				if (response.status === 404) {
 					order = null;
 				} else if (response.ok) {
-					const data = (await response.json()) as SavedOrder;
+					const data: unknown = await response.json();
+					if (!ehPedido(data)) throw new Error('resposta inesperada');
 					const changed = data.status !== order.status;
 					order = { ...order, status: data.status, validoAte: data.validoAte, motivo: data.motivo };
 					if (changed) announce.textContent = `Pedido ${order.numero}: ${ORDER_TEXT[order.status](order)}`;
@@ -561,11 +549,11 @@ if (root) {
 				});
 				const data = await response.json().catch(() => null);
 				if (!response.ok) {
-					const erro = data?.erro as { codigo?: string; mensagem?: string; detalhes?: unknown } | undefined;
+					const erro = erroDa(data);
 					if (erro?.codigo === 'ESTOQUE_INSUFICIENTE' || erro?.codigo === 'ITEM_INVALIDO') {
 						// Atualiza o estoque dos itens que faltaram e ajusta a sacola
 						if (Array.isArray(erro.detalhes)) {
-							(erro.detalhes as { produtoId: string; disponivel: number }[]).forEach(({ produtoId, disponivel }) => {
+							erro.detalhes.filter(ehFalta).forEach(({ produtoId, disponivel }) => {
 								const card = cards.get(produtoId);
 								if (card) card.dataset.stock = String(disponivel);
 							});
@@ -583,7 +571,8 @@ if (root) {
 					if ((erro?.codigo === 'MUITAS_TENTATIVAS' || erro?.codigo === 'LIMITE_PEDIDOS' || erro?.codigo === 'LOJA_OFFLINE' || erro?.codigo === 'ACESSO_NEGADO') && erro.mensagem) return showError(erro.mensagem);
 					return showError('Não deu pra enviar agora. Tenta de novo em instantes ou chama a gente no WhatsApp.');
 				}
-				const created = data as SavedOrder;
+				if (!ehPedido(data)) throw new Error('resposta inesperada');
+				const created = data;
 				order = {
 					id: created.id,
 					numero: created.numero,
@@ -620,12 +609,7 @@ if (root) {
 			$('#cart-heading').focus();
 		});
 
-		try {
-			const saved = JSON.parse(localStorage.getItem(ORDER_KEY) ?? 'null') as SavedOrder | null;
-			if (saved && typeof saved.id === 'string' && Number.isInteger(saved.numero) && ORDER_TEXT[saved.status]) order = saved;
-		} catch {
-			/* Ignora dado corrompido. */
-		}
+		order = lerPedido();
 	}
 
 	// Com pedido no site, a vitrine atualiza estoque e preço ao vivo.

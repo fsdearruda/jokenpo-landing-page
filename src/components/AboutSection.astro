@@ -1,18 +1,8 @@
 ---
-import siteData from '../data/site.json';
+import { site as siteData } from '../lib/content';
 import ArrowIcon from './ArrowIcon.astro';
 
-const about = (siteData as Record<string, any>).about ?? {
-	eyebrow: 'CARD GAMES',
-	titleLine1: 'TCG, MESA',
-	highlight: 'E COMUNIDADE',
-	description:
-		'Temos produtos e cartas de Magic, Pokémon, Yu-Gi-Oh! e One Piece, além de espaço para sentar, jogar com calma e encontrar a sua turma.',
-	tcgs: ['MAGIC', 'POKÉMON', 'YU-GI-OH!', 'ONE PIECE'],
-	noteLine1: 'UM LUGAR PRA',
-	noteHighlight: 'JOGAR COM CALMA.',
-	noteAuthor: '@jokenpoficial',
-};
+const about = siteData.about;
 ---
 
 <section class="about-section" id="sobre" aria-labelledby="about-title">
