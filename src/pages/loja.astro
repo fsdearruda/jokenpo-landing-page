@@ -1,5 +1,4 @@
 ---
-import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import siteData from '../data/site.json';
@@ -11,12 +10,12 @@ import { remoteImage, resolveProductImage } from '../lib/product-images';
 import PromoBanners from '../components/PromoBanners.astro';
 import { activeBanners } from '../lib/banners';
 
-// Estática por padrão. No modo `live`, o astro.config.mjs a torna sob demanda (com cache
-// curto na CDN) para mostrar o catálogo escolhido no PDV.
-export const prerender = true;
+// Sob demanda, com cache curto na CDN: mostra o catálogo, o estoque e as fotos do PDV de agora,
+// não os do último deploy. (O Astro só aceita valor fixo aqui, então vale para todos os modos.)
+export const prerender = false;
 
 const { families, fonte, lojaVistaEm, acrescimoCartaoBp } = await carregarVitrine();
-if (pdvMode === 'live') Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
 const pageUrl = `${siteUrl}/loja`;
@@ -52,7 +51,8 @@ const photoUrls = new Map(
 				.filter((variant) => variant.images?.length)
 				.map(async (variant) => {
 					const src = resolveProductImage(variant.images![0].src);
-					const url = typeof src === 'string' ? src : (await getImage({ src, width: 720, format: 'webp' })).src;
+					// Foto antiga do CMS: arquivo original em /_astro (a página é sob demanda e o /_image não existe na Vercel)
+					const url = typeof src === 'string' ? src : src.src;
 					return [variant.id, new URL(url, siteUrl).href] as const;
 				}),
 		),
@@ -179,9 +179,10 @@ const jsonLd = [
 															const src = resolveProductImage(photo.src);
 															const alt = i === 0 ? photo.alt : '';
 															const cls = i === 0 ? undefined : 'photo-alt';
-															return typeof src === 'string' ? (
+															const img = typeof src === 'string' ? remoteImage(src, [240, 360, 480, 720]) : { src: src.src };
+															return (
 																<img
-																	{...remoteImage(src, [240, 360, 480, 720])}
+																	{...img}
 																	sizes="(min-width: 640px) 260px, 50vw"
 																	alt={alt}
 																	class={cls}
@@ -189,16 +190,6 @@ const jsonLd = [
 																	height="720"
 																	loading="lazy"
 																	decoding="async"
-																/>
-															) : (
-																<Image
-																	src={src}
-																	alt={alt}
-																	class={cls}
-																	widths={[240, 360, 480, 720]}
-																	sizes="(min-width: 640px) 260px, 50vw"
-																	format="webp"
-																	quality={78}
 																/>
 															);
 														})}

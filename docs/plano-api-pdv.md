@@ -30,7 +30,7 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 | `src/pages/api/pdv-sync/*` | Rotas chamadas pelo PC da loja |
 | `src/lib/pdv/index.ts`, `types.ts`, `mock.ts` | `PUBLIC_PDV_MODE = live \| mock \| off`, contrato público e mock |
 | `src/lib/vitrine.ts` | Seções da vitrine: uma por grupo de categoria do PDV, destaques primeiro, nome/descrição/fotos do PDV |
-| `astro.config.mjs` | Com `PUBLIC_PDV_MODE=live`, `/loja` vira rota sob demanda (`s-maxage=60`) |
+| `src/pages/loja.astro` | Sempre sob demanda (`prerender = false`), com `s-maxage=60, stale-while-revalidate=600` na CDN |
 
 ## Ambientes
 
@@ -61,4 +61,3 @@ responde `LOJA_OFFLINE` (503) para quem estiver com a página em cache.
 - Sem Content-Security-Policy: o widget do Blip e o Decap CMS precisam de testes. Começar com
   `Content-Security-Policy-Report-Only`.
 - `Hero` e `ExtrasSection` usam `set:html` com texto do `site.json`, editado só por quem tem acesso ao repositório.
-- Lighthouse do modo `live` (página sob demanda) só dá para medir depois do deploy.
