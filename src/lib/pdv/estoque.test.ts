@@ -51,3 +51,13 @@ describe('loja sem contato', () => {
 		expect(lojaOffline(null, agora)).toBe(true);
 	});
 });
+
+describe('preço no Pix', async () => {
+	const { pixPrice } = await import('../catalog');
+	const { precoPix } = await import('./sync');
+	it('desconto sobre o preço do PDV (cartão), arredondado ao centavo, igual à conta do PDV', () => {
+		expect(pixPrice(6990, { pixDiscountPercent: 5 })).toBe(6641);
+		expect(pixPrice(6990, { pixDiscountPercent: 0 })).toBe(6990);
+		for (const c of [100, 999, 2500, 6990, 10949]) expect(pixPrice(c, { pixDiscountPercent: 5 })).toBe(precoPix(c, 500));
+	});
+});

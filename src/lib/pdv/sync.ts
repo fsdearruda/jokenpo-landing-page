@@ -142,8 +142,10 @@ export interface EnvioEstoque {
 }
 
 export interface LojaFoto {
-  /** Acréscimo no preço para pagar no cartão, em centésimos de % (500 = 5%). 0 = sem acréscimo. */
+  /** Regra antiga (o preço era o do Pix). O PDV manda 0; o site de antes exige o campo. */
   acrescimoCartaoBp: number;
+  /** O preço do PDV é o do cartão; desconto para pagar no Pix, em centésimos de % (500 = 5%). Ausente = PDV antigo. */
+  descontoPixBp?: number;
 }
 
 /** Foto de produto enviada pelo PDV (POST /api/pdv-sync/foto). O site guarda e devolve a URL pública. */
@@ -153,6 +155,10 @@ export interface EnvioFoto {
   tipo: "image/webp" | "image/jpeg" | "image/png";
   dados: string; // base64
 }
+
+/** Preço no Pix de um preço do PDV (que é o do cartão). O site usa a mesma conta, unidade por unidade. */
+export const precoPix = (centavos: number, descontoPixBp: number) =>
+  descontoPixBp > 0 ? Math.round(centavos * (1 - descontoPixBp / 10_000)) : centavos;
 
 /** Limites de conteúdo (o PDV também confere ao salvar). */
 export const MAX_FOTOS_PRODUTO = 5;
@@ -302,8 +308,9 @@ export function lerEnvioEstoque(v: unknown): EnvioEstoque | null {
   if (e.loja !== undefined) {
     const l = e.loja as Record<string, unknown> | null;
     const acrescimo = inteiro(l?.acrescimoCartaoBp, 0, 5_000);
-    if (acrescimo === null) return null;
-    loja = { acrescimoCartaoBp: acrescimo };
+    const desconto = l?.descontoPixBp === undefined ? undefined : inteiro(l.descontoPixBp, 0, 5_000);
+    if (acrescimo === null || desconto === null) return null;
+    loja = { acrescimoCartaoBp: acrescimo, ...(desconto !== undefined ? { descontoPixBp: desconto } : {}) };
   }
   return { pdvSeq: e.pdvSeq, completo: e.completo, eventosAplicadosAte: e.eventosAplicadosAte, geradoEm: e.geradoEm, itens, pedidos, ...(loja ? { loja } : {}) };
 }

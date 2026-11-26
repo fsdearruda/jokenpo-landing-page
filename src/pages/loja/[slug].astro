@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProdutoPagina from '../../components/ProdutoPagina.astro';
 import { getPdv } from '../../lib/pdv';
-import { acrescimoCartaoDaLoja } from '../../lib/pdv/cloud';
+import { descontoPixDaLoja } from '../../lib/pdv/cloud';
 import { regrasPagamento } from '../../lib/vitrine';
 
 // Página de um produto da vitrine (/loja/<slug>). O slug, o conteúdo, o preço e o estoque vêm do PDV.
@@ -11,7 +11,7 @@ export const prerender = false;
 const slug = Astro.params.slug ?? '';
 const pdv = getPdv();
 const produto = /^[a-z0-9-]{1,120}$/.test(slug) ? await pdv.buscarPorSlug(slug).catch(() => null) : null;
-const payment = produto ? regrasPagamento(await acrescimoCartaoDaLoja().catch(() => null)) : null;
+const payment = produto ? regrasPagamento(await descontoPixDaLoja().catch(() => null)) : null;
 
 // O 404 do site é pré-renderizado e não existe dentro da função: esta página responde o "não encontrado"
 if (!produto) Astro.response.status = 404;

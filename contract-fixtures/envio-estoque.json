@@ -117,6 +117,7 @@
     }
   ],
   "loja": {
-    "acrescimoCartaoBp": 500
+    "acrescimoCartaoBp": 0,
+    "descontoPixBp": 500
   }
 }

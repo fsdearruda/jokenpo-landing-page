@@ -2,7 +2,7 @@
  * Comportamento da /loja no navegador: sacola (localStorage `jokenpo:sacola`), filtros, pedido no site ou pelo
  * WhatsApp e acompanhamento do pedido. A página passa os dados pelos atributos `data-*` do `.shop`.
  */
-import { cardPrice, formatPrice, type PaymentRules } from '../lib/catalog';
+import { formatPrice, pixPrice, type PaymentRules } from '../lib/catalog';
 
 type Line = { id: string; qty: number };
 type OrderStatus = 'AGUARDANDO_CONFIRMACAO' | 'PAGAMENTO_PENDENTE' | 'PAGO' | 'ENTREGUE' | 'RECUSADO' | 'CANCELADO' | 'EXPIRADO';
@@ -27,14 +27,14 @@ if (root) {
 	const ORDER_KEY = 'jokenpo:pedido';
 	const optional = <T extends Element = HTMLElement>(selector: string) => root.querySelector<T>(selector);
 	const payment = JSON.parse(root.dataset.payment ?? '{}') as PaymentRules;
-	/** Total do pedido no cartão, com a taxa sobre o preço de cada item gravado no pedido. */
-	const orderCard = (o: SavedOrder) =>
+	/** Total do pedido no Pix: desconto sobre o preço de cada item gravado no pedido (o preço do PDV é o do cartão). */
+	const orderPix = (o: SavedOrder) =>
 		o.itens.every((item) => item.precoUnitarioCentavos)
-			? o.itens.reduce((sum, item) => sum + cardPrice(item.precoUnitarioCentavos!, payment) * item.quantidade, 0)
-			: cardPrice(o.totalCentavos, payment);
-	/** Preço do PDV é o do Pix; com taxa ligada, o total vem nos dois meios. */
-	const totalSentence = (cents: number, card: number) =>
-		card > cents ? `${formatPrice(cents)} no Pix ou ${formatPrice(card)} no cartão` : formatPrice(cents);
+			? o.itens.reduce((sum, item) => sum + pixPrice(item.precoUnitarioCentavos!, payment) * item.quantidade, 0)
+			: pixPrice(o.totalCentavos, payment);
+	/** Com desconto no Pix, o total vem nos dois meios. */
+	const totalSentence = (pix: number, card: number) =>
+		card > pix ? `${formatPrice(pix)} no Pix ou ${formatPrice(card)} no cartão` : formatPrice(card);
 
 	const cards = new Map(
 		[...root.querySelectorAll<HTMLElement>('.product-card')].map((card) => [card.dataset.id!, card]),
@@ -68,8 +68,8 @@ if (root) {
 		cart.forEach((line) => {
 			const { price } = info(line.id);
 			items += line.qty;
-			cents += line.qty * price;
-			card += line.qty * cardPrice(price, payment);
+			cents += line.qty * pixPrice(price, payment); // total no Pix (o que aparece primeiro)
+			card += line.qty * price; // o preço do PDV é o do cartão
 		});
 		return { items, cents, card };
 	};
@@ -323,9 +323,11 @@ if (root) {
 		const before = Number(card.dataset.compare) || 0;
 		const beforeEl = $('[data-role="price-before"]', card);
 		beforeEl.hidden = before <= price;
-		$('[data-role="price-pix"]', card).textContent = formatPrice(price);
+		const beforeText = beforeEl.querySelector('s');
+		if (beforeText && before > price) beforeText.textContent = formatPrice(pixPrice(before, payment));
+		$('[data-role="price-pix"]', card).textContent = formatPrice(pixPrice(price, payment));
 		const cardEl = card.querySelector('[data-role="price-card"]');
-		if (cardEl) cardEl.textContent = formatPrice(cardPrice(price, payment));
+		if (cardEl) cardEl.textContent = formatPrice(price);
 	};
 
 	const refreshStock = async () => {
@@ -426,12 +428,12 @@ if (root) {
 				li.textContent = `${item.quantidade}x ${item.descricao}`;
 				return li;
 			}),
-			Object.assign(document.createElement('li'), { className: 'order-total', textContent: `Total ${totalSentence(order.totalCentavos, orderCard(order))}` }),
+			Object.assign(document.createElement('li'), { className: 'order-total', textContent: `Total ${totalSentence(orderPix(order), order.totalCentavos)}` }),
 		);
 		const text =
 			order.status === 'RECUSADO'
 				? `Oi, Jokenpo! O pedido #${order.numero} do site não tinha estoque. Tem alguma alternativa?`
-				: `Oi, Jokenpo! Fiz o pedido #${order.numero} no site (total ${totalSentence(order.totalCentavos, orderCard(order))}). Como faço o pagamento?`;
+				: `Oi, Jokenpo! Fiz o pedido #${order.numero} no site (total ${totalSentence(orderPix(order), order.totalCentavos)}). Como faço o pagamento?`;
 		const whatsapp = $<HTMLAnchorElement>('[data-role="order-whatsapp"]', panel);
 		whatsapp.href = `https://wa.me/${root!.dataset.whatsapp}?text=${encodeURIComponent(text)}`;
 		whatsapp.hidden = order.status === 'PAGO' || order.status === 'ENTREGUE';

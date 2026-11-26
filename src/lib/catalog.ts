@@ -52,15 +52,13 @@ export const formatPrice = (cents: number) => {
 };
 
 export interface PaymentRules {
-	/** Liga o acréscimo do cartão. Desligado, o cartão custa o mesmo que o Pix. */
-	cardFeeEnabled: boolean;
-	/** Acréscimo no cartão, em %, sobre o preço do PDV (que é o preço no Pix). */
-	cardFeePercent: number;
+	/** Desconto no Pix, em %, sobre o preço do PDV (que é o preço no cartão). 0 = um preço só. */
+	pixDiscountPercent: number;
 }
 
-/** O preço do PDV é o preço no Pix; o cartão leva o acréscimo definido no PDV, arredondado ao centavo. */
-export const cardPrice = (cents: number, rules: PaymentRules) =>
-	rules.cardFeeEnabled && rules.cardFeePercent > 0 ? Math.round(cents * (1 + rules.cardFeePercent / 100)) : cents;
+/** O preço do PDV é o do cartão; o Pix leva o desconto definido no PDV, arredondado ao centavo. */
+export const pixPrice = (cents: number, rules: PaymentRules) =>
+	rules.pixDiscountPercent > 0 ? Math.round(cents * (1 - rules.pixDiscountPercent / 100)) : cents;
 
 type PromoFields = Pick<ProductVariant, 'pdvPromo' | 'priceCents'>;
 

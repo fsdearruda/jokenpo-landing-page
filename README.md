@@ -30,13 +30,13 @@ Para ativar o bot em desenvolvimento ou produção, preencha `PUBLIC_BLIP_APP_KE
 ## Loja e integração com o PDV
 
 O PDV da loja (repositório `jokenpo-pdv`) é o único lugar onde se edita a loja do site: quais produtos aparecem
-(Cadastros → Site), nome de vitrine, descrição, destaque, fotos, preço, estoque, promoções e o acréscimo do cartão.
+(Cadastros → Site), nome de vitrine, descrição, destaque, fotos, preço, estoque, promoções e o desconto no Pix (o preço do PDV é o do cartão).
 O site só mostra e recebe pedidos.
 
 - **`/loja`**: uma seção por grupo de categoria do PDV, com sacola fixa no desktop e gaveta no celular (guardada no
   `localStorage`). Cartas avulsas aparecem como cartão de texto, com filtros por jogo, coleção, condição e idioma.
   Gerada sob demanda com cache de 60 s na CDN.
-- **`/loja/<produto>`**: página de cada produto (fotos, preço no Pix e no cartão, estoque, descrição, JSON-LD
+- **`/loja/<produto>`**: página de cada produto (fotos, preço no cartão e no Pix com desconto, estoque, descrição, JSON-LD
   `Product`), listada no `/sitemap.xml`.
 - **Pedido**: a sacola pede nome e WhatsApp e cria o pedido, que fica **aguardando confirmação** até o PC da loja
   conferir o estoque (mesmo com o PC desligado na hora: ele aplica quando liga). Com estoque, a loja separa e o

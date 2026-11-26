@@ -240,10 +240,10 @@ class CloudPdv implements PdvClient {
 export const cloudPdv: PdvClient = new CloudPdv();
 
 /** Quando o PC da loja falou com o site pela última vez. */
-/** Acréscimo do cartão definido no PDV (null = o PDV ainda não mandou; vale o do CMS). */
-export async function acrescimoCartaoDaLoja(): Promise<number | null> {
-	const [s] = await sql()<{ acrescimo_cartao_bp: number | null }[]>`SELECT acrescimo_cartao_bp FROM pdv_sync WHERE id = 1`;
-	return s?.acrescimo_cartao_bp ?? null;
+/** Desconto no Pix definido no PDV (null = o PDV ainda não mandou: Pix e cartão com o mesmo preço). */
+export async function descontoPixDaLoja(): Promise<number | null> {
+	const [s] = await sql()<{ desconto_pix_bp: number | null }[]>`SELECT desconto_pix_bp FROM pdv_sync WHERE id = 1`;
+	return s?.desconto_pix_bp ?? null;
 }
 
 export async function ultimoContatoDaLoja(): Promise<Date | null> {
@@ -305,7 +305,8 @@ export async function receberEstoque(envio: EnvioEstoque) {
 					AS v(produto_id text, "nomeSite" text, descricao text, slug text, destaque boolean, fotos jsonb, "ordemGrupo" integer, carta jsonb)
 				WHERE p.produto_id = v.produto_id`;
 		}
-		if (envio.loja) await tx`UPDATE pdv_sync SET acrescimo_cartao_bp = ${envio.loja.acrescimoCartaoBp} WHERE id = 1`;
+		// O preço do PDV é o do cartão; o site mostra o Pix com este desconto (PDV antigo não manda: fica como estava)
+		if (envio.loja?.descontoPixBp !== undefined) await tx`UPDATE pdv_sync SET desconto_pix_bp = ${envio.loja.descontoPixBp} WHERE id = 1`;
 		if (envio.completo) {
 			const ids = envio.itens.map((i) => i.produtoId);
 			await tx`UPDATE pdv_produto SET visivel = false WHERE visivel AND NOT (produto_id = ANY(${ids}))`;

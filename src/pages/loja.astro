@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import siteData from '../data/site.json';
-import { CONDICOES, IDIOMAS, JOGOS, LOW_STOCK_THRESHOLD, cardPrice, compareAtCents, formatPrice, nomeDe, promoBadge, type PaymentRules } from '../lib/catalog';
+import { CONDICOES, IDIOMAS, JOGOS, LOW_STOCK_THRESHOLD, compareAtCents, formatPrice, nomeDe, pixPrice, promoBadge, type PaymentRules } from '../lib/catalog';
 import { MAX_QUANTIDADE_POR_ITEM, pedidosNoSite } from '../lib/pdv';
 import { lojaOffline } from '../lib/pdv/estoque';
 import { carregarVitrine, regrasPagamento } from '../lib/vitrine';
@@ -14,7 +14,7 @@ import { activeBanners } from '../lib/banners';
 // não os do último deploy.
 export const prerender = false;
 
-const { families, disponivel, lojaVistaEm, acrescimoCartaoBp } = await carregarVitrine();
+const { families, disponivel, lojaVistaEm, descontoPixBp } = await carregarVitrine();
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
@@ -29,9 +29,10 @@ const stockLevel = (stock: number) => (stock <= 0 ? 'out' : stock <= LOW_STOCK_T
 const stockText = { out: 'Esgotado', low: 'Últimas unidades', ok: 'Em estoque' } as const;
 
 const shop = siteData.shop;
-const payment: PaymentRules = regrasPagamento(acrescimoCartaoBp);
+const payment: PaymentRules = regrasPagamento(descontoPixBp);
 const modeText = orderApi ? shop.orderOnSite : shop.orderOnWhatsapp;
-const feeOn = payment.cardFeeEnabled && payment.cardFeePercent > 0;
+/** O preço do PDV é o do cartão; com desconto no Pix, o card mostra os dois. */
+const feeOn = payment.pixDiscountPercent > 0;
 /** Filtros das cartas avulsas: só aparecem quando há carta na vitrine, com as opções que existem nela. */
 const cartas = families.flatMap((family) => family.variants.flatMap((variant) => (variant.carta ? [variant.carta] : [])));
 const opcoes = (valores: string[]) => [...new Set(valores)].sort((a, b) => a.localeCompare(b, 'pt-BR'));
@@ -247,15 +248,15 @@ const jsonLd = [
 													)}
 													<div class="card-price" data-role="price">
 														<p class="price-before" data-role="price-before" hidden={!before}>
-															<span class="sr-only">De </span><s>{before ? formatPrice(before) : ''}</s>
+															<span class="sr-only">De </span><s>{before ? formatPrice(pixPrice(before, payment)) : ''}</s>
 														</p>
 														<p class="price-main">
-															<span data-role="price-pix">{formatPrice(variant.priceCents)}</span>
+															<span data-role="price-pix">{formatPrice(pixPrice(variant.priceCents, payment))}</span>
 															{feeOn && <small>no Pix</small>}
 														</p>
 														{feeOn && (
 															<p class="price-card">
-																ou <span data-role="price-card">{formatPrice(cardPrice(variant.priceCents, payment))}</span> no cartão
+																ou <span data-role="price-card">{formatPrice(variant.priceCents)}</span> no cartão
 															</p>
 														)}
 													</div>
