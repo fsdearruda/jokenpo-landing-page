@@ -22,6 +22,12 @@ export const ASSINATURA_VALIDADE_MS = 5 * 60_000;
 export const MAX_QUANTIDADE_POR_ITEM = 5;
 export const MAX_ITENS_POR_PEDIDO = 20;
 
+/**
+ * Versão do contrato. Vai em toda chamada do PDV (`x-pdv-versao`) e volta do site (`x-site-versao`): cada lado
+ * sabe o que o outro está rodando (o PC da loja atualiza à mão, o site a cada deploy). Suba quando mudar o protocolo.
+ */
+export const VERSAO_CONTRATO = 2;
+
 // ─── Tipos do protocolo ─────────────────────────────────
 
 export interface ItemEventoPedido {
@@ -41,6 +47,8 @@ export interface EventoPedidoCriado {
     itens: ItemEventoPedido[];
     nomeContato: string;
     telefoneContato: string;
+    /** Desconto no Pix (centésimos de %) que o cliente viu ao fazer o pedido. Ausente = site antigo. */
+    descontoPixBp?: number;
   };
 }
 
@@ -131,14 +139,25 @@ export interface PromocaoFoto {
 }
 
 export interface EnvioEstoque {
+  /** Contador dos envios: o site só aceita um número maior que o último aceito (bloqueia reenvio e envio atrasado). */
   pdvSeq: number;
   completo: boolean;
   eventosAplicadosAte: number;
+  /** Só informativo: o site não decide nada pelo relógio do PC. */
   geradoEm: string;
   itens: ItemFoto[];
   pedidos: StatusPedidoSite[];
   /** Regras da loja para o site. Ausente (PDV antigo) = o site mantém o que tinha. */
   loja?: LojaFoto;
+}
+
+/**
+ * Resposta do site ao envio do estoque. Recusado com `pdvSeq` = o contador do PDV ficou para trás (PC restaurado
+ * de backup): o PDV pula para esse número e manda a foto completa no ciclo seguinte. Site antigo não manda `pdvSeq`.
+ */
+export interface RespostaEstoque {
+  aceito: boolean;
+  pdvSeq?: number;
 }
 
 export interface LojaFoto {
@@ -203,6 +222,8 @@ export function lerEvento(bruto: unknown): EventoSite | null {
   const nomeContato = texto(p.nomeContato, 80);
   const telefoneContato = texto(p.telefoneContato, 20);
   if (!numero || !nomeContato || !telefoneContato) return null;
+  const descontoPixBp = p.descontoPixBp === undefined ? undefined : inteiro(p.descontoPixBp, 0, 5_000);
+  if (descontoPixBp === null) return null;
   const itens: ItemEventoPedido[] = [];
   for (const bi of p.itens as Record<string, unknown>[]) {
     const produtoId = texto(bi?.produtoId, 64);
@@ -212,7 +233,10 @@ export function lerEvento(bruto: unknown): EventoSite | null {
     if (!produtoId || !descricao || !quantidade || preco === null) return null;
     itens.push({ produtoId, descricao, quantidade, precoUnitarioCentavos: preco });
   }
-  return { id, tipo: "PEDIDO_CRIADO", pedidoId, criadoEm, payload: { numero, itens: juntarItens(itens), nomeContato, telefoneContato } };
+  return {
+    id, tipo: "PEDIDO_CRIADO", pedidoId, criadoEm,
+    payload: { numero, itens: juntarItens(itens), nomeContato, telefoneContato, ...(descontoPixBp !== undefined ? { descontoPixBp } : {}) },
+  };
 }
 
 /** Itens repetidos do mesmo produto viram uma linha só (com o preço da primeira). */

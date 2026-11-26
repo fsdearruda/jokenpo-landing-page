@@ -15,6 +15,8 @@ type SavedOrder = {
 	totalCentavos: number;
 	validoAte: string | null;
 	motivo: string | null;
+	/** Desconto no Pix gravado no pedido; ausente/null = pedido antigo, vale o da página. */
+	descontoPixBp?: number | null;
 };
 
 const root = document.querySelector<HTMLElement>('.shop');
@@ -31,10 +33,13 @@ if (root) {
 	const optional = <T extends Element = HTMLElement>(selector: string) => root.querySelector<T>(selector);
 	const payment = JSON.parse(root.dataset.payment ?? '{}') as PaymentRules;
 	/** Total do pedido no Pix: desconto sobre o preço de cada item gravado no pedido (o preço do PDV é o do cartão). */
-	const orderPix = (o: SavedOrder) =>
-		o.itens.every((item) => item.precoUnitarioCentavos)
-			? o.itens.reduce((sum, item) => sum + pixPrice(item.precoUnitarioCentavos!, payment) * item.quantidade, 0)
-			: pixPrice(o.totalCentavos, payment);
+	const orderPix = (o: SavedOrder) => {
+		// O desconto do momento do pedido (gravado nele) vale mesmo que a loja mude o desconto depois
+		const regras: PaymentRules = typeof o.descontoPixBp === 'number' ? { descontoPixBp: o.descontoPixBp } : payment;
+		return o.itens.every((item) => item.precoUnitarioCentavos)
+			? o.itens.reduce((sum, item) => sum + pixPrice(item.precoUnitarioCentavos!, regras) * item.quantidade, 0)
+			: pixPrice(o.totalCentavos, regras);
+	};
 	/** Com desconto no Pix, o total vem nos dois meios. */
 	const totalSentence = (pix: number, card: number) =>
 		card > pix ? `${formatPrice(pix)} no Pix ou ${formatPrice(card)} no cartão` : formatPrice(card);
@@ -587,6 +592,7 @@ if (root) {
 					totalCentavos: created.totalCentavos,
 					validoAte: created.validoAte,
 					motivo: created.motivo,
+					descontoPixBp: created.descontoPixBp ?? null,
 				};
 				saveOrder();
 				cart.clear();

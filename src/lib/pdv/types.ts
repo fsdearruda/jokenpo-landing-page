@@ -81,6 +81,8 @@ export interface PedidoPublico {
 	validoAte: string | null;
 	motivo: string | null;
 	criadoEm: string;
+	/** Desconto no Pix (centésimos de %) do momento do pedido; null = pedido antigo (vale o desconto atual). */
+	descontoPixBp: number | null;
 }
 
 export type PdvErrorCode =

@@ -10,6 +10,7 @@
  * Arquivos copiados: src/lib/site-sync.ts → src/lib/pdv/sync.ts e contract-fixtures/ (exemplos de
  * mensagens que os testes leem). Nunca edite a cópia: mude no PDV e rode `pnpm sync:contract`.
  */
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -47,7 +48,16 @@ function copiar() {
 		process.exit(1);
 	}
 	mkdirSync(FIXTURES, { recursive: true });
-	const lock = { origem: PDV_GITHUB, arquivos: {} };
+	// Commit do PDV de onde a cópia saiu (com "+alterado" se havia mudança não commitada no contrato)
+	const git = (...args) => execFileSync('git', ['-C', origem, ...args], { encoding: 'utf8' }).trim();
+	let commit = null;
+	try {
+		commit = git('rev-parse', 'HEAD');
+		if (git('status', '--porcelain', '--', 'src/lib/site-sync.ts', FIXTURES)) commit += '+alterado';
+	} catch {
+		/* PDV fora de um repositório git */
+	}
+	const lock = { origem: PDV_GITHUB, commit, arquivos: {} };
 	for (const [de, para] of arquivos(readdirSync(join(origem, FIXTURES)))) {
 		const texto = readFileSync(join(origem, de), 'utf8');
 		writeFileSync(para, texto);

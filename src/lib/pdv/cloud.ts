@@ -3,7 +3,7 @@ import type postgres from 'postgres';
 import { sql } from '../db';
 import { calcularDemanda, disponivelNoSite, expirouSemConfirmacao, lojaOffline, podeMudarStatus, promocaoVigente } from './estoque';
 import { apagarFotos } from './fotos';
-import type { CartaFoto, ComponenteKit, EnvioEstoque, PromocaoFoto, ResultadoEvento, StatusPedidoSite } from './sync';
+import type { CartaFoto, ComponenteKit, EnvioEstoque, PromocaoFoto, RespostaEstoque, ResultadoEvento, StatusPedidoSite } from './sync';
 import {
 	MAX_ABERTOS_POR_IP,
 	MAX_ABERTOS_POR_TELEFONE,
@@ -45,6 +45,7 @@ type LinhaPedido = {
 	valido_ate: Date | null;
 	motivo: string | null;
 	criado_em: Date;
+	desconto_pix_bp: number | null;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -130,6 +131,7 @@ const publico = (p: LinhaPedido): PedidoPublico => {
 	validoAte: p.valido_ate?.toISOString() ?? null,
 	motivo: vencido ? 'A loja não confirmou a tempo' : p.motivo,
 	criadoEm: p.criado_em.toISOString(),
+	descontoPixBp: p.desconto_pix_bp,
 	};
 };
 
@@ -162,8 +164,8 @@ class CloudPdv implements PdvClient {
 		const ipHash = origem?.ipHash ?? null;
 		return sql().begin(async (tx) => {
 			// Uma linha só trava todas as criações de pedido e os envios do PDV: sem corrida pela última unidade
-			const [sync] = await tx<{ ultimo_contato_em: Date | null; ultimo_estoque_em: Date | null }[]>`
-				SELECT ultimo_contato_em, ultimo_estoque_em FROM pdv_sync WHERE id = 1 FOR UPDATE`;
+			const [sync] = await tx<{ ultimo_contato_em: Date | null; ultimo_estoque_em: Date | null; desconto_pix_bp: number | null }[]>`
+				SELECT ultimo_contato_em, ultimo_estoque_em, desconto_pix_bp FROM pdv_sync WHERE id = 1 FOR UPDATE`;
 			// A página pode estar em cache de antes da queda: confere aqui também
 			if (lojaOffline({ vistaEm: sync?.ultimo_contato_em ?? null, estoqueEm: sync?.ultimo_estoque_em ?? null })) {
 				throw new PdvError('LOJA_OFFLINE', 'O sistema da loja está sem conexão agora. Manda o pedido pelo WhatsApp que a gente separa.', 503);
@@ -216,9 +218,11 @@ class CloudPdv implements PdvClient {
 			});
 			const id = randomUUID();
 			const total = itens.reduce((s, i) => s + i.totalCentavos, 0);
+			// O desconto no Pix do momento fica no pedido: se a loja mudar depois, o cliente paga o que viu
+			const descontoPixBp = sync?.desconto_pix_bp ?? null;
 			const [pedido] = await tx<LinhaPedido[]>`
-				INSERT INTO pdv_pedido (id, status, itens, total_centavos, nome_contato, telefone_contato, ip_hash)
-				VALUES (${id}, 'AGUARDANDO_CONFIRMACAO', ${tx.json(itens)}, ${total}, ${nome}, ${telefone}, ${ipHash})
+				INSERT INTO pdv_pedido (id, status, itens, total_centavos, nome_contato, telefone_contato, ip_hash, desconto_pix_bp)
+				VALUES (${id}, 'AGUARDANDO_CONFIRMACAO', ${tx.json(itens)}, ${total}, ${nome}, ${telefone}, ${ipHash}, ${descontoPixBp})
 				RETURNING *`;
 			const [evento] = await tx<{ id: string }[]>`
 				INSERT INTO pdv_evento (tipo, pedido_id, payload)
@@ -227,6 +231,7 @@ class CloudPdv implements PdvClient {
 					itens: itens.map(({ produtoId, descricao, quantidade, precoUnitarioCentavos }) => ({ produtoId, descricao, quantidade, precoUnitarioCentavos })),
 					nomeContato: nome,
 					telefoneContato: telefone,
+					...(descontoPixBp !== null ? { descontoPixBp } : {}),
 				})})
 				RETURNING id`;
 			await tx`UPDATE pdv_pedido SET evento_id = ${evento.id} WHERE id = ${id}`;
@@ -261,9 +266,9 @@ export async function contatoDaLoja(): Promise<{ vistaEm: Date | null; estoqueEm
 export async function estadoDaSincronizacao() {
 	const db = sql();
 	const [s] = await db<
-		{ ultimo_contato_em: Date | null; ultimo_estoque_em: Date | null; alerta_chave: string; pendentes: number; pendente_desde: Date | null }[]
+		{ ultimo_contato_em: Date | null; ultimo_estoque_em: Date | null; alerta_chave: string; versao_pdv: number | null; pendentes: number; pendente_desde: Date | null }[]
 	>`
-		SELECT s.ultimo_contato_em, s.ultimo_estoque_em, s.alerta_chave, p.pendentes, p.pendente_desde
+		SELECT s.ultimo_contato_em, s.ultimo_estoque_em, s.alerta_chave, s.versao_pdv, p.pendentes, p.pendente_desde
 		FROM pdv_sync s,
 			(SELECT count(*)::int AS pendentes, min(criado_em) AS pendente_desde FROM pdv_evento WHERE aplicado_em IS NULL) p
 		WHERE s.id = 1`;
@@ -273,6 +278,7 @@ export async function estadoDaSincronizacao() {
 		pendentes: s?.pendentes ?? 0,
 		pendenteDesde: s?.pendente_desde ?? null,
 		alertaChave: s?.alerta_chave ?? '',
+		versaoPdv: s?.versao_pdv ?? null,
 	};
 }
 
@@ -292,17 +298,14 @@ async function atualizarPedido(tx: Tx, p: StatusPedidoSite) {
 }
 
 /** Recebe a foto (completa ou parcial) do estoque e as mudanças de pedidos feitas na loja. */
-export async function receberEstoque(envio: EnvioEstoque) {
+export async function receberEstoque(envio: EnvioEstoque, versaoPdv: number | null = null): Promise<RespostaEstoque> {
 	let fotosRemovidas: string[] = [];
 	const resultado = await sql().begin(async (tx) => {
-		const [estado] = await tx<{ pdv_seq: string; ultimo_gerado_em: Date | null }[]>`
-			SELECT pdv_seq, ultimo_gerado_em FROM pdv_sync WHERE id = 1 FOR UPDATE`;
-		const geradoEm = new Date(envio.geradoEm);
-		if (Number.isNaN(geradoEm.getTime())) return { aceito: false };
-		// Envio mais velho que o último aceito é ignorado: cobre envio atrasado e requisição capturada e
-		// reenviada. Foto completa de um PDV restaurado de backup passa, porque é gerada na hora.
-		if (estado.ultimo_gerado_em && geradoEm <= estado.ultimo_gerado_em) return { aceito: false };
-		if (!envio.completo && envio.pdvSeq <= Number(estado.pdv_seq)) return { aceito: false };
+		const [estado] = await tx<{ pdv_seq: string }[]>`SELECT pdv_seq FROM pdv_sync WHERE id = 1 FOR UPDATE`;
+		// Só o contador decide, nunca o relógio do PC: envio atrasado e requisição capturada e reenviada têm
+		// contador velho. PDV restaurado de backup recebe o contador daqui e pula para ele (ver contrato).
+		if (envio.pdvSeq <= Number(estado.pdv_seq)) return { aceito: false, pdvSeq: Number(estado.pdv_seq) };
+		const geradoEm = new Date(envio.geradoEm); // só informativo
 
 		const json = (v: unknown) => (v ? (tx.json(v as postgres.JSONValue) as unknown as string) : null);
 		await tx`
@@ -346,7 +349,8 @@ export async function receberEstoque(envio: EnvioEstoque) {
 		for (const p of envio.pedidos) await atualizarPedido(tx, p);
 		await tx`
 			UPDATE pdv_sync SET pdv_seq = ${envio.pdvSeq}, eventos_aplicados_ate = ${envio.eventosAplicadosAte}, ultimo_contato_em = now(),
-				ultimo_estoque_em = now(), ultimo_gerado_em = ${geradoEm}
+				ultimo_estoque_em = now(), ultimo_gerado_em = ${Number.isNaN(geradoEm.getTime()) ? null : geradoEm},
+				versao_pdv = ${versaoPdv}
 				${envio.completo ? tx`, ultima_foto_completa_em = now()` : tx``}
 			WHERE id = 1`;
 		return { aceito: true };
@@ -357,16 +361,16 @@ export async function receberEstoque(envio: EnvioEstoque) {
 }
 
 /** Eventos depois do cursor do PDV, em ordem. Inclui os já confirmados: reaplicar não tem efeito no PDV. */
-export async function listarEventos(depois: number, limite: number) {
+export async function listarEventos(depois: number, limite: number, versaoPdv: number | null = null) {
 	const db = sql();
 	const eventos = await db<{ id: string; tipo: string; pedido_id: string; payload: Record<string, unknown>; criado_em: Date }[]>`
 		SELECT id, tipo, pedido_id, payload, criado_em FROM pdv_evento WHERE id > ${depois} ORDER BY id LIMIT ${limite}`;
-	await db`UPDATE pdv_sync SET ultimo_contato_em = now() WHERE id = 1`;
+	await db`UPDATE pdv_sync SET ultimo_contato_em = now(), versao_pdv = ${versaoPdv} WHERE id = 1`;
 	return eventos.map((e) => ({ id: Number(e.id), tipo: e.tipo, pedidoId: e.pedido_id, criadoEm: e.criado_em.toISOString(), payload: e.payload }));
 }
 
 /** O PDV aplicou (ou recusou) os eventos: atualiza o status que o cliente vê e limpa dados de contato antigos. */
-export async function confirmarEventos(resultados: ResultadoEvento[]) {
+export async function confirmarEventos(resultados: ResultadoEvento[], versaoPdv: number | null = null) {
 	await sql().begin(async (tx) => {
 		for (const r of resultados) {
 			const [antes] = await tx<{ aplicado_em: Date | null }[]>`SELECT aplicado_em FROM pdv_evento WHERE id = ${r.eventoId} FOR UPDATE`;
@@ -380,7 +384,7 @@ export async function confirmarEventos(resultados: ResultadoEvento[]) {
 					WHERE id = (SELECT pedido_id FROM pdv_evento WHERE id = ${r.eventoId}) AND status = 'AGUARDANDO_CONFIRMACAO'`;
 			}
 		}
-		await tx`UPDATE pdv_sync SET ultimo_contato_em = now() WHERE id = 1`;
+		await tx`UPDATE pdv_sync SET ultimo_contato_em = now(), versao_pdv = ${versaoPdv} WHERE id = 1`;
 	});
 }
 

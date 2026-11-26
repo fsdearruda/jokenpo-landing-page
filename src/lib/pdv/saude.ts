@@ -45,11 +45,14 @@ const hora = (d: Date | null) =>
 	d ? d.toLocaleString('pt-BR', { timeZone: 'America/Fortaleza', dateStyle: 'short', timeStyle: 'short' }) : 'nunca';
 
 /** Assunto e texto do e-mail. Lista vazia = aviso de que voltou ao normal. */
-export function mensagemDoAlerta(problemas: Problema[], e: EstadoSync) {
+export function mensagemDoAlerta(problemas: Problema[], e: EstadoSync & { versaoPdv?: number | null }, versaoSite?: number) {
 	const resumo = [
 		`Último contato do PC: ${hora(e.vistaEm)}`,
 		`Último estoque aceito: ${hora(e.estoqueEm)}`,
 		`Pedidos esperando o PC: ${e.pendentes}${e.pendenteDesde ? ` (o mais antigo desde ${hora(e.pendenteDesde)})` : ''}`,
+		...(versaoSite !== undefined
+			? [`Versão do contrato: PC ${e.versaoPdv ?? 'anterior à 2'}, site ${versaoSite}${e.versaoPdv === versaoSite ? '' : ' (atualize o PDV)'}`]
+			: []),
 		'',
 		'Log do PDV: C:\\Jokenpo-PDV\\logs (linhas "[site] sincronizado").',
 	].join('\n');

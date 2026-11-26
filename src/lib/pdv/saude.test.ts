@@ -26,4 +26,8 @@ describe('saúde da sincronização', () => {
 		expect(mensagemDoAlerta([], ok).assunto).toMatch(/voltou ao normal/);
 		expect(mensagemDoAlerta(['ESTOQUE_PARADO'], ok).texto).toMatch(/relógio do PC/);
 	});
+	it('mostra a versão do contrato de cada lado', () => {
+		expect(mensagemDoAlerta([], { ...ok, versaoPdv: 2 }, 2).texto).toMatch(/PC 2, site 2\n/);
+		expect(mensagemDoAlerta([], { ...ok, versaoPdv: null }, 2).texto).toMatch(/PC anterior à 2, site 2 \(atualize o PDV\)/);
+	});
 });
