@@ -38,11 +38,11 @@ node scripts/extract-products.mjs banco.sql
 
 A integração com o PDV fica na interface `PdvClient` em `src/lib/pdv/`, com três modos em `PUBLIC_PDV_MODE`:
 
-- `live`: PDV real. O PC da loja sincroniza com o site pelas rotas `/api/pdv-sync/*` (só chamadas de saída, assinadas com `PDV_SYNC_TOKEN`). O site guarda uma cópia do catálogo e a fila de pedidos num Postgres (`DATABASE_URL`, tabelas criadas com `pnpm db:migrate`). O que aparece na vitrine é escolhido no PDV, em Cadastros → Site, e `/loja` vira rota sob demanda com cache de 60 s na CDN.
+- `live`: PDV real. O PC da loja sincroniza com o site pelas rotas `/api/pdv-sync/*` (só chamadas de saída, assinadas com `PDV_SYNC_TOKEN`). O site guarda uma cópia do catálogo e a fila de pedidos num Postgres (`DATABASE_URL`, tabelas criadas no build da Vercel ou com `pnpm db:migrate`). O que aparece na vitrine é escolhido no PDV, em Cadastros → Site, e `/loja` vira rota sob demanda com cache de 60 s na CDN.
 - `mock`: PDV simulado em memória, padrão no `pnpm dev`.
 - `off`: sem PDV. A vitrine usa `products.json` e o pedido vai só pelo WhatsApp. É o padrão no build sem configuração.
 
-Com PDV (`live` ou `mock`), a sacola pede nome e WhatsApp e cria o pedido. Ele fica **aguardando confirmação** até o PC da loja conferir o estoque, o que acontece mesmo se o pedido for feito com o PC desligado: ele é aplicado quando o PC liga. Com estoque, a loja separa as unidades e o cliente tem 48 h para pagar por Pix no WhatsApp. Sem estoque, o pedido é recusado. O cliente acompanha o status na própria sacola. Operação do lado do site e passos para produção: [docs/plano-api-pdv.md](docs/plano-api-pdv.md). O protocolo completo fica em `docs/API-SITE.md` do repositório `jokenpo-pdv`.
+Com PDV (`live` ou `mock`), a sacola pede nome e WhatsApp e cria o pedido. Ele fica **aguardando confirmação** até o PC da loja conferir o estoque, o que acontece mesmo se o pedido for feito com o PC desligado: ele é aplicado quando o PC liga. Se o PC passar de 6 h sem contato, a sacola volta a mandar o pedido pelo WhatsApp até ele voltar. Com estoque, a loja separa as unidades e o cliente tem 48 h para pagar por Pix no WhatsApp. Sem estoque, o pedido é recusado. O cliente acompanha o status na própria sacola. Operação do lado do site e passos para produção: [docs/plano-api-pdv.md](docs/plano-api-pdv.md). O protocolo completo fica em `docs/API-SITE.md` do repositório `jokenpo-pdv`.
 
 | Rota | Uso |
 |---|---|
@@ -153,7 +153,7 @@ Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desati
 | `src/components/PromoBanners.astro`, `src/lib/banners.ts` | Banners de eventos e promoções em carrossel |
 | `src/pages/api/pdv/`, `src/pages/api/pdv-sync/` | API pública do PDV e rotas de sincronização do PC da loja |
 | `src/lib/catalog.ts`, `src/lib/vitrine.ts`, `src/lib/pdv/` | Catálogo tipado, seções da vitrine, contrato `PdvClient`, ponte com o PDV real e PDV simulado |
-| `db/migrations/` | Tabelas da ponte site ↔ PDV (`pnpm db:migrate`) |
+| `db/migrations/` | Tabelas da ponte site ↔ PDV (aplicadas no build da Vercel; à mão: `pnpm db:migrate`) |
 | `src/data/products.json` | Produtos extraídos do PDV (gerado por `scripts/extract-products.mjs`) |
 | `src/pages/admin.astro` | Painel do Decap CMS em `/admin` |
 | `src/pages/llms.txt.ts` | Geração do arquivo `/llms.txt` a partir de `site.json` |

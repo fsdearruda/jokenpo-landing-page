@@ -20,7 +20,7 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 
 | Arquivo | Papel |
 |---|---|
-| `db/migrations/*.sql`, `scripts/db-migrate.mjs` | Tabelas `pdv_produto`, `pdv_pedido`, `pdv_evento`, `pdv_sync`, `pdv_limite_ip` (`pnpm db:migrate`) |
+| `db/migrations/*.sql`, `scripts/db-migrate.mjs` | Tabelas `pdv_produto`, `pdv_pedido`, `pdv_evento`, `pdv_sync`, `pdv_limite_ip`. Aplicadas no build da Vercel (`vercel-build`); à mão: `pnpm db:migrate`. Só acrescentar (IF NOT EXISTS), nunca renomear ou apagar |
 | `src/lib/db.ts` | Conexão (`postgres`, sem prepared statements, compatível com o pooler do Neon) |
 | `src/lib/pdv/cloud.ts` | `CloudPdvClient` (catálogo, estoque, criar e buscar pedido) e as operações da sincronização |
 | `src/lib/pdv/estoque.ts` | Regras puras do disponível no site e do selo de promoção (testadas) |
@@ -51,6 +51,12 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 3. Conferir na aba Pedidos o selo "Site sincronizado".
 4. `vercel env add PUBLIC_PDV_MODE production` com `live` e novo deploy. Até a primeira sincronização,
    a vitrine usa o catálogo do build com pedido pelo WhatsApp, então ligar antes não quebra a página.
+
+## Loja sem conexão
+
+Se o PC da loja ficar mais de 6 h sem falar com o site (`LOJA_OFFLINE_HORAS` em `src/lib/pdv/estoque.ts`),
+`/loja` continua mostrando o catálogo, mas a sacola manda o pedido pelo WhatsApp, e `POST /api/pdv/pedidos`
+responde `LOJA_OFFLINE` (503) para quem estiver com a página em cache.
 
 ## Pendências conhecidas
 

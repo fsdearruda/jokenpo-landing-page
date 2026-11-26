@@ -46,3 +46,12 @@ export function disponivelNoSite(
 	}
 	return Math.max(0, p.disponivel - (demanda.get(p.produto_id) ?? 0));
 }
+
+/**
+ * Sem contato do PC da loja por esse tempo, o site para de criar pedidos e manda pelo WhatsApp:
+ * um pedido feito agora ficaria horas sem confirmação (até expirar em 72 h).
+ */
+export const LOJA_OFFLINE_HORAS = 6;
+
+export const lojaOffline = (vistaEm: Date | string | null, agora = Date.now()) =>
+	!vistaEm || agora - new Date(vistaEm).getTime() > LOJA_OFFLINE_HORAS * 3_600_000;

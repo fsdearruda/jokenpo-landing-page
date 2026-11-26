@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type postgres from 'postgres';
 import { sql } from '../db';
-import { calcularDemanda, disponivelNoSite, promocaoVigente } from './estoque';
+import { calcularDemanda, disponivelNoSite, lojaOffline, promocaoVigente } from './estoque';
 import type { ComponenteKit, EnvioEstoque, PromocaoFoto, ResultadoEvento, StatusPedidoSite } from './sync';
 import {
 	MAX_ABERTOS_POR_IP,
@@ -129,7 +129,11 @@ class CloudPdv implements PdvClient {
 		const ipHash = origem?.ipHash ?? null;
 		return sql().begin(async (tx) => {
 			// Uma linha só trava todas as criações de pedido e os envios do PDV: sem corrida pela última unidade
-			await tx`SELECT 1 FROM pdv_sync WHERE id = 1 FOR UPDATE`;
+			const [sync] = await tx<{ ultimo_contato_em: Date | null }[]>`SELECT ultimo_contato_em FROM pdv_sync WHERE id = 1 FOR UPDATE`;
+			// A página pode estar em cache de antes da queda: confere aqui também
+			if (lojaOffline(sync?.ultimo_contato_em ?? null)) {
+				throw new PdvError('LOJA_OFFLINE', 'O sistema da loja está sem conexão agora. Manda o pedido pelo WhatsApp que a gente separa.', 503);
+			}
 			await expirarNaoConfirmados(tx);
 
 			// Quem já tem pedidos em aberto não segura mais estoque até pagar ou a loja confirmar
