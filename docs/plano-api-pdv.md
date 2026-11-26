@@ -100,6 +100,26 @@ expirado.
 Status vindo do PDV só anda para frente (`podeMudarStatus` em `src/lib/pdv/estoque.ts`): um envio atrasado não
 volta `PAGO` para `PAGAMENTO_PENDENTE` nem reabre pedido encerrado.
 
+## Banco perdido: como recuperar
+
+O banco do site (Neon) guarda uma cópia do catálogo, que o PDV repõe sozinho, e os **pedidos que o PC da loja ainda
+não aplicou**, que só existem aqui. Passos, do mais simples ao último recurso:
+
+1. **Restaurar no Neon** (Console → Branches → Restore) para um instante antes do problema. O plano grátis guarda
+   pouco histórico (confira a janela no console); um plano pago aumenta esse prazo.
+2. **Banco novo**, se não der para restaurar:
+   - `pnpm db:migrate` com a nova `DATABASE_URL` (ou só o próximo deploy, que roda as migrações).
+   - **Antes de o PC voltar a buscar pedidos**, ponha a numeração dos eventos acima do cursor do PDV (Cadastros →
+     Site mostra a sincronização; o cursor é `SyncSite.cursorEventos` no banco do PDV):
+     `SELECT setval('pdv_evento_id_seq', <cursor do PDV>);` Sem isso, o PDV pede eventos "depois do cursor" e
+     ignora os pedidos novos, que nasceriam com número menor.
+   - Faça o mesmo com o número que o cliente vê, para não repetir números já usados:
+     `SELECT setval('pdv_pedido_numero_seq', <maior número de pedido do site no PDV>);`
+   - A próxima foto completa (até 10 min) repõe catálogo, fotos e desconto. O contador `pdvSeq` do banco novo começa
+     em 0, então o envio do PDV é aceito.
+3. **Pedidos não aplicados se perdem** junto com o banco. O e-mail de saúde avisa quando há pedido esperando o PC há
+   mais de 30 min. Se o banco cair nessa hora, confira os pedidos recentes no WhatsApp da loja.
+
 ## Robôs
 
 `POST /api/pdv/pedidos` passa pelo Vercel BotID (nível Basic, grátis): a sacola chama `initBotId` só quando o

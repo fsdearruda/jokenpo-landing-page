@@ -21,10 +21,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Versão do pnpm vem do `packageManager` do package.json
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 12
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -40,6 +39,10 @@ jobs:
 
       - name: Tests
         run: pnpm test
+
+      # Banco de verdade em memória (PGlite): migrações, pedidos, estoque, faxina e rotas /api
+      - name: Integration tests
+        run: pnpm test:integracao
 
       # A cópia do contrato precisa ser igual ao main do PDV (repositório privado: token só de leitura)
       - name: Contract matches PDV
