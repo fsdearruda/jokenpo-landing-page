@@ -394,17 +394,18 @@ export async function confirmarEventos(resultados: ResultadoEvento[]) {
 export async function manutencao() {
 	return sql().begin(async (tx) => {
 		await expirarNaoConfirmados(tx);
-		// LGPD: um dia depois de encerrado, o site guarda só primeiro nome e 4 dígitos. Evento só depois que a
-		// loja recebeu, ou quando o pedido dele já encerrou (expirado sem a loja ver).
+		// LGPD: um dia depois de encerrado, o site guarda só primeiro nome e 4 dígitos
+		const pedidos = await tx`
+			UPDATE pdv_pedido SET nome_contato = split_part(nome_contato, ' ', 1), telefone_contato = right(telefone_contato, 4), contato_mascarado = true
+			WHERE NOT contato_mascarado AND status NOT IN ('AGUARDANDO_CONFIRMACAO', 'PAGAMENTO_PENDENTE')
+				AND atualizado_em < now() - interval '1 day'`;
+		// Evento: depois que a loja recebeu, ou quando o pedido dele já foi mascarado acima (expirou sem a
+		// loja ver). Roda depois dos pedidos para pegar os mascarados nesta mesma passada.
 		const eventos = await tx`
 			UPDATE pdv_evento e SET payload = payload - 'nomeContato' - 'telefoneContato'
 			WHERE payload ? 'telefoneContato'
 				AND (aplicado_em < now() - interval '1 day'
 					OR EXISTS (SELECT 1 FROM pdv_pedido p WHERE p.id = e.pedido_id AND p.contato_mascarado))`;
-		const pedidos = await tx`
-			UPDATE pdv_pedido SET nome_contato = split_part(nome_contato, ' ', 1), telefone_contato = right(telefone_contato, 4), contato_mascarado = true
-			WHERE NOT contato_mascarado AND status NOT IN ('AGUARDANDO_CONFIRMACAO', 'PAGAMENTO_PENDENTE')
-				AND atualizado_em < now() - interval '1 day'`;
 		const limites = await tx`DELETE FROM pdv_limite_ip WHERE janela < now() - interval '1 day'`;
 		const fotos = await tx<{ url: string }[]>`SELECT DISTINCT jsonb_array_elements_text(fotos) AS url FROM pdv_produto WHERE fotos IS NOT NULL`;
 		return {
