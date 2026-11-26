@@ -1,4 +1,4 @@
-import { del, put } from '@vercel/blob';
+import { del, list, put } from '@vercel/blob';
 import type { EnvioFoto } from './sync';
 
 /**
@@ -37,4 +37,28 @@ export async function apagarFotos(urls: string[]) {
 	} catch (error) {
 		console.error('[pdv-sync] não deu para apagar fotos antigas', error instanceof Error ? error.message : error);
 	}
+}
+
+/** Foto enviada e ainda não ligada a produto fica esse tempo antes da faxina (o PDV liga no envio seguinte). */
+export const FOTO_ORFA_DIAS = 7;
+
+/**
+ * Apaga do Blob as fotos da pasta deste ambiente que nenhum produto usa há mais de `FOTO_ORFA_DIAS`
+ * (upload que nunca virou conteúdo, produto apagado). Só olha a própria pasta: preview e produção
+ * dividem o store, cada um com o seu banco.
+ */
+export async function apagarFotosOrfas(emUso: Set<string>, agora = Date.now()) {
+	// Banco sem nenhuma foto (restaurado, zerado) não é motivo para esvaziar o Blob
+	if (!emUso.size) return 0;
+	const caminhos = new Set([...emUso].flatMap((u) => (URL.canParse(u) ? [new URL(u).pathname.slice(1)] : [])));
+	const limite = agora - FOTO_ORFA_DIAS * 86_400_000;
+	const orfas: string[] = [];
+	let cursor: string | undefined;
+	do {
+		const pagina = await list({ prefix: `${pasta()}/produtos/`, cursor, limit: 1000 });
+		for (const b of pagina.blobs) if (!caminhos.has(b.pathname) && b.uploadedAt.getTime() < limite) orfas.push(b.url);
+		cursor = pagina.hasMore ? pagina.cursor : undefined;
+	} while (cursor);
+	for (let i = 0; i < orfas.length; i += 500) await del(orfas.slice(i, i + 500));
+	return orfas.length;
 }

@@ -138,7 +138,8 @@ Consulte [.env.example](.env.example). Nunca versione chaves ou segredos reais n
 | `PEDIDOS_NO_SITE` | `false` manda o pedido só pelo WhatsApp (o catálogo continua); vale no próximo deploy | Não (padrão `true`) |
 | `DATABASE_URL` | Postgres da ponte site ↔ PDV | Sim, para a `/loja` |
 | `PDV_SYNC_TOKEN` | Segredo compartilhado com o PC da loja (`SITE_SYNC_TOKEN` no PDV) | Sim, para a sincronização |
-| `CRON_SECRET` | Autoriza a checagem de saúde `saude-pdv` (Vercel Schedules, `vercel.json`) em `/api/pdv-sync/saude` | Sim, para os alertas (só Production) |
+| `CRON_SECRET` | Autoriza as rotas do Vercel Schedules (`vercel.json`): `saude-pdv` (alerta) e `manutencao-pdv` (faxina diária) | Sim, para alertas e faxina (só Production) |
+| `IP_HASH_SECRET` | Sal do hash de IP do limite de pedidos (sem ele, usa `PDV_SYNC_TOKEN`) | Recomendado |
 | `RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN` | E-mail de alerta para contato@jokenpo.cards (integração Resend da Vercel; domínio verificado no DNS) | Sim, para os alertas |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob das fotos de produto enviadas pelo PDV | Sim (criada pela integração) |
 

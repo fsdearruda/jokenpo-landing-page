@@ -30,6 +30,8 @@ export default defineConfig({
 			DATABASE_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
 			PDV_SYNC_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
 			// Checagem de saúde (Vercel Schedules) e e-mail de alerta pelo Resend (integração da Vercel)
+			// Sal do hash de IP do limite de pedidos (sem ele, usa PDV_SYNC_TOKEN)
+			IP_HASH_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
 			CRON_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
 			RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
 			RESEND_EMAIL_DOMAIN: envField.string({ context: 'server', access: 'secret', optional: true }),

@@ -6,9 +6,15 @@ import { sql } from '../db';
 export const LIMITE_PEDIDOS = 10;
 export const JANELA_MS = 10 * 60_000;
 
-/** Hash do IP com o segredo do site: identifica repetição sem guardar o IP (LGPD). */
+/**
+ * Hash do IP com um segredo próprio (`IP_HASH_SECRET`): identifica repetição sem guardar o IP (LGPD).
+ * Separado do token de sincronização, para trocar um sem mexer no outro. Sem ele, usa o token (legado).
+ */
 export const hashIp = (ip: string) =>
-	createHash('sha256').update(`${getSecret('PDV_SYNC_TOKEN') ?? 'jokenpo'}:${ip}`).digest('base64url').slice(0, 32);
+	createHash('sha256')
+		.update(`${getSecret('IP_HASH_SECRET') ?? getSecret('PDV_SYNC_TOKEN') ?? 'jokenpo'}:${ip}`)
+		.digest('base64url')
+		.slice(0, 32);
 
 /**
  * Conta uma tentativa de pedido do IP e diz se ainda está dentro do limite.
@@ -26,7 +32,5 @@ export async function dentroDoLimite(ip: string | undefined, agora = Date.now())
 		INSERT INTO pdv_limite_ip (chave, janela, contagem) VALUES (${chave}, ${new Date(janela)}, 1)
 		ON CONFLICT (chave, janela) DO UPDATE SET contagem = pdv_limite_ip.contagem + 1
 		RETURNING contagem`;
-	// Faxina ocasional das janelas antigas
-	if (Math.random() < 0.02) await db`DELETE FROM pdv_limite_ip WHERE janela < now() - interval '1 day'`;
 	return linha.contagem <= LIMITE_PEDIDOS;
 }

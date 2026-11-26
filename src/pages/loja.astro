@@ -39,7 +39,7 @@ const shop = siteData.shop;
 const payment: PaymentRules = regrasPagamento(descontoPixBp);
 const modeText = orderApi ? shop.orderOnSite : shop.orderOnWhatsapp;
 /** O preço do PDV é o do cartão; com desconto no Pix, o card mostra os dois. */
-const feeOn = payment.pixDiscountPercent > 0;
+const feeOn = payment.descontoPixBp > 0;
 /** Filtros das cartas avulsas: só aparecem quando há carta na vitrine, com as opções que existem nela. */
 const cartas = families.flatMap((family) => family.variants.flatMap((variant) => (variant.carta ? [variant.carta] : [])));
 const opcoes = (valores: string[]) => [...new Set(valores)].sort((a, b) => a.localeCompare(b, 'pt-BR'));

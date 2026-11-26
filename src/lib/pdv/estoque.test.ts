@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularDemanda, disponivelNoSite, lojaOffline, promocaoVigente } from './estoque';
+import { calcularDemanda, disponivelNoSite, expirouSemConfirmacao, lojaOffline, podeMudarStatus, promocaoVigente } from './estoque';
 import type { ComponenteKit } from './sync';
 
 const kit: ComponenteKit[] = [
@@ -61,8 +61,40 @@ describe('preço no Pix', async () => {
 	const { pixPrice } = await import('../catalog');
 	const { precoPix } = await import('./sync');
 	it('desconto sobre o preço do PDV (cartão), arredondado ao centavo, igual à conta do PDV', () => {
-		expect(pixPrice(6990, { pixDiscountPercent: 5 })).toBe(6641);
-		expect(pixPrice(6990, { pixDiscountPercent: 0 })).toBe(6990);
-		for (const c of [100, 999, 2500, 6990, 10949]) expect(pixPrice(c, { pixDiscountPercent: 5 })).toBe(precoPix(c, 500));
+		expect(pixPrice(6990, { descontoPixBp: 500 })).toBe(6641);
+		expect(pixPrice(6990, { descontoPixBp: 0 })).toBe(6990);
+		for (const bp of [1, 250, 333, 500, 750, 1000, 1250, 5000])
+			for (const c of [1, 99, 100, 999, 2500, 6990, 10949, 123457]) expect(pixPrice(c, { descontoPixBp: bp })).toBe(precoPix(c, bp));
+	});
+});
+
+describe('status do pedido vindo do PDV', () => {
+	it('anda para frente', () => {
+		expect(podeMudarStatus('AGUARDANDO_CONFIRMACAO', 'PAGAMENTO_PENDENTE')).toBe(true);
+		expect(podeMudarStatus('PAGAMENTO_PENDENTE', 'PAGO')).toBe(true);
+		expect(podeMudarStatus('PAGO', 'ENTREGUE')).toBe(true);
+		expect(podeMudarStatus('PAGAMENTO_PENDENTE', 'EXPIRADO')).toBe(true);
+		expect(podeMudarStatus('PAGO', 'CANCELADO')).toBe(true);
+	});
+	it('envio atrasado não volta PAGO para pagamento pendente', () => {
+		expect(podeMudarStatus('PAGO', 'PAGAMENTO_PENDENTE')).toBe(false);
+	});
+	it('pedido encerrado não reabre nem troca de motivo', () => {
+		expect(podeMudarStatus('EXPIRADO', 'PAGAMENTO_PENDENTE')).toBe(false);
+		expect(podeMudarStatus('ENTREGUE', 'CANCELADO')).toBe(false);
+		expect(podeMudarStatus('CANCELADO', 'EXPIRADO')).toBe(false);
+	});
+	it('o mesmo status passa (atualiza prazo e número)', () => {
+		expect(podeMudarStatus('PAGAMENTO_PENDENTE', 'PAGAMENTO_PENDENTE')).toBe(true);
+		expect(podeMudarStatus('CANCELADO', 'CANCELADO')).toBe(true);
+	});
+});
+
+describe('pedido vencido sem a loja confirmar', () => {
+	const criado = new Date('2026-11-25T12:00:00Z');
+	it('conta como expirado depois do prazo, antes da faxina gravar', () => {
+		expect(expirouSemConfirmacao('AGUARDANDO_CONFIRMACAO', criado, 72, Date.parse('2026-11-28T11:59:00Z'))).toBe(false);
+		expect(expirouSemConfirmacao('AGUARDANDO_CONFIRMACAO', criado, 72, Date.parse('2026-11-28T12:01:00Z'))).toBe(true);
+		expect(expirouSemConfirmacao('PAGAMENTO_PENDENTE', criado, 72, Date.parse('2026-12-01T00:00:00Z'))).toBe(false);
 	});
 });
