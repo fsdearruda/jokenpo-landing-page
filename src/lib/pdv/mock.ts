@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { families, variantsById } from '../catalog';
 import {
 	MAX_QUANTIDADE_POR_ITEM,
+	PRAZO_PAGAMENTO_HORAS,
 	PdvError,
 	mascararNome,
 	mascararTelefone,
@@ -15,8 +16,6 @@ import {
 
 export { MAX_QUANTIDADE_POR_ITEM };
 
-/** Prazo para pagar depois que a loja confirma o estoque. */
-export const PRAZO_PAGAMENTO_HORAS = 48;
 
 /**
  * Mock em memória do PDV, para desenvolver a vitrine sem o PC da loja.

@@ -10,6 +10,8 @@
  *    Sem pagamento em 48 h: `EXPIRADO`. A loja pode cancelar: `CANCELADO`.
  */
 
+import { MAX_ITENS_POR_PEDIDO, type PromocaoFoto } from './sync';
+
 export type StatusPedido =
 	| 'AGUARDANDO_CONFIRMACAO'
 	| 'PAGAMENTO_PENDENTE'
@@ -37,12 +39,7 @@ export interface ProdutoCatalogo extends EstoqueItem {
 }
 
 /** Promoção criada no PDV: o preço promocional já está em `precoCentavos`. */
-export interface PromocaoPdv {
-	id: string;
-	nome: string;
-	precoOriginalCentavos: number;
-	terminaEm: string;
-}
+export type PromocaoPdv = PromocaoFoto;
 
 export interface ItemPedidoInput {
 	produtoId: string;
@@ -112,14 +109,11 @@ export interface PdvClient {
 
 // ─── Regras comuns ao mock e à ponte ────────────────────
 
-/** Limite por item num pedido do site, para evitar que alguém trave o estoque inteiro. */
-export const MAX_QUANTIDADE_POR_ITEM = 5;
-export const MAX_ITENS_POR_PEDIDO = 20;
+// Limites e prazos do protocolo: definidos no contrato (cópia do PDV, ver scripts/sync-contract.mjs)
+export { MAX_ITENS_POR_PEDIDO, MAX_QUANTIDADE_POR_ITEM, PRAZO_CONFIRMACAO_HORAS, PRAZO_PAGAMENTO_HORAS } from './sync';
 /** Pedidos em aberto (aguardando a loja ou o pagamento) por WhatsApp e por IP. */
 export const MAX_ABERTOS_POR_TELEFONE = 2;
 export const MAX_ABERTOS_POR_IP = 3;
-/** Sem confirmação da loja nesse prazo, o pedido expira e as unidades voltam (evita estoque preso para sempre). */
-export const PRAZO_CONFIRMACAO_HORAS = 72;
 
 /** Valida nome, WhatsApp e itens; devolve os dados limpos e os itens agrupados por produto. */
 export function validarPedido(input: CriarPedidoInput) {

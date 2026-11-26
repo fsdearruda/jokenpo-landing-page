@@ -1,0 +1,19 @@
+{
+  "eventos": [
+    {
+      "id": 7,
+      "tipo": "PEDIDO_CRIADO",
+      "pedidoId": "8a0c6f1e-0000-4000-8000-000000000001",
+      "criadoEm": "2026-11-28T11:00:00.000Z",
+      "payload": {
+        "numero": 12,
+        "itens": [
+          { "produtoId": "cmw3sqnrz001tm2sk9mafrrox", "descricao": "Deck box completa", "quantidade": 1, "precoUnitarioCentavos": 5942 },
+          { "produtoId": "kit-turno", "descricao": "Kit Turno", "quantidade": 2, "precoUnitarioCentavos": 1000 }
+        ],
+        "nomeContato": "Ana Souza",
+        "telefoneContato": "84999990000"
+      }
+    }
+  ]
+}

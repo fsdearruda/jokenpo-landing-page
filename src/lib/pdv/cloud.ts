@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type postgres from 'postgres';
 import { sql } from '../db';
+import { calcularDemanda, disponivelNoSite, promocaoVigente } from './estoque';
 import type { ComponenteKit, EnvioEstoque, PromocaoFoto, ResultadoEvento, StatusPedidoSite } from './sync';
 import {
 	MAX_ABERTOS_POR_IP,
@@ -59,10 +60,6 @@ type LinhaProduto = {
 	promocao?: PromocaoFoto | null;
 };
 
-/** Selo só enquanto a promoção vale. Se o PDV ficar offline, o selo some no fim mesmo sem um novo envio. */
-const promocaoVigente = (p: PromocaoFoto | null | undefined, agora = Date.now()) =>
-	p && Date.parse(p.terminaEm) > agora ? p : null;
-
 /**
  * Unidades pedidas no site que a última foto do PDV ainda não inclui, por produto.
  * Kit conta nos componentes (é deles que o PDV separa o estoque).
@@ -75,17 +72,7 @@ async function demandaPendente(tx: Tx) {
 				AND evento_id > (SELECT eventos_aplicados_ate FROM pdv_sync WHERE id = 1)`,
 		tx<{ produto_id: string; componentes: ComponenteKit[] }[]>`SELECT produto_id, componentes FROM pdv_produto WHERE componentes IS NOT NULL`,
 	]);
-	const composicao = new Map(kits.map((k) => [k.produto_id, k.componentes]));
-	const demanda = new Map<string, number>();
-	const somar = (id: string, q: number) => demanda.set(id, (demanda.get(id) ?? 0) + q);
-	for (const { itens } of pedidos) {
-		for (const item of itens) {
-			const comps = composicao.get(item.produtoId);
-			if (comps) for (const c of comps) somar(c.produtoId, c.quantidade * item.quantidade);
-			else somar(item.produtoId, item.quantidade);
-		}
-	}
-	return demanda;
+	return calcularDemanda(pedidos, new Map(kits.map((k) => [k.produto_id, k.componentes])));
 }
 
 /**
@@ -96,14 +83,6 @@ async function expirarNaoConfirmados(tx: Tx) {
 	await tx`
 		UPDATE pdv_pedido SET status = 'EXPIRADO', motivo = 'A loja não confirmou a tempo', atualizado_em = now()
 		WHERE status = 'AGUARDANDO_CONFIRMACAO' AND criado_em < now() - make_interval(hours => ${PRAZO_CONFIRMACAO_HORAS})`;
-}
-
-/** Disponível no site: o do PDV menos a demanda pendente; kit pelo componente que acaba primeiro. */
-function disponivelNoSite(p: Pick<LinhaProduto, 'produto_id' | 'disponivel' | 'componentes'>, demanda: Map<string, number>) {
-	if (p.componentes?.length) {
-		return Math.max(0, Math.min(...p.componentes.map((c) => Math.floor((c.disponivel - (demanda.get(c.produtoId) ?? 0)) / c.quantidade))));
-	}
-	return Math.max(0, p.disponivel - (demanda.get(p.produto_id) ?? 0));
 }
 
 const publico = (p: LinhaPedido): PedidoPublico => ({

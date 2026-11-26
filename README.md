@@ -42,7 +42,7 @@ A integração com o PDV fica na interface `PdvClient` em `src/lib/pdv/`, com tr
 - `mock`: PDV simulado em memória, padrão no `pnpm dev`.
 - `off`: sem PDV. A vitrine usa `products.json` e o pedido vai só pelo WhatsApp. É o padrão no build sem configuração.
 
-Com PDV (`live` ou `mock`), a sacola pede nome e WhatsApp e cria o pedido. Ele fica **aguardando confirmação** até o PC da loja conferir o estoque, o que acontece mesmo se o pedido for feito com o PC desligado: ele é aplicado quando o PC liga. Com estoque, a loja separa as unidades e o cliente tem 48 h para pagar por Pix no WhatsApp. Sem estoque, o pedido é recusado. O cliente acompanha o status na própria sacola. Desenho completo, contrato da sincronização e passos para produção: [docs/plano-api-pdv.md](docs/plano-api-pdv.md).
+Com PDV (`live` ou `mock`), a sacola pede nome e WhatsApp e cria o pedido. Ele fica **aguardando confirmação** até o PC da loja conferir o estoque, o que acontece mesmo se o pedido for feito com o PC desligado: ele é aplicado quando o PC liga. Com estoque, a loja separa as unidades e o cliente tem 48 h para pagar por Pix no WhatsApp. Sem estoque, o pedido é recusado. O cliente acompanha o status na própria sacola. Operação do lado do site e passos para produção: [docs/plano-api-pdv.md](docs/plano-api-pdv.md). O protocolo completo fica em `docs/API-SITE.md` do repositório `jokenpo-pdv`.
 
 | Rota | Uso |
 |---|---|
@@ -116,12 +116,15 @@ pnpm exec astro dev logs
 pnpm exec astro dev stop
 ```
 
-Para validar tipos, links e build de produção:
+Para validar tipos, testes e build de produção:
 
 ```bash
-pnpm check
+pnpm check   # inclui a conferência da cópia do contrato do PDV
+pnpm test
 pnpm build
 ```
+
+O contrato da sincronização com o PDV (`src/lib/pdv/sync.ts` e `contract-fixtures/`) é copiado do repositório `jokenpo-pdv` com `pnpm sync:contract` e não deve ser editado aqui.
 
 ## Variáveis de ambiente
 

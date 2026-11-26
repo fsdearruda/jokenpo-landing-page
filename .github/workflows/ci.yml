@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Pega mudanças de contrato feitas no PDV mesmo sem commit no site
+  schedule:
+    - cron: "0 9 * * *"
 
 permissions:
   contents: read
@@ -11,6 +14,9 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      # Segredo não pode ir no `if`; só a informação de que ele existe
+      HAS_PDV_TOKEN: ${{ secrets.PDV_CONTRACT_TOKEN != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,6 +37,16 @@ jobs:
 
       - name: Check types
         run: pnpm check
+
+      - name: Tests
+        run: pnpm test
+
+      # A cópia do contrato precisa ser igual ao main do PDV (repositório privado: token só de leitura)
+      - name: Contract matches PDV
+        if: env.HAS_PDV_TOKEN == 'true'
+        env:
+          PDV_CONTRACT_TOKEN: ${{ secrets.PDV_CONTRACT_TOKEN }}
+        run: pnpm sync:contract --remote
 
       - name: Build
         run: pnpm build
