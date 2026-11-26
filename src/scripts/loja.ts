@@ -2,6 +2,7 @@
  * Comportamento da /loja no navegador: sacola (localStorage `jokenpo:sacola`), filtros, pedido no site ou pelo
  * WhatsApp e acompanhamento do pedido. A página passa os dados pelos atributos `data-*` do `.shop`.
  */
+import { initBotId } from 'botid/client/core';
 import { formatPrice, pixPrice, type PaymentRules } from '../lib/catalog';
 
 type Line = { id: string; qty: number };
@@ -21,6 +22,8 @@ if (root) {
 	const $ = <T extends Element = HTMLElement>(selector: string, scope: ParentNode = root) =>
 		scope.querySelector<T>(selector)!;
 	const mode = root.dataset.pdvMode;
+	// Pedido no site: o BotID (Vercel) marca o POST do pedido para a rota barrar robôs que seguram estoque
+	if (root.dataset.orderApi) initBotId({ protect: [{ path: '/api/pdv/pedidos', method: 'POST' }] });
 	const maxQty = Number(root.dataset.maxQty) || 5;
 	const lowStock = Number(root.dataset.lowStock) || 3;
 	const STORAGE_KEY = 'jokenpo:sacola';
@@ -572,7 +575,7 @@ if (root) {
 						return showError(`${erro.mensagem ?? 'Um item acabou.'} A sacola foi ajustada: confere e tenta de novo.`);
 					}
 					if (erro?.codigo === 'CONTATO_INVALIDO') return showError(erro.mensagem ?? 'Confere seu nome e WhatsApp.', phoneInput);
-					if ((erro?.codigo === 'MUITAS_TENTATIVAS' || erro?.codigo === 'LIMITE_PEDIDOS' || erro?.codigo === 'LOJA_OFFLINE') && erro.mensagem) return showError(erro.mensagem);
+					if ((erro?.codigo === 'MUITAS_TENTATIVAS' || erro?.codigo === 'LIMITE_PEDIDOS' || erro?.codigo === 'LOJA_OFFLINE' || erro?.codigo === 'ACESSO_NEGADO') && erro.mensagem) return showError(erro.mensagem);
 					return showError('Não deu pra enviar agora. Tenta de novo em instantes ou chama a gente no WhatsApp.');
 				}
 				const created = data as SavedOrder;

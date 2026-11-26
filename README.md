@@ -41,7 +41,7 @@ O site só mostra e recebe pedidos.
 - **Pedido**: a sacola pede nome e WhatsApp e cria o pedido, que fica **aguardando confirmação** até o PC da loja
   conferir o estoque (mesmo com o PC desligado na hora: ele aplica quando liga). Com estoque, a loja separa e o
   cliente tem 48 h para pagar por Pix no WhatsApp; sem estoque, o pedido é recusado. O cliente acompanha na sacola.
-  Se o PC passar de 6 h sem contato, ou com `PEDIDOS_NO_SITE=false`, a sacola manda o pedido pelo WhatsApp.
+  Se o PC passar de 6 h sem mandar estoque (ou 30 min conectado com o estoque recusado), ou com `PEDIDOS_NO_SITE=false`, a sacola manda o pedido pelo WhatsApp.
 
 O PC da loja só faz chamadas de saída (rotas `/api/pdv-sync/*`, assinadas com HMAC); o site guarda uma cópia do
 catálogo e a fila de pedidos num Postgres (Neon) e as fotos no Vercel Blob. Operação do site:
@@ -138,6 +138,8 @@ Consulte [.env.example](.env.example). Nunca versione chaves ou segredos reais n
 | `PEDIDOS_NO_SITE` | `false` manda o pedido só pelo WhatsApp (o catálogo continua); vale no próximo deploy | Não (padrão `true`) |
 | `DATABASE_URL` | Postgres da ponte site ↔ PDV | Sim, para a `/loja` |
 | `PDV_SYNC_TOKEN` | Segredo compartilhado com o PC da loja (`SITE_SYNC_TOKEN` no PDV) | Sim, para a sincronização |
+| `CRON_SECRET` | Autoriza a checagem de saúde `saude-pdv` (Vercel Schedules, `vercel.json`) em `/api/pdv-sync/saude` | Sim, para os alertas (só Production) |
+| `RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN` | E-mail de alerta para contato@jokenpo.cards (integração Resend da Vercel; domínio verificado no DNS) | Sim, para os alertas |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob das fotos de produto enviadas pelo PDV | Sim (criada pela integração) |
 
 Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desativado localmente. Enquanto `PUBLIC_BLIP_APP_KEY` estiver vazia, o botão do Blip Chat não é renderizado. Ao configurar o Blip, libere os domínios do site (`localhost` e `jokenpo.cards`) em `Canais > Blip Chat > Configurações` no portal da Blip.

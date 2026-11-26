@@ -8,6 +8,7 @@ export const GET: APIRoute = () => {
 	const { name, description, location, contact, hours, agenda, boardgamePasses, boardgames, extras, faq } =
 		siteData;
 
+	const tiers = new Map(boardgamePasses.afternoon.tiers.map((t) => [t.id, t]));
 	const whatsappUrl = `https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`;
 
 	const lines: string[] = [
@@ -52,7 +53,7 @@ export const GET: APIRoute = () => {
 		'',
 		'## Acervo de Jogos Disponíveis',
 		...boardgames.map(
-			(g) => `- ${g.name} (${g.categoryName}, ${g.price}/h) — ${g.players} · ${g.tag} · Editora: ${g.publisher}`,
+			(g) => `- ${g.name} (${tiers.get(g.category)?.name ?? g.category}, ${tiers.get(g.category)?.price ?? ''}/h) — ${g.players} · ${g.tag} · Editora: ${g.publisher}`,
 		),
 		'',
 		'## Produtos para Retirada na Loja',

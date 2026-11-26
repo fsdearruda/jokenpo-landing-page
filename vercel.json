@@ -50,5 +50,13 @@
 				}
 			]
 		}
-	]
+	],
+	"schedules": {
+		"saude-pdv": {
+			"schedule": "30 14-21 * * 1-6",
+			"timezone": "America/Fortaleza",
+			"path": "/api/pdv-sync/saude",
+			"requestMethod": "GET"
+		}
+	}
 }

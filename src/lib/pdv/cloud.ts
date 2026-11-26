@@ -157,9 +157,10 @@ class CloudPdv implements PdvClient {
 		const ipHash = origem?.ipHash ?? null;
 		return sql().begin(async (tx) => {
 			// Uma linha só trava todas as criações de pedido e os envios do PDV: sem corrida pela última unidade
-			const [sync] = await tx<{ ultimo_contato_em: Date | null }[]>`SELECT ultimo_contato_em FROM pdv_sync WHERE id = 1 FOR UPDATE`;
+			const [sync] = await tx<{ ultimo_contato_em: Date | null; ultimo_estoque_em: Date | null }[]>`
+				SELECT ultimo_contato_em, ultimo_estoque_em FROM pdv_sync WHERE id = 1 FOR UPDATE`;
 			// A página pode estar em cache de antes da queda: confere aqui também
-			if (lojaOffline(sync?.ultimo_contato_em ?? null)) {
+			if (lojaOffline({ vistaEm: sync?.ultimo_contato_em ?? null, estoqueEm: sync?.ultimo_estoque_em ?? null })) {
 				throw new PdvError('LOJA_OFFLINE', 'O sistema da loja está sem conexão agora. Manda o pedido pelo WhatsApp que a gente separa.', 503);
 			}
 			await expirarNaoConfirmados(tx);
@@ -239,16 +240,41 @@ class CloudPdv implements PdvClient {
 
 export const cloudPdv: PdvClient = new CloudPdv();
 
-/** Quando o PC da loja falou com o site pela última vez. */
 /** Desconto no Pix definido no PDV (null = o PDV ainda não mandou: Pix e cartão com o mesmo preço). */
 export async function descontoPixDaLoja(): Promise<number | null> {
 	const [s] = await sql()<{ desconto_pix_bp: number | null }[]>`SELECT desconto_pix_bp FROM pdv_sync WHERE id = 1`;
 	return s?.desconto_pix_bp ?? null;
 }
 
-export async function ultimoContatoDaLoja(): Promise<Date | null> {
-	const [s] = await sql()<{ ultimo_contato_em: Date | null }[]>`SELECT ultimo_contato_em FROM pdv_sync WHERE id = 1`;
-	return s?.ultimo_contato_em ?? null;
+/** Quando o PC da loja falou com o site pela última vez e quando o site aceitou o último estoque dele. */
+export async function contatoDaLoja(): Promise<{ vistaEm: Date | null; estoqueEm: Date | null }> {
+	const [s] = await sql()<{ ultimo_contato_em: Date | null; ultimo_estoque_em: Date | null }[]>`
+		SELECT ultimo_contato_em, ultimo_estoque_em FROM pdv_sync WHERE id = 1`;
+	return { vistaEm: s?.ultimo_contato_em ?? null, estoqueEm: s?.ultimo_estoque_em ?? null };
+}
+
+/** Estado da sincronização para a checagem de saúde (/api/pdv-sync/saude). */
+export async function estadoDaSincronizacao() {
+	const db = sql();
+	const [s] = await db<
+		{ ultimo_contato_em: Date | null; ultimo_estoque_em: Date | null; alerta_chave: string; pendentes: number; pendente_desde: Date | null }[]
+	>`
+		SELECT s.ultimo_contato_em, s.ultimo_estoque_em, s.alerta_chave, p.pendentes, p.pendente_desde
+		FROM pdv_sync s,
+			(SELECT count(*)::int AS pendentes, min(criado_em) AS pendente_desde FROM pdv_evento WHERE aplicado_em IS NULL) p
+		WHERE s.id = 1`;
+	return {
+		vistaEm: s?.ultimo_contato_em ?? null,
+		estoqueEm: s?.ultimo_estoque_em ?? null,
+		pendentes: s?.pendentes ?? 0,
+		pendenteDesde: s?.pendente_desde ?? null,
+		alertaChave: s?.alerta_chave ?? '',
+	};
+}
+
+/** Guarda os problemas já avisados por e-mail. */
+export async function registrarAlerta(chave: string) {
+	await sql()`UPDATE pdv_sync SET alerta_chave = ${chave} WHERE id = 1`;
 }
 
 // ─── Lado do PDV (rotas /api/pdv-sync/*) ────────────────
@@ -314,7 +340,7 @@ export async function receberEstoque(envio: EnvioEstoque) {
 		for (const p of envio.pedidos) await atualizarPedido(tx, p);
 		await tx`
 			UPDATE pdv_sync SET pdv_seq = ${envio.pdvSeq}, eventos_aplicados_ate = ${envio.eventosAplicadosAte}, ultimo_contato_em = now(),
-				ultimo_gerado_em = ${geradoEm}
+				ultimo_estoque_em = now(), ultimo_gerado_em = ${geradoEm}
 				${envio.completo ? tx`, ultima_foto_completa_em = now()` : tx``}
 			WHERE id = 1`;
 		return { aceito: true };

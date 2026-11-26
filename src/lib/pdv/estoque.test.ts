@@ -43,12 +43,17 @@ describe('selo de promoção', () => {
 
 describe('loja sem contato', () => {
 	const agora = Date.parse('2026-11-28T20:00:00Z');
-	it('pausa os pedidos depois de 6 h sem o PC da loja falar com o site', () => {
-		expect(lojaOffline('2026-11-28T15:00:00Z', agora)).toBe(false);
-		expect(lojaOffline('2026-11-28T13:59:00Z', agora)).toBe(true);
+	it('pausa os pedidos depois de 6 h sem estoque novo (PC desligado)', () => {
+		expect(lojaOffline({ vistaEm: '2026-11-28T15:00:00Z', estoqueEm: '2026-11-28T15:00:00Z' }, agora)).toBe(false);
+		expect(lojaOffline({ vistaEm: '2026-11-28T13:59:00Z', estoqueEm: '2026-11-28T13:59:00Z' }, agora)).toBe(true);
 	});
-	it('sem nenhum contato conta como offline', () => {
-		expect(lojaOffline(null, agora)).toBe(true);
+	it('sem nenhum estoque aceito conta como offline', () => {
+		expect(lojaOffline({ vistaEm: null, estoqueEm: null }, agora)).toBe(true);
+		expect(lojaOffline({ vistaEm: '2026-11-28T19:59:00Z', estoqueEm: null }, agora)).toBe(true);
+	});
+	it('pausa quando o PC busca pedidos mas o estoque está sendo recusado há mais de 30 min', () => {
+		expect(lojaOffline({ vistaEm: '2026-11-28T19:59:45Z', estoqueEm: '2026-11-28T19:35:00Z' }, agora)).toBe(false);
+		expect(lojaOffline({ vistaEm: '2026-11-28T19:59:45Z', estoqueEm: '2026-11-28T19:29:00Z' }, agora)).toBe(true);
 	});
 });
 

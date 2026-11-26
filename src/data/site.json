@@ -167,32 +167,6 @@
       "closed": true
     }
   ],
-  "boardgameCategories": [
-    {
-      "id": "leves",
-      "name": "Leves",
-      "price": "R$ 10",
-      "description": "Partidas rápidas",
-      "color": "cyan",
-      "icon": "✦"
-    },
-    {
-      "id": "medios",
-      "name": "Médios",
-      "price": "R$ 13",
-      "description": "Blefe, cartas e cooperativos",
-      "color": "yellow",
-      "icon": "◆"
-    },
-    {
-      "id": "grandes",
-      "name": "Grandes",
-      "price": "R$ 15",
-      "description": "Estratégia e partidas longas",
-      "color": "pink",
-      "icon": "●"
-    }
-  ],
   "location": {
     "venue": "Shopping New Way Center, loja 24",
     "street": "Av. Dr. João Medeiros Filho, 5421",
@@ -281,8 +255,6 @@
   },
   "boardgames": [
     {
-      "categoryName": "Leves",
-      "price": "R$ 10",
       "name": "Uno: Show 'Em No Mercy",
       "players": "2–10 jogadores",
       "tag": "Partidas rápidas",
@@ -292,8 +264,6 @@
       "category": "leves"
     },
     {
-      "categoryName": "Leves",
-      "price": "R$ 10",
       "name": "Taco Gato Cabra Queijo Pizza",
       "players": "2–8 jogadores",
       "tag": "Agilidade e reflexo",
@@ -303,8 +273,6 @@
       "category": "leves"
     },
     {
-      "categoryName": "Leves",
-      "price": "R$ 10",
       "name": "Knock Knock Dungeon",
       "players": "1–4 jogadores",
       "tag": "Cooperativo e tempo real",
@@ -314,8 +282,6 @@
       "category": "leves"
     },
     {
-      "categoryName": "Leves",
-      "price": "R$ 10",
       "name": "Nem a Pato!",
       "players": "2–10 jogadores",
       "tag": "Trivia e blefe",
@@ -325,8 +291,6 @@
       "category": "leves"
     },
     {
-      "categoryName": "Leves",
-      "price": "R$ 10",
       "name": "Não Testamos Esse Troço",
       "players": "2–17 jogadores",
       "tag": "Caos e risadas",
@@ -336,8 +300,6 @@
       "category": "leves"
     },
     {
-      "categoryName": "Leves",
-      "price": "R$ 10",
       "name": "Não Pode 2",
       "players": "2–12 jogadores",
       "tag": "Palavras proibidas",
@@ -347,8 +309,6 @@
       "category": "leves"
     },
     {
-      "categoryName": "Médios",
-      "price": "R$ 13",
       "name": "Bang! Dice Game",
       "players": "3–8 jogadores",
       "tag": "Faroeste e papéis secretos",
@@ -358,8 +318,6 @@
       "category": "medios"
     },
     {
-      "categoryName": "Médios",
-      "price": "R$ 13",
       "name": "Coup",
       "players": "2–6 jogadores",
       "tag": "Blefe e dedução",
@@ -369,8 +327,6 @@
       "category": "medios"
     },
     {
-      "categoryName": "Médios",
-      "price": "R$ 13",
       "name": "Sky Team",
       "players": "2 jogadores",
       "tag": "Cooperativo tenso para 2",
@@ -380,8 +336,6 @@
       "category": "medios"
     },
     {
-      "categoryName": "Médios",
-      "price": "R$ 13",
       "name": "Exploding Kittens: Para a Galera",
       "players": "2–10 jogadores",
       "tag": "Roleta-russa felina",
@@ -391,8 +345,6 @@
       "category": "medios"
     },
     {
-      "categoryName": "Grandes",
-      "price": "R$ 15",
       "name": "Catan",
       "players": "3–4 jogadores",
       "tag": "Estratégia e negociação",
@@ -402,8 +354,6 @@
       "category": "grandes"
     },
     {
-      "categoryName": "Grandes",
-      "price": "R$ 15",
       "name": "Ticket to Ride",
       "players": "2–5 jogadores",
       "tag": "Construção de rotas",
@@ -413,8 +363,6 @@
       "category": "grandes"
     },
     {
-      "categoryName": "Grandes",
-      "price": "R$ 15",
       "name": "Zombicide",
       "players": "1–6 jogadores",
       "tag": "Sobrevivência cooperativa",

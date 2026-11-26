@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProdutoPagina from '../../components/ProdutoPagina.astro';
+import siteData from '../../data/site.json';
 import { getPdv } from '../../lib/pdv';
 import { descontoPixDaLoja } from '../../lib/pdv/cloud';
 import { regrasPagamento } from '../../lib/vitrine';
@@ -10,17 +11,42 @@ export const prerender = false;
 
 const slug = Astro.params.slug ?? '';
 const pdv = getPdv();
-const produto = /^[a-z0-9-]{1,120}$/.test(slug) ? await pdv.buscarPorSlug(slug).catch(() => null) : null;
+let produto: Awaited<ReturnType<typeof pdv.buscarPorSlug>> = null;
+let erro = false;
+if (/^[a-z0-9-]{1,120}$/.test(slug)) {
+	try {
+		produto = await pdv.buscarPorSlug(slug);
+	} catch (error) {
+		erro = true;
+		console.error('[loja/slug] produto indisponível', error instanceof Error ? error.message : error);
+	}
+}
 const payment = produto ? regrasPagamento(await descontoPixDaLoja().catch(() => null)) : null;
 
-// O 404 do site é pré-renderizado e não existe dentro da função: esta página responde o "não encontrado"
-if (!produto) Astro.response.status = 404;
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+if (erro) {
+	// Banco fora do ar não é "produto não existe": 503 sem cache, a CDN segue com a última página boa
+	// e o buscador não tira o produto do índice
+	Astro.response.status = 503;
+	Astro.response.headers.set('Cache-Control', 'no-store');
+	Astro.response.headers.set('Retry-After', '60');
+} else {
+	// O 404 do site é pré-renderizado e não existe dentro da função: esta página responde o "não encontrado"
+	if (!produto) Astro.response.status = 404;
+	Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+}
 ---
 
 {
 	produto && payment ? (
 		<ProdutoPagina produto={produto} payment={payment} slug={slug} />
+	) : erro ? (
+		<BaseLayout title="Loja fora do ar | Jokenpo" description="A loja on-line está fora do ar por alguns minutos." path={`/loja/${slug}`} robots="noindex, follow">
+			<div class="nao-encontrado">
+				<h1>A loja saiu do ar por um instante</h1>
+				<p>Tenta de novo em alguns minutos ou chama a gente no WhatsApp que a gente separa.</p>
+				<a href={`https://wa.me/${siteData.contact.whatsapp.replace(/\D/g, '')}`}>Falar no WhatsApp</a>
+			</div>
+		</BaseLayout>
 	) : (
 		<BaseLayout title="Produto não encontrado | Jokenpo" description="Este produto saiu da loja ou o endereço mudou." path={`/loja/${slug}`} robots="noindex, follow">
 			<div class="nao-encontrado">

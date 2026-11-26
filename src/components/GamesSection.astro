@@ -54,19 +54,15 @@ for (const [filePath, mod] of Object.entries(assetGlob)) {
 }
 
 const passes = siteData.boardgamePasses;
-const categoryLookup = Object.fromEntries(
-	(siteData.boardgameCategories ?? passes.afternoon.tiers).map((cat) => [
-		cat.id,
-		{ name: cat.name, price: cat.price, color: cat.color },
-	]),
-);
+// Nome e preço da categoria vêm só da tabela do Passe da Tarde (editada no CMS)
+const categoryLookup = new Map(passes.afternoon.tiers.map((tier) => [tier.id, tier]));
 
 const games = siteData.boardgames.map((game) => {
-	const catInfo = categoryLookup[game.category];
+	const tier = categoryLookup.get(game.category);
 	return {
 		...game,
-		categoryName: catInfo?.name || game.categoryName || game.category,
-		price: catInfo?.price || game.price || '',
+		categoryName: tier?.name ?? game.category,
+		price: tier?.price ?? '',
 	};
 });
 
