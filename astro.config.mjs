@@ -15,6 +15,10 @@ const pdvLive = process.env.PUBLIC_PDV_MODE === 'live';
 export default defineConfig({
 	site: 'https://jokenpo.cards',
 	compressHTML: true,
+	// A vitrine mudou de /produtos para /loja; links antigos continuam funcionando.
+	redirects: {
+		'/produtos': { status: 301, destination: '/loja' },
+	},
 	build: {
 		inlineStylesheets: 'always',
 	},
@@ -35,17 +39,17 @@ export default defineConfig({
 		// `include` limita o bundle SSR aos glifos usados; adicione novos nomes aqui.
 		icon({
 			include: {
-				lucide: ['arrow-right', 'arrow-up-right', 'arrow-down', 'arrow-up', 'plus', 'minus', 'x', 'shopping-bag'],
+				lucide: ['arrow-right', 'arrow-up-right', 'arrow-down', 'arrow-up', 'plus', 'minus', 'x', 'shopping-bag', 'chevron-left', 'chevron-right', 'pause', 'play'],
 				'simple-icons': ['whatsapp'],
 			},
 		}),
-		// Com o PDV real (`PUBLIC_PDV_MODE=live`), /produtos é gerada sob demanda para mostrar o
+		// Com o PDV real (`PUBLIC_PDV_MODE=live`), /loja é gerada sob demanda para mostrar o
 		// catálogo escolhido no PDV; nos outros modos continua estática.
 		{
-			name: 'jokenpo:produtos-sob-demanda',
+			name: 'jokenpo:loja-sob-demanda',
 			hooks: {
 				'astro:route:setup': ({ route }) => {
-					if (pdvLive && route.component.endsWith('src/pages/produtos.astro')) route.prerender = false;
+					if (pdvLive && route.component.endsWith('src/pages/loja.astro')) route.prerender = false;
 				},
 			},
 		},

@@ -1,0 +1,20 @@
+{
+  "pdvSeq": 3,
+  "completo": false,
+  "eventosAplicadosAte": 0,
+  "geradoEm": "2026-11-25T18:00:00.000Z",
+  "itens": [
+    {
+      "produtoId": "shield-preto",
+      "sku": "SHD-PRETO",
+      "nome": "Shield preto (100 un)",
+      "categoria": "Shields",
+      "grupo": "Acessórios",
+      "precoCentavos": 2500,
+      "disponivel": 6,
+      "noCatalogo": true,
+      "atualizadoEm": "2026-11-25T17:00:00.000Z"
+    }
+  ],
+  "pedidos": []
+}

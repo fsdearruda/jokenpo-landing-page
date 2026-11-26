@@ -1,68 +1,37 @@
-## Repository workflow
+# AGENTS.md
 
-Before changing code:
+Landing page e loja da Jokenpo (jokenpo.cards): Astro 7, TypeScript estrito, CSS nativo, Decap CMS e
+Vercel. Estrutura, rotas e variáveis: `README.md`.
 
-1. Read `README.md` for setup, structure and validation commands.
-2. Read `docs/style-guide.md` for visual and editorial rules.
-3. Read `docs/ui-ux-guidelines.md` before changing UI or interaction behavior.
-4. Read `docs/brand-content.md` for public business information.
-5. Treat `src/data/site.json` as the source of truth for landing-page content.
-6. For any UI changes, apply **deslop** (`frontend-design-deslop`) to prevent generic AI UI patterns.
-7. Maintain `src/pages/llms.txt.ts` strictly compliant with `llmstxt.org` using Markdown links (`- [Title](url): description`) to pass automated Agentic Browsing audits.
-8. Maintain 95+ scores across Performance, Accessibility, Best Practices, and SEO in Lighthouse audits.
+## Comandos
 
-Keep changes focused. Do not edit generated files in `dist/`, `.vercel/` or
-`.astro/`. Run `pnpm check` and `pnpm build` after code changes. Report changed
-files, validation results and unresolved placeholders.
-
-## Development
-
-When starting the dev server, use background mode:
-
-```
-astro dev --background
+```bash
+pnpm check        # confere a cópia do contrato do PDV + astro check
+pnpm test         # vitest (contrato com o PDV e cálculo de estoque)
+pnpm build
+pnpm exec astro dev --background   # dev em segundo plano; `astro dev status|logs|stop`
 ```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+Rode `pnpm check`, `pnpm test` e `pnpm build` depois de mudar código. Ao terminar, informe os arquivos
+alterados, o resultado da validação e placeholders pendentes.
 
-## Documentation
+## Fontes da verdade
 
-Full documentation: https://docs.astro.build
+- Conteúdo da landing (horários, agenda, FAQ, banners, textos da loja): `src/data/site.json`, editado pelo CMS.
+- Produtos, preço, estoque e promoções: o PDV (repositório `jokenpo-pdv`), pela sincronização.
+- `src/lib/pdv/sync.ts` e `contract-fixtures/` são cópias do PDV: nunca edite; mude no PDV e rode `pnpm sync:contract`.
+- Não edite gerados: `dist/`, `.vercel/`, `.astro/`.
 
-Consult these guides before working on related tasks:
+## Leia antes, conforme a tarefa
 
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+- Interface ou interação: `docs/ui-ux-guidelines.md` e `DESIGN.md` (tokens reais em `src/styles/global.css`). Evite visual genérico de IA.
+- Textos públicos e dados da loja: `docs/brand-content.md`.
+- Peças para redes sociais (não o site): `docs/style-guide.md`.
+- Pedidos, estoque ou rotas `/api/pdv*`: `docs/plano-api-pdv.md` e o protocolo em `docs/API-SITE.md` do PDV.
 
-## Agent skills & triggers
+## Metas que não podem regredir
 
-Este repositório possui skills instaladas em `.agents/skills/`. Ative e consulte as instruções da respectiva skill (`SKILL.md`) antes e durante as seguintes tarefas:
-
-### 1. Astro, Web nativa & Vercel
-- **`astro-guidance`**: Ao criar/editar componentes `.astro`, layouts, manipulação de imagens com `<Image />` ou lógica de roteamento/SSR.
-- **`modern-web-guidance`**: Ao planejar componentes interativos HTML/CSS modernos nativos (`<dialog>`, popover, navegação por âncoras, scroll-driven animations).
-- **`vercel-optimize`**: Ao alterar rotas serverless, headers de cache, otimizar bundle ou investigar performance na Vercel.
-
-### 2. Acessibilidade (A11y) & WCAG
-- **`frontend-a11y`**: Ao implementar ou alterar navegação por teclado, estados de foco (`:focus-visible`), atributos ARIA e marcação semântica.
-- **`wcag-audit-patterns`**: Antes de concluir modificações de UI, para auditar contraste de cores, compatibilidade com leitores de tela e conformidade WCAG 2.1/2.2.
-
-### 3. Performance, Core Web Vitals & Lighthouse
-- **`web-quality-audit`**: Ao auditar a landing page de ponta a ponta (qualidade web, SEO, segurança e CWV).
-- **`core-web-vitals`**: Ao investigar ou corrigir métricas de LCP (Largest Contentful Paint), CLS (Layout Shift) ou INP.
-- **`perf-astro`**: Ao otimizar carregamento de fontes locais (Fontsource), CSS crítico ou buscar pontuação 95+ no Lighthouse.
-
-### 4. UI/UX, Design & Conteúdo de Conversão
-- **`frontend-design-deslop`**: Ao desenhar ou estilizar componentes e seções, evitando padrões visuais genéricos de IA e mantendo fidelidade a `docs/style-guide.md`.
-- **`copywriting-cta`**: Ao criar ou revisar botões de ação e chamadas para conversão (WhatsApp, Instagram, visitas à loja física).
-- **`event-landing-page`**: Ao atualizar ou reprojetar a seção de agenda semanal e torneios da loja.
-- **`interface-review`**: Ao fazer revisões heurísticas de layout, consistência e usabilidade.
-
-### 5. SEO & Presença Local
-- **`seo-schema-local-business`**: Ao alterar dados cadastrais da loja em `src/data/site.json` ou schemas JSON-LD (`LocalBusiness`, eventos, horários).
-- **`local-seo`**: Ao trabalhar visibilidade em buscas geográficas (Natal/RN, Google Maps e Local Pack).
-- **`astro-seo`**: Ao revisar metadados no `<head>`, Open Graph e tags canônicas no layout base.
+- Lighthouse 95+ em Performance, Acessibilidade, Boas Práticas e SEO (meça no preview da Vercel, ou com `pnpm dev` rodando e `pnpm lighthouse`).
+- WCAG 2.2 AA: teclado, foco visível, `prefers-reduced-motion`, `forced-colors`.
+- `src/pages/llms.txt.ts` segue o `llmstxt.org`, com links em Markdown (`- [Título](url): descrição`).
+- Documentação do Astro: https://docs.astro.build

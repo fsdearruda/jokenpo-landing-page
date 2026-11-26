@@ -1,0 +1,51 @@
+{
+  "pdvSeq": 42,
+  "completo": true,
+  "eventosAplicadosAte": 7,
+  "geradoEm": "2026-11-28T12:00:00.000Z",
+  "itens": [
+    {
+      "produtoId": "cmw3sqnrz001tm2sk9mafrrox",
+      "sku": "DBX-DUPLA",
+      "nome": "Deck box dupla",
+      "categoria": "Deck boxes",
+      "grupo": "Acessórios",
+      "precoCentavos": 5942,
+      "disponivel": 4,
+      "noCatalogo": true,
+      "atualizadoEm": "2026-11-28T11:59:00.000Z",
+      "promocao": { "id": "bf", "nome": "Black Friday", "precoOriginalCentavos": 6990, "terminaEm": "2026-11-30T03:00:00.000Z" }
+    },
+    {
+      "produtoId": "kit-turno",
+      "sku": "3D-KIT-TURNO",
+      "nome": "Kit Turno",
+      "categoria": "Marcadores 3D",
+      "grupo": "Acessórios",
+      "precoCentavos": 1000,
+      "disponivel": 15,
+      "noCatalogo": true,
+      "atualizadoEm": "2026-11-20T10:00:00.000Z",
+      "componentes": [
+        { "produtoId": "marcador-energy", "quantidade": 1, "disponivel": 15 },
+        { "produtoId": "marcador-supporter", "quantidade": 1, "disponivel": 15 }
+      ],
+      "promocao": null
+    },
+    {
+      "produtoId": "shield-roxo",
+      "sku": null,
+      "nome": "Shield roxo (100 un)",
+      "categoria": null,
+      "grupo": null,
+      "precoCentavos": 2500,
+      "disponivel": 0,
+      "noCatalogo": false,
+      "atualizadoEm": "2026-11-27T09:00:00.000Z",
+      "promocao": null
+    }
+  ],
+  "pedidos": [
+    { "pedidoId": "8a0c6f1e-0000-4000-8000-000000000001", "numeroPdv": 31, "status": "PAGAMENTO_PENDENTE", "validoAte": "2026-11-30T12:00:00.000Z", "motivo": null }
+  ]
+}

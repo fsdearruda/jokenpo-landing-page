@@ -8,12 +8,14 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "check": "astro check",
+    "check": "node scripts/sync-contract.mjs --check && astro check",
     "test:build": "pnpm build",
     "preview": "astro preview",
     "lighthouse": "lighthouse http://localhost:4321 --quiet --chrome-flags='--headless --no-sandbox --disable-gpu'",
     "astro": "astro",
-    "db:migrate": "node scripts/db-migrate.mjs"
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "test": "vitest run",
+    "sync:contract": "node scripts/sync-contract.mjs"
   },
   "dependencies": {
     "@astrojs/vercel": "^11.0.20",
@@ -30,6 +32,7 @@
     "@iconify-json/lucide": "^1.2.158",
     "@iconify-json/simple-icons": "^1.2.103",
     "@types/node": "^26.6.6",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.7"
   }
 }

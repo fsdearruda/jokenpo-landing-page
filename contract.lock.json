@@ -1,0 +1,11 @@
+{
+	"origem": "larissarruda/jokenpo-pdv",
+	"arquivos": {
+		"src/lib/pdv/sync.ts": "0ee4900d788f12c16c1d639f17ea9949500be62f57c3dedae7646d24ffb731bf",
+		"contract-fixtures/README.md": "a57f933bfcff4746d8f7d6fb5c2b696b95eb9e3e8e3927514df7ed5482d1e29f",
+		"contract-fixtures/ack.json": "f9ff746600a5d8e421a0f46a598dc93888eb9c3468b51b98ec6a10780bedfb2c",
+		"contract-fixtures/envio-estoque-pdv-antigo.json": "92dcb0f7495dbdb26ae9b6bea060de2ee52e6a28eef90b45ec1b2fa02ea7e82d",
+		"contract-fixtures/envio-estoque.json": "68fff8fc330dcec9cf042bfff40d0759003cf190da50f0c65660998ea2657516",
+		"contract-fixtures/eventos.json": "f53dd03bdc9c7912932cca2f9eac36d6ef7074376f117e248e7ead7b0863583a"
+	}
+}

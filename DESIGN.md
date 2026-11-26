@@ -128,7 +128,7 @@
 - Color independence: Active nav links use underline; game categories pair color with explicit text labels (`Leves`, `Médios`, `Grandes`).
 - Agentic Browsing: Fully compliant `llms.txt` with canonical Markdown links (`- [Title](url): description`), structured JSON-LD `@graph`, and preloaded critical local fonts achieving **100/100** on Lighthouse Agentic Browsing, Accessibility, SEO, and Best Practices (98 Performance).
 
-## Tokens (source of truth)
+## Tokens (mirror of `src/styles/global.css`, which wins if they differ)
 
 ```css
 :root {

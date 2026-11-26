@@ -1,0 +1,16 @@
+{
+  "resultados": [
+    {
+      "eventoId": 7,
+      "status": "APLICADO",
+      "pedido": { "pedidoId": "8a0c6f1e-0000-4000-8000-000000000001", "numeroPdv": 31, "status": "PAGAMENTO_PENDENTE", "validoAte": "2026-11-30T12:00:00.000Z", "motivo": null }
+    },
+    {
+      "eventoId": 8,
+      "status": "RECUSADO",
+      "motivo": "Sem estoque: Deck box dupla",
+      "pedido": { "pedidoId": "8a0c6f1e-0000-4000-8000-000000000002", "numeroPdv": 32, "status": "RECUSADO", "validoAte": null, "motivo": "Sem estoque: Deck box dupla" }
+    },
+    { "eventoId": 9, "status": "RECUSADO", "motivo": "Evento em formato inválido" }
+  ]
+}

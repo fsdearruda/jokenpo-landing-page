@@ -1,0 +1,142 @@
+---
+import BannerCarousel from './BannerCarousel.astro';
+import ArrowIcon from './ArrowIcon.astro';
+import { activeBanners, bannerFrame, bannerPeriod, isUpcoming, type BannerPlacement, type BannerShape } from '../lib/banners';
+
+interface Props {
+	placement: BannerPlacement;
+	/** Só os banners nesses formatos (a loja põe os em pé na lateral e os largos na vitrine). */
+	shapes?: BannerShape[];
+	/**
+	 * `stack`: só as artes, uma embaixo da outra.
+	 * `feature`: banner em pé ou quadrado ganha um bloco com período, nome e botão ao lado
+	 * da arte (página inicial); banner largo continua só com a arte, na largura toda.
+	 */
+	layout?: 'stack' | 'feature';
+	class?: string;
+	eager?: boolean;
+	sizes?: string;
+}
+
+const { placement, shapes, layout = 'stack', class: className, eager = false, sizes } = Astro.props;
+const banners = activeBanners(placement, shapes);
+---
+
+{
+	banners.length > 0 && (
+		<div class:list={['promo-banners', `layout-${layout}`, className]}>
+			{banners.map((banner, index) => {
+				const id = `banner-${placement}-${shapes?.join('-') ?? 'all'}-${index}`;
+				const first = eager && index === 0;
+				if (layout === 'stack' || bannerFrame(banner).shape === 'wide') {
+					return <BannerCarousel banner={banner} id={id} eager={first} sizes={sizes} />;
+				}
+				const period = bannerPeriod(banner);
+				const external = banner.link && /^https?:/.test(banner.link);
+				return (
+					<div
+						class:list={['promo-feature', { 'is-flipped': index % 2 === 1 }]}
+						data-banner-dates
+						data-start={banner.startDate || undefined}
+						data-end={banner.endDate || undefined}
+						hidden={isUpcoming(banner)}
+					>
+						<div class="feature-copy">
+							{period && <p class="eyebrow feature-period">{period}</p>}
+							<h2 class="feature-title">{banner.title}</h2>
+							{banner.link && (
+								<a
+									class="button button-yellow feature-cta"
+									href={banner.link}
+									{...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+								>
+									<span>{banner.cta || 'Saiba mais'}</span>
+									<ArrowIcon direction={external ? 'up-right' : 'right'} size={16} />
+									{external && <span class="sr-only">(abre em nova aba)</span>}
+								</a>
+							)}
+						</div>
+						<BannerCarousel
+							banner={banner}
+							id={id}
+							eager={first}
+							dated={false}
+							sizes="(min-width: 900px) 420px, 100vw"
+						/>
+					</div>
+				);
+			})}
+		</div>
+	)
+}
+
+<style>
+	.promo-banners {
+		display: grid;
+		gap: clamp(1rem, 2.5vw, 1.5rem);
+	}
+
+	.promo-feature[hidden] {
+		display: none;
+	}
+
+	/* Bloco da página inicial: texto de um lado, arte do outro, sem sobra vazia */
+	.promo-feature {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: clamp(1.75rem, 5vw, 4.5rem);
+	}
+
+	.promo-feature :global(.promo-banner) {
+		--max-h: min(72svh, 32rem);
+	}
+
+	.promo-feature.is-flipped .feature-copy {
+		order: 2;
+	}
+
+	.feature-period {
+		margin-bottom: 0.875rem;
+		color: var(--yellow);
+	}
+
+	.feature-title {
+		margin: 0 0 1.75rem;
+		font-size: clamp(2rem, 1rem + 3.4vw, 3.75rem);
+		line-height: 0.95;
+		text-transform: uppercase;
+		text-wrap: balance;
+	}
+
+	.feature-cta {
+		gap: 0.625rem;
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	@media (max-width: 899px) {
+		.promo-feature {
+			grid-template-columns: minmax(0, 1fr);
+			justify-items: center;
+			text-align: center;
+		}
+
+		.promo-feature .feature-copy,
+		.promo-feature.is-flipped .feature-copy {
+			order: 0;
+		}
+
+		.feature-title {
+			margin-bottom: 1.25rem;
+		}
+	}
+</style>

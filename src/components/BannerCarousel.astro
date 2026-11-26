@@ -1,0 +1,349 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { bannerFrame, isUpcoming, resolveBannerImage, type Banner } from '../lib/banners';
+
+interface Props {
+	banner: Banner;
+	/** Prefixo único dos ids na página. */
+	id: string;
+	class?: string;
+	/** Carrega a 1ª foto com prioridade (banner no topo da página, candidato a LCP). */
+	eager?: boolean;
+	/** Largura mostrada, para o navegador escolher o tamanho da foto. */
+	sizes?: string;
+	/** Esconde/remove o banner pelas datas. Desligado quando um bloco externo já faz isso. */
+	dated?: boolean;
+}
+
+const { banner, id, class: className, eager = false, sizes = '100vw', dated = true } = Astro.props;
+const { ratio, shape } = bannerFrame(banner);
+const many = banner.slides.length > 1;
+---
+
+<section
+	class:list={['promo-banner', `is-${shape}`, className]}
+	style={`--ratio: ${ratio}`}
+	aria-roledescription={many ? 'carrossel' : undefined}
+	aria-label={banner.title}
+	data-banner
+	data-banner-dates={dated ? '' : undefined}
+	data-start={dated ? banner.startDate || undefined : undefined}
+	data-end={dated ? banner.endDate || undefined : undefined}
+	hidden={dated && isUpcoming(banner)}
+	data-interval={Math.max(3, banner.interval || 5) * 1000}
+>
+	<ul class="banner-track" id={`${id}-track`} role="list" aria-live={many ? 'off' : undefined}>
+		{banner.slides.map((slide, i) => {
+			const src = resolveBannerImage(slide.src);
+			const loading = eager && i === 0 ? 'eager' : 'lazy';
+			const img =
+				typeof src === 'string' ? (
+					<img src={src} alt={slide.alt} loading={loading} decoding="async" />
+				) : (
+					<Image
+						src={src}
+						alt={slide.alt}
+						widths={[360, 540, 720, 1080, 1440].filter((w) => w <= src.width)}
+						sizes={sizes}
+						format="webp"
+						quality={80}
+						loading={loading}
+						fetchpriority={loading === 'eager' ? 'high' : undefined}
+					/>
+				);
+			return (
+				<li
+					class="banner-slide"
+					aria-roledescription={many ? 'slide' : undefined}
+					aria-label={many ? `${i + 1} de ${banner.slides.length}` : undefined}
+				>
+					{banner.link ? (
+						<a href={banner.link} {...(/^https?:/.test(banner.link) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+							{img}
+						</a>
+					) : (
+						img
+					)}
+				</li>
+			);
+		})}
+	</ul>
+	{many && (
+		<div class="banner-controls">
+			<button type="button" class="banner-btn" data-role="toggle" aria-label="Pausar banner">
+				<Icon name="lucide:pause" class="icon-pause" size={16} weight={3} />
+				<Icon name="lucide:play" class="icon-play" size={16} weight={3} />
+			</button>
+			<button type="button" class="banner-btn" data-role="prev" aria-controls={`${id}-track`} aria-label="Foto anterior">
+				<Icon name="lucide:chevron-left" size={18} weight={3} />
+			</button>
+			<div class="banner-dots">
+				{banner.slides.map((_, i) => (
+					<button
+						type="button"
+						class="banner-dot"
+						data-index={i}
+						aria-controls={`${id}-track`}
+						aria-label={`Ir para a foto ${i + 1}`}
+						aria-current={i === 0 ? 'true' : undefined}
+					/>
+				))}
+			</div>
+			<button type="button" class="banner-btn" data-role="next" aria-controls={`${id}-track`} aria-label="Próxima foto">
+				<Icon name="lucide:chevron-right" size={18} weight={3} />
+			</button>
+		</div>
+	)}
+</section>
+
+<script>
+	/** Datas no horário de Natal: o banner aparece e some sem precisar de novo deploy. */
+	const expired = (end: string) => Date.now() > new Date(`${end.slice(0, 10)}T23:59:59-03:00`).getTime();
+	const started = (start: string) => Date.now() >= new Date(`${start.slice(0, 10)}T00:00:00-03:00`).getTime();
+	const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+	document.querySelectorAll<HTMLElement>('[data-banner-dates]').forEach((el) => {
+		if (el.dataset.end && expired(el.dataset.end)) el.remove();
+		else if (el.dataset.start && started(el.dataset.start)) el.hidden = false;
+	});
+
+	document.querySelectorAll<HTMLElement>('[data-banner]').forEach((banner) => {
+		const track = banner.querySelector<HTMLElement>('.banner-track')!;
+		const slides = [...track.children] as HTMLElement[];
+		if (slides.length < 2) return;
+
+		const dots = [...banner.querySelectorAll<HTMLButtonElement>('.banner-dot')];
+		const toggle = banner.querySelector<HTMLButtonElement>('[data-role="toggle"]')!;
+		const interval = Number(banner.dataset.interval) || 5000;
+		let current = 0;
+		let timer: number | undefined;
+		// Pausado pelo botão: não volta a girar sozinho até a pessoa mandar.
+		let userPaused = reduceMotion.matches;
+		let hold = false;
+
+		const go = (index: number, smooth = true) => {
+			current = (index + slides.length) % slides.length;
+			track.scrollTo({ left: slides[current].offsetLeft, behavior: smooth && !reduceMotion.matches ? 'smooth' : 'auto' });
+		};
+
+		const paint = () => {
+			dots.forEach((dot, i) => dot.toggleAttribute('aria-current', i === current));
+			slides.forEach((slide, i) => {
+				slide.inert = i !== current;
+			});
+		};
+
+		const schedule = () => {
+			window.clearInterval(timer);
+			const running = !userPaused && !hold;
+			banner.classList.toggle('is-paused', userPaused);
+			toggle.setAttribute('aria-label', userPaused ? 'Girar banner' : 'Pausar banner');
+			if (running) timer = window.setInterval(() => go(current + 1), interval);
+		};
+
+		// O índice segue a rolagem (inclusive arrastando com o dedo).
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+						current = slides.indexOf(entry.target as HTMLElement);
+						paint();
+					}
+				}
+			},
+			{ root: track, threshold: [0.6] },
+		);
+		slides.forEach((slide) => observer.observe(slide));
+
+		banner.querySelector('[data-role="prev"]')!.addEventListener('click', () => {
+			go(current - 1);
+			schedule();
+		});
+		banner.querySelector('[data-role="next"]')!.addEventListener('click', () => {
+			go(current + 1);
+			schedule();
+		});
+		dots.forEach((dot) =>
+			dot.addEventListener('click', () => {
+				go(Number(dot.dataset.index));
+				schedule();
+			}),
+		);
+		toggle.addEventListener('click', () => {
+			userPaused = !userPaused;
+			schedule();
+		});
+
+		// Para enquanto a pessoa olha, aponta ou navega pelo teclado dentro do banner.
+		const setHold = (value: boolean) => {
+			hold = value;
+			schedule();
+		};
+		banner.addEventListener('pointerenter', () => setHold(true));
+		banner.addEventListener('pointerleave', () => setHold(banner.contains(document.activeElement)));
+		banner.addEventListener('focusin', () => setHold(true));
+		banner.addEventListener('focusout', (event) => {
+			if (!banner.contains(event.relatedTarget as Node)) setHold(banner.matches(':hover'));
+		});
+		document.addEventListener('visibilitychange', () => setHold(document.hidden));
+
+		paint();
+		schedule();
+	});
+</script>
+
+<style>
+	/*
+	 * A moldura usa a proporção da 1ª foto. A largura é limitada pela altura máxima
+	 * (`--max-h`), que cada página ajusta para o lugar onde o banner fica.
+	 */
+	.promo-banner {
+		--max-h: min(80svh, 40rem);
+		position: relative;
+		inline-size: min(100%, calc(var(--max-h) * (var(--ratio))));
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-card);
+		background: var(--ink-2);
+		box-shadow: var(--shadow-hard-surface);
+		overflow: hidden;
+	}
+
+	.promo-banner[hidden] {
+		display: none;
+	}
+
+	.banner-track {
+		display: flex;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		aspect-ratio: var(--ratio);
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+	}
+
+	.banner-track::-webkit-scrollbar {
+		display: none;
+	}
+
+	.banner-slide {
+		flex: 0 0 100%;
+		scroll-snap-align: start;
+		scroll-snap-stop: always;
+	}
+
+	.banner-slide a {
+		display: block;
+		block-size: 100%;
+		outline-offset: -4px;
+	}
+
+	.banner-slide :global(img) {
+		display: block;
+		inline-size: 100%;
+		block-size: 100%;
+		object-fit: cover;
+	}
+
+	.banner-controls {
+		position: absolute;
+		inset-inline: 0.625rem;
+		inset-block-end: 0.625rem;
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		pointer-events: none;
+	}
+
+	.banner-controls > * {
+		pointer-events: auto;
+	}
+
+	.banner-btn {
+		display: grid;
+		place-items: center;
+		inline-size: 2.75rem;
+		block-size: 2.75rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-pill);
+		background: var(--white);
+		color: var(--ink);
+		cursor: pointer;
+		touch-action: manipulation;
+		transition: transform var(--duration-instant) var(--ease-out);
+	}
+
+	.banner-btn:active {
+		transform: scale(0.94);
+	}
+
+	.banner-btn :global(.icon-play),
+	.promo-banner.is-paused .banner-btn :global(.icon-pause) {
+		display: none;
+	}
+
+	.promo-banner.is-paused .banner-btn :global(.icon-play) {
+		display: block;
+	}
+
+	.banner-dots {
+		display: flex;
+		flex: 1;
+		justify-content: center;
+	}
+
+	/* Alvo de 44px com o ponto visível pequeno no centro */
+	.banner-dot {
+		display: grid;
+		place-items: center;
+		inline-size: 1.75rem;
+		block-size: 2.75rem;
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: pointer;
+	}
+
+	.banner-dot::before {
+		content: '';
+		inline-size: 0.625rem;
+		block-size: 0.625rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-pill);
+		background: var(--white);
+		transition:
+			inline-size var(--duration-fast) var(--ease-out),
+			background-color var(--duration-fast) var(--ease-out);
+	}
+
+	.banner-dot[aria-current]::before {
+		inline-size: 1.375rem;
+		background: var(--yellow);
+	}
+
+	@media (hover: hover) {
+		.banner-btn:hover,
+		.banner-dot:hover::before {
+			background: var(--yellow);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.banner-dot::before,
+		.banner-btn {
+			transition: none;
+		}
+	}
+
+	@media (forced-colors: active) {
+		.banner-dot::before {
+			background: CanvasText;
+		}
+		.banner-dot[aria-current]::before {
+			background: Highlight;
+		}
+	}
+</style>

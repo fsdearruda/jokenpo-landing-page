@@ -9,13 +9,24 @@ import AboutSection from '../components/AboutSection.astro';
 import ExtrasSection from '../components/ExtrasSection.astro';
 import FaqSection from '../components/FaqSection.astro';
 import VisitSection from '../components/VisitSection.astro';
+import PromoBanners from '../components/PromoBanners.astro';
+import { activeBanners } from '../lib/banners';
 
 export const prerender = true;
+
+const hasBanners = activeBanners('inicio').length > 0;
 ---
 
 <BaseLayout>
 	<Hero />
 	<Marquee />
+	{
+		hasBanners && (
+			<div class="home-banners">
+				<PromoBanners placement="inicio" layout="feature" sizes="(min-width: 1176px) 1100px, 100vw" />
+			</div>
+		)
+	}
 	<HowItWorksSection />
 	<GamesSection />
 	<AgendaSection />
@@ -24,3 +35,16 @@ export const prerender = true;
 	<FaqSection />
 	<VisitSection />
 </BaseLayout>
+
+<style>
+	.home-banners {
+		max-width: 1176px;
+		margin-inline: auto;
+		padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 4vw, 2.625rem) 0;
+	}
+
+	.home-banners :global(.layout-feature > .promo-banner) {
+		--max-h: 26rem;
+		margin-inline: auto;
+	}
+</style>

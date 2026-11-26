@@ -7,6 +7,8 @@ import { LOW_STOCK_THRESHOLD, catalog, cardPrice, compareAtCents, formatPrice, p
 import { MAX_QUANTIDADE_POR_ITEM, pdvMode } from '../lib/pdv';
 import { carregarVitrine } from '../lib/vitrine';
 import { resolveProductImage } from '../lib/product-images';
+import PromoBanners from '../components/PromoBanners.astro';
+import { activeBanners } from '../lib/banners';
 
 // Estática por padrão. No modo `live`, o astro.config.mjs a torna sob demanda (com cache
 // curto na CDN) para mostrar o catálogo escolhido no PDV.
@@ -16,10 +18,9 @@ const { families, fonte } = await carregarVitrine();
 if (pdvMode === 'live') Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
-const pageUrl = `${siteUrl}/produtos`;
+const pageUrl = `${siteUrl}/loja`;
 const whatsappNumber = siteData.contact.whatsapp.replace(/\D/g, '');
 const catalogDate = catalog.extractedAt.split('-').reverse().join('/');
-const totalProducts = families.reduce((sum, family) => sum + family.variants.length, 0);
 /**
  * Modo efetivo da página: com o PDV real fora do ar (ou antes da primeira sincronização da
  * loja), a vitrine volta ao catálogo do build com pedido pelo WhatsApp.
@@ -35,6 +36,8 @@ const shop = siteData.shop;
 const payment: PaymentRules = shop.payment;
 const modeText = orderApi ? shop.orderOnSite : shop.orderOnWhatsapp;
 const feeOn = payment.cardFeeEnabled && payment.cardFeePercent > 0;
+/** Banner em pé ou quadrado vai para a coluna da sacola no desktop, sem empurrar os produtos. */
+const hasSideBanner = activeBanners('loja', ['tall', 'square']).length > 0;
 
 /** URL absoluta da foto principal de cada variação, para o JSON-LD. */
 const photoUrls = new Map(
@@ -66,7 +69,7 @@ const jsonLd = [
 				name: family.name,
 				description: family.description,
 				productGroupID: family.slug,
-				url: `${pageUrl}#${family.slug}`,
+				url: pageUrl,
 				variesBy: family.variantLabel === 'Cor' ? 'https://schema.org/color' : 'https://schema.org/size',
 				hasVariant: family.variants.map((variant) => ({
 					'@type': 'Product',
@@ -91,7 +94,7 @@ const jsonLd = [
 <BaseLayout
 	title={shop.seoTitle}
 	description={shop.seoDescription}
-	path="/produtos"
+	path="/loja"
 	jsonLd={jsonLd}
 >
 	<div
@@ -103,29 +106,29 @@ const jsonLd = [
 		data-low-stock={LOW_STOCK_THRESHOLD}
 		data-payment={JSON.stringify(payment)}
 	>
-		<div class="shop-layout">
-			<div class="shop-catalog">
-				<header class="shop-intro">
-					<div>
-						<p class="eyebrow">{modeText.eyebrow}</p>
-						<h1>{shop.titleLine} <span>{shop.titleHighlight}</span></h1>
-						<p class="shop-lead">{modeText.lead}</p>
+		<div class:list={['shop-layout', { 'has-side-banner': hasSideBanner }]}>
+			<header class="shop-intro">
+				<h1>{shop.titleLine} <span>{shop.titleHighlight}</span></h1>
+				<p class="shop-lead">{modeText.lead}</p>
+			</header>
+			{
+				hasSideBanner && (
+					<div class="shop-side">
+						<PromoBanners placement="loja" shapes={['tall', 'square']} eager sizes="(min-width: 1024px) 360px, 100vw" />
 					</div>
-					{
-						modeText.perks.length > 0 && (
-							<ul class="shop-perks" role="list">
-								{modeText.perks.map((perk) => (
-									<li><strong>{perk.title}</strong><span>{perk.text}</span></li>
-								))}
-							</ul>
-						)
-					}
-				</header>
+				)
+			}
+			<div class="shop-catalog">
+				<PromoBanners
+					placement="loja"
+					shapes={['wide']}
+					class="shop-banners"
+					eager={!hasSideBanner}
+					sizes="(min-width: 1024px) 900px, 100vw"
+				/>
 				<div class="filter-wrap">
 					<div class="filter-toolbar" role="toolbar" aria-label="Filtrar produtos por categoria">
-						<button type="button" class="filter-btn is-active" data-filter="all" aria-pressed="true">
-							Todos <span class="badge-count">{totalProducts}</span>
-						</button>
+						<button type="button" class="filter-btn is-active" data-filter="all" aria-pressed="true">Todos</button>
 						{
 							families.map((family) => (
 								<button
@@ -134,7 +137,7 @@ const jsonLd = [
 									data-filter={family.slug}
 									aria-pressed="false"
 								>
-									{family.category} <span class="badge-count">{family.variants.length}</span>
+									{family.category}
 								</button>
 							))
 						}
@@ -143,113 +146,102 @@ const jsonLd = [
 				<p id="filter-status" class="sr-only" aria-live="polite"></p>
 
 				{
-					families.map((family) => {
-						const tone = toneOf(family);
-						return (
-							<section class="category" id={family.slug} data-category={family.slug} aria-labelledby={`${family.slug}-title`}>
-								<div class="category-head">
-									<h2 id={`${family.slug}-title`} class={`category-title tone-${tone}`}>
-										{family.category}
-									</h2>
-									<p class="category-count">
-										{family.variants.length} {family.variants.length === 1 ? 'produto' : 'produtos'}
-									</p>
-									{family.description && <p class="category-desc">{family.description}</p>}
-								</div>
-								<ul class="product-grid" role="list">
-									{family.variants.map((variant, index) => {
-										const level = stockLevel(variant.stock);
-										const photos = variant.images ?? [];
-										const before = compareAtCents(variant);
-										const badge = promoBadge(variant, shop.promoBadgeDefault);
-										return (
-											<li>
-												<article
-													class={`product-card tone-${tone}`}
-													data-id={variant.id}
-													data-price={variant.priceCents}
-													data-stock={variant.stock}
-													data-title={variant.title}
-													data-compare={before ?? undefined}
-													data-swatch={variant.swatch ?? (family.slug === 'shield-personalizada' ? 'art' : undefined)}
-													data-index={index}
-													aria-labelledby={`p-${variant.id}`}
-												>
-													{photos.length > 0 ? (
-														<div class="product-visual product-photo">
-															{photos.slice(0, 2).map((photo, i) => {
-																const src = resolveProductImage(photo.src);
-																const alt = i === 0 ? photo.alt : '';
-																const cls = i === 0 ? undefined : 'photo-alt';
-																return typeof src === 'string' ? (
-																	<img src={src} alt={alt} class={cls} loading="lazy" decoding="async" />
-																) : (
-																	<Image
-																		src={src}
-																		alt={alt}
-																		class={cls}
-																		widths={[240, 360, 480, 720]}
-																		sizes="(min-width: 640px) 260px, 50vw"
-																		format="webp"
-																		quality={78}
-																	/>
-																);
-															})}
-															{badge && <strong class="promo-badge">{badge}</strong>}
-														</div>
-													) : (
-														<div class={`product-visual visual-${family.type}`}>
-															<span aria-hidden="true" />
-															<span aria-hidden="true" />
-															<span aria-hidden="true" />
-															{badge && <strong class="promo-badge">{badge}</strong>}
-														</div>
-													)}
-													<div class="card-body">
-														<p class="card-kicker">{family.subtitle}</p>
-														<h3 class="card-title" id={`p-${variant.id}`}>
-															{variant.title}
-														</h3>
-														<div class="card-price" data-role="price">
-															<p class="price-before" data-role="price-before" hidden={!before}>
-																<span class="sr-only">De </span><s>{before ? formatPrice(before) : ''}</s>
-															</p>
-															<p class="price-main">
-																<span data-role="price-pix">{formatPrice(variant.priceCents)}</span>
-																{feeOn && <small>no Pix</small>}
-															</p>
-															{feeOn && (
-																<p class="price-card">
-																	ou <span data-role="price-card">{formatPrice(cardPrice(variant.priceCents, payment))}</span> no cartão
-																</p>
-															)}
-														</div>
-														<p class="card-stock" data-role="stock" data-level={level}>
-															{stockText[level]}
+					families.length > 0 && (
+						<ul class="product-grid" role="list" aria-label="Produtos">
+							{families.flatMap((family) => {
+								const tone = toneOf(family);
+								return family.variants.map((variant, index) => {
+									const level = stockLevel(variant.stock);
+									const photos = variant.images ?? [];
+									const before = compareAtCents(variant);
+									const badge = promoBadge(variant, shop.promoBadgeDefault);
+									return (
+										<li data-category={family.slug}>
+											<article
+												class={`product-card tone-${tone}`}
+												data-id={variant.id}
+												data-price={variant.priceCents}
+												data-stock={variant.stock}
+												data-title={variant.title}
+												data-compare={before ?? undefined}
+												data-swatch={variant.swatch ?? (family.slug === 'shield-personalizada' ? 'art' : undefined)}
+												data-index={index}
+												aria-labelledby={`p-${variant.id}`}
+											>
+												{photos.length > 0 ? (
+													<div class="product-visual product-photo">
+														{photos.slice(0, 2).map((photo, i) => {
+															const src = resolveProductImage(photo.src);
+															const alt = i === 0 ? photo.alt : '';
+															const cls = i === 0 ? undefined : 'photo-alt';
+															return typeof src === 'string' ? (
+																<img src={src} alt={alt} class={cls} loading="lazy" decoding="async" />
+															) : (
+																<Image
+																	src={src}
+																	alt={alt}
+																	class={cls}
+																	widths={[240, 360, 480, 720]}
+																	sizes="(min-width: 640px) 260px, 50vw"
+																	format="webp"
+																	quality={78}
+																/>
+															);
+														})}
+														{badge && <strong class="promo-badge">{badge}</strong>}
+													</div>
+												) : (
+													<div class={`product-visual visual-${family.type}`}>
+														<span aria-hidden="true" />
+														<span aria-hidden="true" />
+														<span aria-hidden="true" />
+														{badge && <strong class="promo-badge">{badge}</strong>}
+													</div>
+												)}
+												<div class="card-body">
+													<p class="card-kicker">{family.category}</p>
+													<h3 class="card-title" id={`p-${variant.id}`}>
+														{variant.title}
+													</h3>
+													<div class="card-price" data-role="price">
+														<p class="price-before" data-role="price-before" hidden={!before}>
+															<span class="sr-only">De </span><s>{before ? formatPrice(before) : ''}</s>
 														</p>
-														<div class="card-action">
-															<button type="button" class="add-btn" data-role="add" disabled={level === 'out'}>
-																{level === 'out' ? 'Esgotado' : 'Adicionar'}
+														<p class="price-main">
+															<span data-role="price-pix">{formatPrice(variant.priceCents)}</span>
+															{feeOn && <small>no Pix</small>}
+														</p>
+														{feeOn && (
+															<p class="price-card">
+																ou <span data-role="price-card">{formatPrice(cardPrice(variant.priceCents, payment))}</span> no cartão
+															</p>
+														)}
+													</div>
+													<p class="card-stock" data-role="stock" data-level={level}>
+														{stockText[level]}
+													</p>
+													<div class="card-action">
+														<button type="button" class="add-btn" data-role="add" disabled={level === 'out'}>
+															{level === 'out' ? 'Esgotado' : 'Adicionar'}
+														</button>
+														<div class="card-qty" data-role="qty" role="group" aria-label={`${variant.title} na sacola`} hidden>
+															<button type="button" class="step-btn" data-step="-1" aria-label={`Tirar uma unidade de ${variant.title}`}>
+																<Icon name="lucide:minus" size={16} weight={3} />
 															</button>
-															<div class="card-qty" data-role="qty" role="group" aria-label={`${variant.title} na sacola`} hidden>
-																<button type="button" class="step-btn" data-step="-1" aria-label={`Tirar uma unidade de ${variant.title}`}>
-																	<Icon name="lucide:minus" size={16} weight={3} />
-																</button>
-																<span class="card-qty-value" data-role="qty-value">1 na sacola</span>
-																<button type="button" class="step-btn" data-step="1" aria-label={`Adicionar mais uma unidade de ${variant.title}`}>
-																	<Icon name="lucide:plus" size={16} weight={3} />
-																</button>
-															</div>
+															<span class="card-qty-value" data-role="qty-value">1 na sacola</span>
+															<button type="button" class="step-btn" data-step="1" aria-label={`Adicionar mais uma unidade de ${variant.title}`}>
+																<Icon name="lucide:plus" size={16} weight={3} />
+															</button>
 														</div>
 													</div>
-												</article>
-											</li>
-										);
-									})}
-								</ul>
-							</section>
-						);
-					})
+												</div>
+											</article>
+										</li>
+									);
+								});
+							})}
+						</ul>
+					)
 				}
 				{
 					families.length === 0 && (
@@ -262,8 +254,8 @@ const jsonLd = [
 				<p class="catalog-note">
 					{
 						fonte === 'pdv'
-							? 'Preço e estoque direto do sistema da loja. A loja confirma a disponibilidade quando recebe o pedido.'
-							: `Preços e estoque do PDV da loja em ${catalogDate}. A disponibilidade é confirmada na hora do pedido.`
+							? 'Preço e estoque direto do sistema da loja.'
+							: `Preços e estoque de ${catalogDate}.`
 					}
 				</p>
 			</div>
@@ -692,10 +684,10 @@ const jsonLd = [
 					b.setAttribute('aria-pressed', String(b === button));
 				});
 				let visible = 0;
-				root.querySelectorAll<HTMLElement>('.category').forEach((section) => {
-					const show = filter === 'all' || section.dataset.category === filter;
-					section.hidden = !show;
-					if (show) visible += section.querySelectorAll('.product-card').length;
+				root.querySelectorAll<HTMLElement>('.product-grid > li').forEach((item) => {
+					const show = filter === 'all' || item.dataset.category === filter;
+					item.hidden = !show;
+					if (show) visible += 1;
 				});
 				$('#filter-status').textContent = `Mostrando ${plural(visible, 'produto', 'produtos')}.`;
 			});
@@ -1025,22 +1017,14 @@ const jsonLd = [
 
 	/* Abertura curta: os produtos aparecem logo na primeira tela */
 	.shop-intro {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: 1.5rem 2.5rem;
-		margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
-	}
-
-	.shop-intro .eyebrow {
-		margin-bottom: 0.75rem;
+		margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
 	}
 
 	.shop-intro h1 {
-		margin-bottom: 0.875rem;
+		margin-bottom: 0.625rem;
 		font-size: clamp(2.5rem, 1.25rem + 4.5vw, 4.5rem);
 		line-height: 0.92;
+		text-wrap: balance;
 	}
 
 	.shop-lead {
@@ -1049,50 +1033,67 @@ const jsonLd = [
 		color: var(--mist);
 		font-size: 1rem;
 		font-weight: 600;
+		text-wrap: pretty;
 	}
 
-	.shop-perks {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
+	.shop-catalog :global(.shop-banners) {
+		margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
 	}
 
-	.shop-perks li {
-		display: grid;
-		gap: 0.125rem;
-		padding: 0.625rem 0.875rem;
-		border-left: 3px solid var(--yellow);
-		color: var(--mist);
-		font-size: 0.8125rem;
-		line-height: 1.35;
+	/* Banner largo: faixa na largura da vitrine, com altura contida */
+	.shop-catalog :global(.promo-banner) {
+		--max-h: 18rem;
 	}
 
-	.shop-perks li:nth-child(2) {
-		border-color: var(--cyan);
-	}
-	.shop-perks li:nth-child(3) {
-		border-color: var(--pink);
+	.shop-side {
+		grid-area: side;
+		margin-bottom: 1.5rem;
 	}
 
-	.shop-perks strong {
-		color: var(--white);
-		font-size: 0.875rem;
+	.shop-side :global(.promo-banner) {
+		inline-size: 100%;
 	}
 
 	/* Vitrine + sacola */
+	/*
+	 * Desktop: título e vitrine à esquerda, sacola à direita. Com banner em pé, ele ocupa o
+	 * topo da coluna da sacola e a sacola (fixa ao rolar) vem logo abaixo.
+	 */
 	.shop-layout {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 22.5rem;
-		gap: clamp(1.5rem, 2.5vw, 2.5rem);
+		grid-template-rows: auto 1fr;
+		grid-template-areas:
+			'intro cart'
+			'catalog cart';
+		column-gap: clamp(1.5rem, 2.5vw, 2.5rem);
 		align-items: start;
 	}
 
+	.shop-layout.has-side-banner {
+		grid-template-rows: auto auto 1fr;
+		grid-template-areas:
+			'intro side'
+			'catalog side'
+			'catalog cart';
+	}
+
+	.shop-intro {
+		grid-area: intro;
+	}
+
+	.shop-catalog {
+		grid-area: catalog;
+	}
+
+	.cart {
+		grid-area: cart;
+	}
+
+	/* Encosta no cabeçalho (altura medida em Header.astro); -1px evita fresta de subpixel */
 	.filter-wrap {
 		position: sticky;
-		top: 4.5rem;
+		top: calc(var(--header-h, 4.5rem) - 1px);
 		z-index: 5;
 		margin: 0 -0.25rem 1.25rem;
 		padding: 0.625rem 0.25rem;
@@ -1161,83 +1162,19 @@ const jsonLd = [
 		background: var(--pink);
 	}
 
-	.badge-count {
-		display: inline-grid;
-		place-items: center;
-		min-inline-size: 1.375rem;
-		padding: 0 0.375rem;
-		border-radius: var(--radius-pill);
-		background: color-mix(in oklch, currentColor 16%, transparent);
-		font-size: 0.75rem;
-		font-variant-numeric: tabular-nums;
-	}
-
-	/* Categorias */
-	.category {
-		margin-bottom: clamp(2.25rem, 4vw, 3rem);
-		scroll-margin-top: 8.5rem;
-	}
-
-	.category[hidden] {
-		display: none;
-	}
-
-	.category-head {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: 0.25rem 0.875rem;
-		margin-bottom: 1rem;
-		padding-bottom: 0.75rem;
-		border-bottom: 2px dashed var(--ink-3);
-	}
-
-	.category-title {
-		margin: 0;
-		font-size: clamp(1.375rem, 1rem + 1.4vw, 1.875rem);
-		line-height: 1;
-	}
-
-	.category-title::before {
-		content: '';
-		display: inline-block;
-		width: 0.55em;
-		height: 0.55em;
-		margin-right: 0.4em;
-		border: 2px solid var(--ink);
-		border-radius: 3px;
-		background: var(--cyan);
-		transform: rotate(-8deg) translateY(-0.05em);
-	}
-	.category-title.tone-yellow::before {
-		background: var(--yellow);
-	}
-	.category-title.tone-pink::before {
-		background: var(--pink);
-	}
-
-	.category-count {
-		margin: 0;
-		color: var(--mist);
-		font-size: 0.8125rem;
-		font-weight: 700;
-	}
-
-	.category-desc {
-		flex-basis: 100%;
-		margin: 0;
-		color: var(--mist);
-		font-size: 0.875rem;
-	}
-
 	/* Cards compactos */
 	.product-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
 		gap: 1rem;
-		margin: 0;
+		margin: 0 0 clamp(2rem, 4vw, 2.75rem);
 		padding: 0;
 		list-style: none;
+		scroll-margin-top: 8.5rem;
+	}
+
+	.product-grid > li[hidden] {
+		display: none;
 	}
 
 	.product-card {
@@ -2106,8 +2043,21 @@ const jsonLd = [
 	}
 
 	@media (max-width: 1023px) {
-		.shop-layout {
+		.shop-layout,
+		.shop-layout.has-side-banner {
 			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: auto;
+			grid-template-areas: 'intro' 'side' 'catalog';
+		}
+
+		.shop-side {
+			margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
+		}
+
+		.shop-side :global(.promo-banner) {
+			--max-h: min(80svh, 36rem);
+			inline-size: min(100%, calc(var(--max-h) * (var(--ratio))));
+			margin-inline: auto;
 		}
 
 		.cart {
@@ -2200,9 +2150,6 @@ const jsonLd = [
 			padding-bottom: 7rem;
 		}
 
-		.filter-wrap {
-			top: 4rem;
-		}
 	}
 
 	@media (max-width: 1023px) and (prefers-reduced-motion: no-preference) {
@@ -2253,10 +2200,6 @@ const jsonLd = [
 			font-size: 0.75rem;
 		}
 
-		.shop-perks li {
-			flex: 1 1 100%;
-			padding-block: 0.375rem;
-		}
 	}
 
 	.sr-only {
