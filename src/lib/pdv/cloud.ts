@@ -3,7 +3,7 @@ import type postgres from 'postgres';
 import { sql } from '../db';
 import { calcularDemanda, disponivelNoSite, lojaOffline, promocaoVigente } from './estoque';
 import { apagarFotos } from './fotos';
-import type { ComponenteKit, EnvioEstoque, PromocaoFoto, ResultadoEvento, StatusPedidoSite } from './sync';
+import type { CartaFoto, ComponenteKit, EnvioEstoque, PromocaoFoto, ResultadoEvento, StatusPedidoSite } from './sync';
 import {
 	MAX_ABERTOS_POR_IP,
 	MAX_ABERTOS_POR_TELEFONE,
@@ -65,6 +65,7 @@ type LinhaProduto = {
 	destaque?: boolean;
 	fotos?: string[];
 	ordem_grupo?: number | null;
+	carta?: CartaFoto | null;
 };
 
 /**
@@ -92,6 +93,27 @@ async function expirarNaoConfirmados(tx: Tx) {
 		WHERE status = 'AGUARDANDO_CONFIRMACAO' AND criado_em < now() - make_interval(hours => ${PRAZO_CONFIRMACAO_HORAS})`;
 }
 
+const COLUNAS_CATALOGO =
+	'produto_id, sku, nome, categoria, grupo, preco_centavos, disponivel, componentes, promocao, nome_site, descricao, slug, destaque, fotos, ordem_grupo, carta';
+
+const paraCatalogo = (p: LinhaProduto, demanda: Map<string, number>): ProdutoCatalogo => ({
+	produtoId: p.produto_id,
+	sku: p.sku,
+	nome: p.nome,
+	categoria: p.categoria,
+	grupo: p.grupo,
+	precoCentavos: p.preco_centavos,
+	disponivel: disponivelNoSite(p, demanda),
+	promocao: promocaoVigente(p.promocao),
+	nomeSite: p.nome_site ?? null,
+	descricao: p.descricao ?? null,
+	slug: p.slug ?? null,
+	destaque: p.destaque ?? false,
+	fotos: p.fotos ?? [],
+	ordemGrupo: p.ordem_grupo ?? null,
+	carta: p.carta ?? null,
+});
+
 const publico = (p: LinhaPedido): PedidoPublico => ({
 	id: p.id,
 	numero: p.numero,
@@ -111,27 +133,18 @@ class CloudPdv implements PdvClient {
 		await expirarNaoConfirmados(db);
 		const [produtos, demanda] = await Promise.all([
 			db<LinhaProduto[]>`
-				SELECT produto_id, sku, nome, categoria, grupo, preco_centavos, disponivel, componentes, promocao,
-					nome_site, descricao, slug, destaque, fotos, ordem_grupo
-				FROM pdv_produto WHERE visivel ORDER BY grupo, nome`,
+				SELECT ${db.unsafe(COLUNAS_CATALOGO)} FROM pdv_produto WHERE visivel ORDER BY grupo, nome`,
 			demandaPendente(db),
 		]);
-		return produtos.map((p) => ({
-			produtoId: p.produto_id,
-			sku: p.sku,
-			nome: p.nome,
-			categoria: p.categoria,
-			grupo: p.grupo,
-			precoCentavos: p.preco_centavos,
-			disponivel: disponivelNoSite(p, demanda),
-			promocao: promocaoVigente(p.promocao),
-			nomeSite: p.nome_site ?? null,
-			descricao: p.descricao ?? null,
-			slug: p.slug ?? null,
-			destaque: p.destaque ?? false,
-			fotos: p.fotos ?? [],
-			ordemGrupo: p.ordem_grupo ?? null,
-		}));
+		return produtos.map((p) => paraCatalogo(p, demanda));
+	}
+
+	/** Produto visível pelo endereço da página dele (/loja/<slug>). */
+	async buscarPorSlug(slug: string): Promise<ProdutoCatalogo | null> {
+		const db = sql();
+		const [linha] = await db<LinhaProduto[]>`SELECT ${db.unsafe(COLUNAS_CATALOGO)} FROM pdv_produto WHERE visivel AND slug = ${slug} LIMIT 1`;
+		if (!linha) return null;
+		return paraCatalogo(linha, await demandaPendente(db));
 	}
 
 	async listarEstoque(): Promise<EstoqueItem[]> {
@@ -295,9 +308,9 @@ export async function receberEstoque(envio: EnvioEstoque) {
 			fotosRemovidas = antigas.flatMap((a) => a.fotos).filter((url) => !novas.has(url));
 			await tx`
 				UPDATE pdv_produto p SET nome_site = v."nomeSite", descricao = v.descricao, slug = v.slug, destaque = v.destaque,
-					fotos = v.fotos, ordem_grupo = v."ordemGrupo"
+					fotos = v.fotos, ordem_grupo = v."ordemGrupo", carta = v.carta
 				FROM jsonb_to_recordset(${json(comConteudo)}::jsonb)
-					AS v(produto_id text, "nomeSite" text, descricao text, slug text, destaque boolean, fotos jsonb, "ordemGrupo" integer)
+					AS v(produto_id text, "nomeSite" text, descricao text, slug text, destaque boolean, fotos jsonb, "ordemGrupo" integer, carta jsonb)
 				WHERE p.produto_id = v.produto_id`;
 		}
 		if (envio.loja) await tx`UPDATE pdv_sync SET acrescimo_cartao_bp = ${envio.loja.acrescimoCartaoBp} WHERE id = 1`;

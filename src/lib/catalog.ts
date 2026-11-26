@@ -1,6 +1,7 @@
 import products from '../data/products.json';
+import type { CartaFoto } from './pdv/sync';
 
-export type ProductType = 'shield' | 'deckbox' | 'triple' | 'generic';
+export type ProductType = 'shield' | 'deckbox' | 'triple' | 'generic' | 'carta';
 export type Tone = 'cyan' | 'yellow' | 'pink';
 
 export interface ProductVariant {
@@ -28,6 +29,8 @@ export interface ProductVariant {
 	featured?: boolean;
 	/** Ilustração quando não há foto (sem isto, a do tipo da família). */
 	visual?: ProductType;
+	/** Carta avulsa: dados para o cartão de texto e os filtros. */
+	carta?: CartaFoto | null;
 }
 
 export interface ProductImage {
@@ -63,6 +66,7 @@ export const productTypes: Record<ProductType, { label: string; plural: string; 
 	deckbox: { label: 'Deck box', plural: 'Deck boxes', color: 'yellow' },
 	triple: { label: 'Triple pack', plural: 'Triple packs', color: 'pink' },
 	generic: { label: 'Produto', plural: 'Produtos', color: 'cyan' },
+	carta: { label: 'Carta avulsa', plural: 'Cartas avulsas', color: 'pink' },
 };
 
 export const toneOf = (family: ProductFamily): Tone => family.tone ?? productTypes[family.type].color;
@@ -119,3 +123,9 @@ export const promoBadge = (variant: PromoFields, fallback: string) => {
 
 /** Até este número de unidades a vitrine mostra "Últimas unidades". */
 export const LOW_STOCK_THRESHOLD = 3;
+
+/** Nomes que o cliente entende, para os códigos do PDV. */
+export const JOGOS: Record<string, string> = { MAGIC: 'Magic', POKEMON: 'Pokémon', YUGIOH: 'Yu-Gi-Oh!', ONE_PIECE: 'One Piece', LORCANA: 'Lorcana' };
+export const CONDICOES: Record<string, string> = { NM: 'Quase nova (NM)', SP: 'Pouco jogada (SP)', MP: 'Jogada (MP)', HP: 'Muito jogada (HP)', DMG: 'Danificada (DMG)' };
+export const IDIOMAS: Record<string, string> = { PT: 'Português', EN: 'Inglês', JP: 'Japonês', ES: 'Espanhol', IT: 'Italiano', FR: 'Francês', DE: 'Alemão', KR: 'Coreano', CN: 'Chinês' };
+export const nomeDe = (mapa: Record<string, string>, codigo: string) => mapa[codigo] ?? codigo;

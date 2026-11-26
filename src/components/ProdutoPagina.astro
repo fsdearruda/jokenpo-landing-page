@@ -1,0 +1,506 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from './Icon.astro';
+import siteData from '../data/site.json';
+import { CONDICOES, IDIOMAS, JOGOS, LOW_STOCK_THRESHOLD, cardPrice, compareAtCents, formatPrice, nomeDe, promoBadge, type PaymentRules } from '../lib/catalog';
+import { MAX_QUANTIDADE_POR_ITEM, type ProdutoCatalogo } from '../lib/pdv';
+import { remoteImage } from '../lib/product-images';
+import { variante } from '../lib/vitrine';
+
+interface Props {
+	produto: ProdutoCatalogo;
+	payment: PaymentRules;
+	slug: string;
+}
+
+/** Página de um produto da vitrine (/loja/<slug>): conteúdo, preço e estoque vêm do PDV. */
+const { produto, payment, slug } = Astro.props;
+const shop = siteData.shop;
+
+const feeOn = payment.cardFeeEnabled && payment.cardFeePercent > 0;
+const v = variante(produto);
+const carta = v.carta;
+const before = compareAtCents(v);
+const badge = promoBadge(v, shop.promoBadgeDefault);
+const level = v.stock <= 0 ? 'out' : v.stock <= LOW_STOCK_THRESHOLD ? 'low' : 'ok';
+const stockText = { out: 'Esgotado', low: 'Últimas unidades', ok: 'Em estoque' }[level];
+const fotos = (produto.fotos ?? []).slice(0, 5);
+const grupo = produto.grupo ?? 'Produtos';
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
+const pageUrl = `${siteUrl}/loja/${slug}`;
+const detalhesCarta = carta
+	? [
+			['Jogo', nomeDe(JOGOS, carta.jogo)],
+			['Coleção', carta.colecaoNome ? `${carta.colecaoNome} (${carta.colecao})` : carta.colecao],
+			['Número', carta.numero],
+			['Raridade', carta.raridade],
+			['Condição', nomeDe(CONDICOES, carta.condicao)],
+			['Idioma', nomeDe(IDIOMAS, carta.idioma)],
+			['Acabamento', carta.acabamento !== 'normal' ? carta.acabamento : null],
+		].filter((d): d is [string, string] => Boolean(d[1]))
+	: [];
+const descricao =
+	produto.descricao ??
+	(carta ? `${carta.nomeCarta}, ${detalhesCarta.map(([, valor]) => valor).join(', ')}.` : `${v.title} na Jokenpo, para retirar na loja.`);
+const metaDescription = `${v.title} por ${formatPrice(v.priceCents)} no Pix na Jokenpo (Natal/RN). ${descricao}`.slice(0, 160);
+
+const jsonLd = [
+	{
+		'@type': 'Product',
+		'@id': `${pageUrl}#produto`,
+		name: v.title,
+		...(v.sku ? { sku: v.sku } : {}),
+		description: descricao,
+		url: pageUrl,
+		...(fotos.length ? { image: fotos } : {}),
+		category: grupo,
+		offers: {
+			'@type': 'Offer',
+			price: (v.priceCents / 100).toFixed(2),
+			priceCurrency: 'BRL',
+			availability: v.stock > 0 ? 'https://schema.org/InStoreOnly' : 'https://schema.org/OutOfStock',
+			itemCondition: carta ? 'https://schema.org/UsedCondition' : 'https://schema.org/NewCondition',
+			url: pageUrl,
+			seller: { '@id': `${siteUrl}/#store` },
+		},
+	},
+	{
+		'@type': 'BreadcrumbList',
+		itemListElement: [
+			{ '@type': 'ListItem', position: 1, name: 'Loja', item: `${siteUrl}/loja` },
+			{ '@type': 'ListItem', position: 2, name: v.title, item: pageUrl },
+		],
+	},
+];
+---
+
+<BaseLayout title={`${v.title} | Jokenpo`} description={metaDescription} path={`/loja/${slug}`} jsonLd={jsonLd} image={fotos[0]}>
+	<div class="produto">
+		<nav class="trilha" aria-label="Você está em">
+			<a href="/loja">Loja</a>
+			<Icon name="lucide:chevron-right" size={14} weight={3} />
+			<span>{grupo}</span>
+		</nav>
+
+		<div class="produto-grid">
+			<div class="galeria">
+				{
+					fotos.length > 0 ? (
+						<>
+							<figure class="foto-principal">
+								<img
+									{...remoteImage(fotos[0], [480, 720, 960, 1440])}
+									sizes="(min-width: 900px) 600px, 100vw"
+									alt={v.title}
+									width="960"
+									height="960"
+									fetchpriority="high"
+									decoding="async"
+									data-role="foto-principal"
+								/>
+								{badge && <strong class="selo">{badge}</strong>}
+							</figure>
+							{fotos.length > 1 && (
+								<ul class="miniaturas" role="list" aria-label="Outras fotos">
+									{fotos.map((foto, i) => (
+										<li>
+											<button type="button" class="miniatura" data-foto={i} aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`Ver foto ${i + 1} de ${fotos.length}`}>
+												<img {...remoteImage(foto, [240])} sizes="96px" alt="" width="96" height="96" loading="lazy" decoding="async" />
+											</button>
+										</li>
+									))}
+								</ul>
+							)}
+						</>
+					) : carta ? (
+						<div class="foto-principal carta" aria-hidden="true">
+							<span class="carta-jogo">{nomeDe(JOGOS, carta.jogo)}</span>
+							<span class="carta-nome">{carta.nomeCarta}</span>
+							<span class="carta-colecao">{carta.numero ?? carta.colecao}</span>
+							{badge && <strong class="selo">{badge}</strong>}
+						</div>
+					) : (
+						<div class="foto-principal vazia" aria-hidden="true">
+							<span>{v.title}</span>
+							{badge && <strong class="selo">{badge}</strong>}
+						</div>
+					)
+				}
+			</div>
+
+			<div class="info">
+				<p class="kicker">{grupo}</p>
+				<h1 class="titulo">{v.title}</h1>
+
+				<div class="precos">
+					{
+						before && (
+							<p class="preco-antes">
+								<span class="sr-only">De </span>
+								<s>{formatPrice(before)}</s>
+							</p>
+						)
+					}
+					<p class="preco">
+						{formatPrice(v.priceCents)}
+						{feeOn && <small>no Pix</small>}
+					</p>
+					{feeOn && <p class="preco-cartao">ou {formatPrice(cardPrice(v.priceCents, payment))} no cartão</p>}
+				</div>
+
+				<p class="estoque" data-level={level}>{stockText}</p>
+
+				<div class="acoes">
+					<button
+						type="button"
+						class="btn-sacola"
+						data-role="adicionar"
+						data-id={v.id}
+						data-max={Math.min(v.stock, MAX_QUANTIDADE_POR_ITEM)}
+						disabled={level === 'out'}
+					>
+						<Icon name="lucide:shopping-bag" size={18} weight={3} />
+						{level === 'out' ? 'Esgotado' : 'Adicionar à sacola'}
+					</button>
+					<a class="link-loja" href="/loja#sacola">Ver a sacola e outros produtos</a>
+				</div>
+				<p class="aviso" data-role="aviso" aria-live="polite"></p>
+
+				{produto.descricao && <p class="descricao">{produto.descricao}</p>}
+
+				{
+					detalhesCarta.length > 0 && (
+						<dl class="detalhes">
+							{detalhesCarta.map(([rotulo, valor]) => (
+								<div>
+									<dt>{rotulo}</dt>
+									<dd>{valor}</dd>
+								</div>
+							))}
+						</dl>
+					)
+				}
+
+				<p class="retirada">Retirada na loja: {siteData.location.venue}, {siteData.location.neighborhood}. O pagamento é combinado pelo WhatsApp.</p>
+			</div>
+		</div>
+	</div>
+</BaseLayout>
+
+<script>
+	// Mesma sacola da /loja (localStorage `jokenpo:sacola`): adiciona e leva o cliente para lá
+	const STORAGE_KEY = 'jokenpo:sacola';
+	type Line = { id: string; qty: number };
+
+	const botao = document.querySelector<HTMLButtonElement>('[data-role="adicionar"]');
+	const aviso = document.querySelector<HTMLElement>('[data-role="aviso"]');
+	botao?.addEventListener('click', () => {
+		const id = botao.dataset.id!;
+		const max = Number(botao.dataset.max ?? 0);
+		let linhas: Line[] = [];
+		try {
+			linhas = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') as Line[];
+		} catch {
+			linhas = [];
+		}
+		const linha = linhas.find((l) => l.id === id);
+		if (linha && linha.qty >= max) {
+			if (aviso) aviso.textContent = 'Você já tem o máximo disponível na sacola.';
+			return;
+		}
+		if (linha) linha.qty += 1;
+		else linhas.push({ id, qty: 1 });
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(linhas));
+		} catch {
+			if (aviso) aviso.textContent = 'Não deu para salvar a sacola neste navegador.';
+			return;
+		}
+		window.location.href = '/loja#sacola';
+	});
+
+	// Galeria: miniatura troca a foto principal
+	const principal = document.querySelector<HTMLImageElement>('[data-role="foto-principal"]');
+	const miniaturas = [...document.querySelectorAll<HTMLButtonElement>('.miniatura')];
+	miniaturas.forEach((mini) => {
+		mini.addEventListener('click', () => {
+			const img = mini.querySelector('img');
+			if (!principal || !img) return;
+			principal.src = img.currentSrc || img.src;
+			principal.removeAttribute('srcset');
+			miniaturas.forEach((m) => m.setAttribute('aria-pressed', String(m === mini)));
+		});
+	});
+</script>
+
+<style>
+	.produto {
+		max-width: 1180px;
+		margin-inline: auto;
+		padding: clamp(6.5rem, 10vw, 8rem) clamp(1rem, 3vw, 2.625rem) clamp(4.75rem, 8vw, 7.5rem);
+	}
+	.trilha {
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		margin-bottom: 1.5rem;
+		color: var(--mist);
+		font-size: 0.875rem;
+	}
+	.trilha a {
+		color: var(--yellow);
+		text-underline-offset: 3px;
+	}
+	.trilha a:focus-visible {
+		outline: 3px solid var(--cyan);
+		outline-offset: 3px;
+		border-radius: 4px;
+	}
+	.produto-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: clamp(1.5rem, 4vw, 3rem);
+	}
+	@media (min-width: 900px) {
+		.produto-grid {
+			grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+			align-items: start;
+		}
+	}
+	.foto-principal {
+		position: relative;
+		margin: 0;
+		aspect-ratio: 1;
+		overflow: hidden;
+		border: 2px solid var(--ink-3);
+		border-radius: 22px;
+		background: var(--ink-2);
+		box-shadow: 7px 7px 0 var(--pink);
+	}
+	.foto-principal img {
+		inline-size: 100%;
+		block-size: 100%;
+		object-fit: cover;
+	}
+	.foto-principal.carta,
+	.foto-principal.vazia {
+		display: grid;
+		align-content: center;
+		justify-items: center;
+		gap: 0.75rem;
+		padding: 2rem;
+		text-align: center;
+		background:
+			repeating-linear-gradient(135deg, color-mix(in oklch, var(--pink) 22%, transparent) 0 8px, transparent 8px 18px),
+			var(--ink);
+		color: var(--white);
+	}
+	.foto-principal.vazia span {
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 4vw, 2.25rem);
+		line-height: 1.05;
+	}
+	.carta-jogo {
+		color: var(--pink);
+		font-size: 0.8125rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+	.carta-nome {
+		font-family: var(--font-display);
+		font-size: clamp(1.75rem, 5vw, 2.75rem);
+		line-height: 1;
+		overflow-wrap: anywhere;
+	}
+	.carta-colecao {
+		padding: 0.375rem 0.75rem;
+		border: 2px solid currentColor;
+		border-radius: var(--radius-pill);
+		font-weight: 600;
+	}
+	.selo {
+		position: absolute;
+		top: 1rem;
+		left: 1rem;
+		padding: 0.375rem 0.75rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-pill);
+		background: var(--yellow);
+		color: var(--ink);
+		font-size: 0.8125rem;
+		font-weight: 700;
+	}
+	.miniaturas {
+		display: flex;
+		gap: 0.625rem;
+		margin: 1rem 0 0;
+		padding: 0;
+		list-style: none;
+		overflow-x: auto;
+	}
+	.miniatura {
+		display: block;
+		padding: 0;
+		overflow: hidden;
+		border: 2px solid var(--ink-3);
+		border-radius: 12px;
+		background: var(--ink-2);
+		cursor: pointer;
+	}
+	.miniatura[aria-pressed='true'] {
+		border-color: var(--yellow);
+	}
+	.miniatura:focus-visible {
+		outline: 3px solid var(--cyan);
+		outline-offset: 2px;
+	}
+	.miniatura img {
+		display: block;
+		inline-size: 4.5rem;
+		block-size: 4.5rem;
+		object-fit: cover;
+	}
+	.kicker {
+		margin: 0 0 0.5rem;
+		color: var(--cyan);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+	.titulo {
+		margin: 0 0 1.25rem;
+		font-size: clamp(2rem, 5vw, 3.25rem);
+		line-height: 0.95;
+		overflow-wrap: anywhere;
+	}
+	.precos {
+		display: grid;
+		gap: 0.25rem;
+		margin-bottom: 0.75rem;
+	}
+	.precos p {
+		margin: 0;
+	}
+	.preco-antes {
+		color: var(--mist);
+	}
+	.preco {
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 5vw, 2.75rem);
+		font-variant-numeric: tabular-nums;
+		line-height: 1;
+	}
+	.preco small {
+		margin-left: 0.5rem;
+		font-family: var(--font-body);
+		font-size: 0.9375rem;
+		color: var(--mist);
+	}
+	.preco-cartao {
+		color: var(--mist);
+		font-size: 0.9375rem;
+	}
+	.estoque {
+		display: inline-block;
+		margin: 0 0 1.5rem;
+		padding: 0.25rem 0.75rem;
+		border-radius: var(--radius-pill);
+		background: color-mix(in oklch, var(--cyan) 18%, transparent);
+		font-size: 0.875rem;
+		font-weight: 700;
+	}
+	.estoque[data-level='low'] {
+		background: color-mix(in oklch, var(--yellow) 22%, transparent);
+	}
+	.estoque[data-level='out'] {
+		background: color-mix(in oklch, var(--pink) 22%, transparent);
+	}
+	.acoes {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 1rem 1.5rem;
+	}
+	.btn-sacola {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.625rem;
+		min-block-size: 3.25rem;
+		padding: 0 1.5rem;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius-pill);
+		background: var(--yellow);
+		color: var(--ink);
+		font: 700 1rem/1 var(--font-body);
+		box-shadow: 4px 4px 0 var(--pink);
+		cursor: pointer;
+	}
+	.btn-sacola:disabled {
+		cursor: not-allowed;
+		opacity: 0.6;
+	}
+	.btn-sacola:focus-visible,
+	.link-loja:focus-visible {
+		outline: 3px solid var(--cyan);
+		outline-offset: 3px;
+	}
+	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.btn-sacola:not(:disabled) {
+			transition: transform var(--duration-fast, 120ms) ease-out;
+		}
+		.btn-sacola:not(:disabled):hover {
+			transform: translate(-2px, -2px);
+		}
+	}
+	.link-loja {
+		color: var(--white);
+		font-weight: 600;
+		text-underline-offset: 3px;
+	}
+	.aviso:empty {
+		display: none;
+	}
+	.aviso {
+		margin: 0.75rem 0 0;
+		color: var(--yellow);
+		font-weight: 600;
+	}
+	.descricao {
+		margin: 2rem 0 0;
+		max-width: 60ch;
+		font-size: 1.0625rem;
+		line-height: 1.6;
+		white-space: pre-line;
+	}
+	.detalhes {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+		gap: 1rem;
+		margin: 2rem 0 0;
+	}
+	.detalhes dt {
+		color: var(--mist);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+	.detalhes dd {
+		margin: 0.25rem 0 0;
+		font-weight: 600;
+	}
+	.retirada {
+		margin: 2rem 0 0;
+		color: var(--mist);
+		font-size: 0.875rem;
+	}
+	@media (forced-colors: active) {
+		.foto-principal,
+		.btn-sacola {
+			border-color: canvastext;
+		}
+	}
+</style>

@@ -74,7 +74,7 @@ Use sempre o componente `src/components/Icon.astro`. Ele marca o ícone como dec
 
 As rotas públicas (`/`, `/404`, `/admin` e `/llms.txt`) são pré-renderizadas em HTML estático; `/loja` é gerada sob demanda com cache curto na CDN, para mostrar o estoque de agora, enquanto o adaptador da Vercel mantém as rotas de autenticação e da API do PDV (`/api/pdv/*`, `/api/pdv-sync/*`) sob demanda. As capas dos jogos passam pelo pipeline de imagens do Astro (`astro:assets`), e as fontes `Archivo Black` e `Poppins` são empacotadas localmente via Fontsource com preload no `<head>`.
 
-Os metadados incluem Open Graph, Twitter Cards, grafo JSON-LD (`WebSite`, `WebPage`, `GameStore`, `Event` e `FAQPage`), `sitemap.xml` e endpoint `/llms.txt` no formato do `llmstxt.org`. Cabeçalhos de cache e segurança ficam em `vercel.json`. Conforme registrado em [DESIGN.md](DESIGN.md), a página atingiu 100 em Acessibilidade, Boas Práticas, SEO e Agentic Browsing, e 98 em Performance no Lighthouse.
+Os metadados incluem Open Graph, Twitter Cards, grafo JSON-LD (`WebSite`, `WebPage`, `GameStore`, `Event` e `FAQPage`), `/sitemap.xml` gerado (com a página de cada produto) e endpoint `/llms.txt` no formato do `llmstxt.org`. Cabeçalhos de cache e segurança ficam em `vercel.json`. Conforme registrado em [DESIGN.md](DESIGN.md), a página atingiu 100 em Acessibilidade, Boas Práticas, SEO e Agentic Browsing, e 98 em Performance no Lighthouse.
 
 ### Conteúdo e CMS
 
@@ -150,7 +150,9 @@ Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desati
 | Caminho | Responsabilidade |
 |---|---|
 | `src/pages/index.astro` | Composição das seções da landing page |
-| `src/pages/loja.astro` | Vitrine de produtos, sacola, pedido e status do pedido |
+| `src/pages/loja.astro`, `src/scripts/loja.ts` | Vitrine de produtos (markup e estilos) e o comportamento no navegador: sacola, filtros, pedido e status |
+| `src/pages/loja/[slug].astro` | Página de cada produto da vitrine (fotos, preço, estoque, descrição, dados da carta avulsa, JSON-LD `Product`) |
+| `src/pages/sitemap.xml.ts` | Sitemap gerado com as páginas de produto do PDV |
 | `src/components/PromoBanners.astro`, `src/lib/banners.ts` | Banners de eventos e promoções em carrossel |
 | `src/pages/api/pdv/`, `src/pages/api/pdv-sync/` | API pública do PDV e rotas de sincronização do PC da loja |
 | `src/lib/catalog.ts`, `src/lib/vitrine.ts`, `src/lib/pdv/` | Catálogo tipado, seções da vitrine, contrato `PdvClient`, ponte com o PDV real e PDV simulado |
@@ -164,7 +166,7 @@ Sem `OAUTH_GITHUB_CLIENT_ID` e `OAUTH_GITHUB_CLIENT_SECRET`, o OAuth fica desati
 | `src/styles/` | Declarações `@font-face` (`fonts.css`) e tokens/estilos globais (`global.css`) |
 | `src/data/site.json` | Fonte de dados pública exibida no site |
 | `src/assets/games/` | Capas locais dos jogos otimizadas no build |
-| `public/` | Vetores SVG da marca, `og-image.png`, `site.webmanifest`, `robots.txt`, `sitemap.xml` e configuração do CMS em `admin/` |
+| `public/` | Vetores SVG da marca, `og-image.png`, `site.webmanifest`, `robots.txt` e configuração do CMS em `admin/` |
 | `docs/` | Documentação da marca (`style-guide.md`, `brand-content.md`, `ui-ux-guidelines.md`) e capturas do site em `images/` |
 | `vercel.json` | Cabeçalhos HTTP de segurança, cache e descoberta |
 

@@ -30,6 +30,7 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 | `src/pages/api/pdv-sync/*` | Rotas chamadas pelo PC da loja |
 | `src/lib/pdv/index.ts`, `types.ts`, `mock.ts` | `PUBLIC_PDV_MODE = live \| mock \| off`, contrato público e mock |
 | `src/lib/vitrine.ts` | Seções da vitrine: uma por grupo de categoria do PDV, destaques primeiro, nome/descrição/fotos do PDV |
+| `src/pages/loja/[slug].astro`, `src/pages/sitemap.xml.ts` | Página de cada produto (slug criado no PDV) e sitemap com essas páginas |
 | `src/pages/loja.astro` | Sempre sob demanda (`prerender = false`), com `s-maxage=60, stale-while-revalidate=600` na CDN |
 
 ## Ambientes
@@ -49,6 +50,12 @@ No CI, `pnpm sync:contract --remote` compara com o `main` do PDV (precisa do seg
 
 Ligado desde 25/11/2026: o PC da loja sincroniza e `/loja` usa o catálogo do PDV. Fotos de produto
 otimizadas pelo `/_vercel/image` (`imagesConfig` no `astro.config.mjs`) a partir do Blob.
+
+## Cartas avulsas
+
+Entram no site só marcadas à mão no PDV. Aparecem como cartão de texto (jogo, carta, coleção, número, condição,
+idioma) e ganham filtros em `/loja` quando há mais de uma opção. Imagem das APIs de cartas não vai para o site
+(licença para software e conteúdo de fã); foto tirada pela loja vai.
 
 ## Loja sem conexão
 

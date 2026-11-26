@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProdutoPagina from '../../components/ProdutoPagina.astro';
+import siteData from '../../data/site.json';
+import { getPdv, pdvMode } from '../../lib/pdv';
+import { acrescimoCartaoDaLoja } from '../../lib/pdv/cloud';
+import { regrasPagamento } from '../../lib/vitrine';
+
+// Página de um produto da vitrine (/loja/<slug>). O slug, o conteúdo, o preço e o estoque vêm do PDV.
+export const prerender = false;
+
+const slug = Astro.params.slug ?? '';
+const pdv = getPdv();
+const produto = pdvMode === 'live' && pdv && /^[a-z0-9-]{1,120}$/.test(slug) ? await pdv.buscarPorSlug(slug).catch(() => null) : null;
+const payment = produto ? regrasPagamento(await acrescimoCartaoDaLoja().catch(() => null), siteData.shop.payment) : null;
+
+// O 404 do site é pré-renderizado e não existe dentro da função: esta página responde o "não encontrado"
+if (!produto) Astro.response.status = 404;
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+---
+
+{
+	produto && payment ? (
+		<ProdutoPagina produto={produto} payment={payment} slug={slug} />
+	) : (
+		<BaseLayout title="Produto não encontrado | Jokenpo" description="Este produto saiu da loja ou o endereço mudou." path={`/loja/${slug}`} robots="noindex, follow">
+			<div class="nao-encontrado">
+				<h1>Esse produto não está mais na loja</h1>
+				<p>Ele pode ter esgotado de vez ou mudado de endereço.</p>
+				<a href="/loja">Ver os produtos da loja</a>
+			</div>
+		</BaseLayout>
+	)
+}
+
+<style>
+	.nao-encontrado {
+		max-width: 720px;
+		margin-inline: auto;
+		padding: clamp(7rem, 12vw, 9rem) clamp(1rem, 3vw, 2.625rem) clamp(5rem, 8vw, 7.5rem);
+	}
+	.nao-encontrado h1 {
+		margin: 0 0 1rem;
+		font-size: clamp(2rem, 5vw, 3rem);
+		line-height: 1;
+	}
+	.nao-encontrado p {
+		margin: 0 0 1.5rem;
+		color: var(--mist);
+	}
+	.nao-encontrado a {
+		color: var(--yellow);
+		font-weight: 700;
+		text-underline-offset: 3px;
+	}
+	.nao-encontrado a:focus-visible {
+		outline: 3px solid var(--cyan);
+		outline-offset: 3px;
+	}
+</style>
