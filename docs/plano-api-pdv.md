@@ -59,9 +59,40 @@ idioma) e ganham filtros em `/loja` quando há mais de uma opção. Imagem das A
 
 ## Loja sem conexão
 
-Se o PC da loja ficar mais de 6 h sem falar com o site (`LOJA_OFFLINE_HORAS` em `src/lib/pdv/estoque.ts`),
-`/loja` continua mostrando o catálogo, mas a sacola manda o pedido pelo WhatsApp, e `POST /api/pdv/pedidos`
-responde `LOJA_OFFLINE` (503) para quem estiver com a página em cache.
+A regra (`lojaOffline` em `src/lib/pdv/estoque.ts`) olha o último envio de estoque **aceito**
+(`pdv_sync.ultimo_estoque_em`), não só o último contato. A loja conta como offline quando:
+
+- nenhum estoque foi aceito há mais de 6 h (`LOJA_OFFLINE_HORAS`; PC desligado, internet fora); ou
+- o PC segue falando com o site (buscando pedidos), mas nenhum estoque é aceito há mais de 30 min
+  (`ESTOQUE_PARADO_MINUTOS`; envio recusado, por exemplo relógio do PC atrasado). O PC manda a foto completa a
+  cada 10 min, então esse silêncio é falha, não falta de mudança.
+
+Offline, `/loja` continua mostrando o catálogo, mas a sacola manda o pedido pelo WhatsApp, e
+`POST /api/pdv/pedidos` responde `LOJA_OFFLINE` (503) para quem estiver com a página em cache.
+
+## Banco fora do ar
+
+`/loja` e `/loja/<produto>` respondem 503 com `Cache-Control: no-store` quando o Postgres falha. A resposta não
+entra no cache, então a CDN segue servindo a última página boa (dentro do `stale-while-revalidate`), e o
+buscador não recebe 404 de produto que existe.
+
+## Alertas
+
+O Vercel Schedules `saude-pdv` (`vercel.json`) chama `GET /api/pdv-sync/saude` às :30, das 14h30 às 21h30
+de segunda a sábado (America/Fortaleza; fora do horário o PC pode estar desligado), com
+`Authorization: Bearer $CRON_SECRET`. A rota aponta três problemas (`src/lib/pdv/saude.ts`), cada um depois de
+30 min: PC sem contato, PC conectado com o estoque recusado e pedido esperando o PC. Ela manda e-mail pelo
+Resend para contato@jokenpo.cards só quando a lista muda (aparece problema ou volta ao normal), guardando o já
+avisado em `pdv_sync.alerta_chave`. Se o envio falhar, nada é gravado e a próxima checagem tenta de novo.
+
+É alvo `path` (e não função privada) porque o Astro junta todas as rotas numa função só. Testar em produção:
+`vercel schedules invoke saude-pdv`.
+
+## Robôs
+
+`POST /api/pdv/pedidos` passa pelo Vercel BotID (nível Basic, grátis): a sacola chama `initBotId` só quando o
+pedido no site está ligado, e a rota responde `ACESSO_NEGADO` (403) para robô. Se o serviço falhar, a venda
+segue (o limite por IP e por telefone continua). Em dev e fora da Vercel o BotID responde humano.
 
 ## Pendências conhecidas
 

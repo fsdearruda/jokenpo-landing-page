@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { checkBotId } from 'botid/server';
 import { handle, json, pedidosNoSite, readJson, type CriarPedidoInput } from '../../../../lib/pdv';
 import { dentroDoLimite, hashIp } from '../../../../lib/pdv/limite';
 
@@ -18,6 +19,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 	}
 	if (!pedidosNoSite) {
 		return json({ erro: { codigo: 'LOJA_OFFLINE', mensagem: 'Os pedidos estão indo pelo WhatsApp agora. Manda por lá que a gente separa.' } }, 503);
+	}
+	// Robô criando pedido com telefone aleatório seguraria o estoque da loja por horas
+	if (await ehRobo(request)) {
+		return json({ erro: { codigo: 'ACESSO_NEGADO', mensagem: 'Não deu pra confirmar o pedido por aqui. Manda pelo WhatsApp que a gente separa.' } }, 403);
 	}
 	const permitido = await dentroDoLimite(ip).catch(() => true); // limite fora do ar não bloqueia venda
 	if (!permitido) {
@@ -41,3 +46,15 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		),
 	);
 };
+
+/** BotID da Vercel (a sacola da /loja registra esta rota). Fora da Vercel/em dev responde humano. */
+async function ehRobo(request: Request) {
+	try {
+		const { isBot } = await checkBotId({ advancedOptions: { headers: Object.fromEntries(request.headers) } });
+		return isBot;
+	} catch (error) {
+		// Falha do serviço não derruba a venda: o limite por IP e por telefone continua valendo
+		console.error('[pdv] BotID indisponível', error instanceof Error ? error.message : error);
+		return false;
+	}
+}

@@ -14,14 +14,21 @@ import { activeBanners } from '../lib/banners';
 // não os do último deploy.
 export const prerender = false;
 
-const { families, disponivel, lojaVistaEm, descontoPixBp } = await carregarVitrine();
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+const { families, disponivel, erro, lojaVistaEm, lojaEstoqueEm, descontoPixBp } = await carregarVitrine();
+if (erro) {
+	// Banco fora do ar: 503 sem cache, para a CDN não trocar a última vitrine boa por uma vazia
+	Astro.response.status = 503;
+	Astro.response.headers.set('Cache-Control', 'no-store');
+	Astro.response.headers.set('Retry-After', '60');
+} else {
+	Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+}
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://jokenpo.cards';
 const pageUrl = `${siteUrl}/loja`;
 const whatsappNumber = siteData.contact.whatsapp.replace(/\D/g, '');
-/** PC da loja sem falar com o site há horas: catálogo continua, pedido vai pelo WhatsApp. */
-const lojaPausada = disponivel && lojaOffline(lojaVistaEm);
+/** PC da loja sem mandar estoque há horas (ou estoque parado): catálogo continua, pedido vai pelo WhatsApp. */
+const lojaPausada = disponivel && lojaOffline({ vistaEm: lojaVistaEm, estoqueEm: lojaEstoqueEm });
 /** Pedido criado no site (a loja confirma o estoque); senão a sacola manda o pedido pelo WhatsApp. */
 const orderApi = pedidosNoSite && disponivel && !lojaPausada;
 

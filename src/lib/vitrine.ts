@@ -1,13 +1,17 @@
 import type { PaymentRules, ProductFamily, ProductVariant, Tone } from './catalog';
 import { getPdv, type ProdutoCatalogo } from './pdv';
-import { descontoPixDaLoja, ultimoContatoDaLoja } from './pdv/cloud';
+import { contatoDaLoja, descontoPixDaLoja } from './pdv/cloud';
 
 export interface Vitrine {
 	families: ProductFamily[];
 	/** O catálogo do PDV carregou (false = banco fora do ar ou loja que nunca sincronizou). */
 	disponivel: boolean;
+	/** O banco falhou: a página responde 503 sem cache, para a CDN seguir com a última página boa. */
+	erro: boolean;
 	/** Última vez que o PC da loja falou com o site. */
 	lojaVistaEm: string | null;
+	/** Último envio de estoque do PC aceito pelo site. */
+	lojaEstoqueEm: string | null;
 	/** Desconto no Pix definido no PDV, em centésimos de % (null = o PDV ainda não mandou). */
 	descontoPixBp: number | null;
 }
@@ -22,7 +26,7 @@ const slugify = (text: string) =>
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-|-$/g, '') || 'produtos';
 
-const VAZIA: Vitrine = { families: [], disponivel: false, lojaVistaEm: null, descontoPixBp: null };
+const VAZIA: Vitrine = { families: [], disponivel: false, erro: false, lojaVistaEm: null, lojaEstoqueEm: null, descontoPixBp: null };
 
 /** Desconto no Pix definido no PDV (Cadastros → Site); sem ele, Pix e cartão custam o mesmo. */
 export const regrasPagamento = (descontoPixBp: number | null): PaymentRules => ({ pixDiscountPercent: (descontoPixBp ?? 0) / 100 });
@@ -55,7 +59,7 @@ export function variante(p: ProdutoCatalogo): ProductVariant {
  */
 export async function carregarVitrine(): Promise<Vitrine> {
 	try {
-		const [catalogo, vistaEm, descontoPixBp] = await Promise.all([getPdv().listarCatalogo(), ultimoContatoDaLoja(), descontoPixDaLoja()]);
+		const [catalogo, { vistaEm, estoqueEm }, descontoPixBp] = await Promise.all([getPdv().listarCatalogo(), contatoDaLoja(), descontoPixDaLoja()]);
 		// Loja que nunca sincronizou: vitrine vazia com o WhatsApp
 		if (!vistaEm) return VAZIA;
 
@@ -83,10 +87,11 @@ export async function carregarVitrine(): Promise<Vitrine> {
 				};
 			});
 
-		return { families, disponivel: true, lojaVistaEm: vistaEm.toISOString(), descontoPixBp };
+		return { families, disponivel: true, erro: false, lojaVistaEm: vistaEm.toISOString(), lojaEstoqueEm: estoqueEm?.toISOString() ?? null, descontoPixBp };
 	} catch (error) {
-		// Banco fora do ar: a CDN segue servindo a última página boa (stale-while-revalidate); sem ela, vitrine vazia
+		// Banco fora do ar: a página responde 503 sem cache (ver /loja), então a CDN não troca a última
+		// página boa por uma vitrine vazia; sem página boa em cache, o visitante vê a vitrine vazia com o WhatsApp
 		console.error('[vitrine] catálogo do PDV indisponível', error instanceof Error ? error.message : error);
-		return VAZIA;
+		return { ...VAZIA, erro: true };
 	}
 }

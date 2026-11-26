@@ -48,10 +48,28 @@ export function disponivelNoSite(
 }
 
 /**
- * Sem contato do PC da loja por esse tempo, o site para de criar pedidos e manda pelo WhatsApp:
- * um pedido feito agora ficaria horas sem confirmação (até expirar em 72 h).
+ * Sem estoque aceito por esse tempo, o site para de criar pedidos e manda pelo WhatsApp:
+ * um pedido feito agora ficaria horas sem confirmação (até expirar em 72 h). Cobre o PC desligado à noite.
  */
 export const LOJA_OFFLINE_HORAS = 6;
 
-export const lojaOffline = (vistaEm: Date | string | null, agora = Date.now()) =>
-	!vistaEm || agora - new Date(vistaEm).getTime() > LOJA_OFFLINE_HORAS * 3_600_000;
+/**
+ * O PC manda a foto completa a cada 10 min. Se ele segue falando com o site (buscando pedidos) mas nenhum
+ * envio de estoque é aceito há esse tempo, o estoque da vitrine está velho: os pedidos também pausam.
+ */
+export const ESTOQUE_PARADO_MINUTOS = 30;
+
+export interface ContatoLoja {
+	/** Última vez que o PC da loja falou com o site (qualquer rota de sincronização). */
+	vistaEm: Date | string | null;
+	/** Último envio de estoque aceito. */
+	estoqueEm: Date | string | null;
+}
+
+const ms = (d: Date | string) => new Date(d).getTime();
+
+export const lojaOffline = ({ vistaEm, estoqueEm }: ContatoLoja, agora = Date.now()) => {
+	if (!estoqueEm) return true;
+	if (agora - ms(estoqueEm) > LOJA_OFFLINE_HORAS * 3_600_000) return true;
+	return vistaEm != null && ms(vistaEm) - ms(estoqueEm) > ESTOQUE_PARADO_MINUTOS * 60_000;
+};

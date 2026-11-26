@@ -272,7 +272,7 @@ collections:
             name: boardgames
             widget: list
             summary: "{{fields.name}} — [{{fields.category}}] · {{fields.players}} ({{fields.publisher}})"
-            hint: "Adicione, reordene ou edite os jogos disponíveis no acervo. O preço e o selo da categoria são preenchidos automaticamente a partir da categoria escolhida."
+            hint: "Adicione, reordene ou edite os jogos disponíveis no acervo. O nome e o preço da categoria vêm da tabela do Passe da Tarde."
             fields:
               - label: Nome do Jogo
                 name: name
@@ -286,11 +286,11 @@ collections:
               - label: Categoria do Jogo
                 name: category
                 widget: select
-                hint: "Define automaticamente a cor do card, o filtro na estante e o preço do passe."
+                hint: "Define a cor do card, o filtro na estante e o preço (o da categoria no Passe da Tarde)."
                 options:
-                  - { label: "Leves — Ciano (R$ 10 · Partidas rápidas)", value: "leves" }
-                  - { label: "Médios — Amarelo (R$ 13 · Blefe, cartas e cooperativos)", value: "medios" }
-                  - { label: "Grandes — Rosa (R$ 15 · Estratégia e partidas longas)", value: "grandes" }
+                  - { label: "Leves — Ciano", value: "leves" }
+                  - { label: "Médios — Amarelo", value: "medios" }
+                  - { label: "Grandes — Rosa", value: "grandes" }
               - label: Foto da Caixa (Capa)
                 name: image
                 widget: image
