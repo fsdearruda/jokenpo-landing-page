@@ -19,7 +19,7 @@ export const PRECO_HISTORICO_DIAS = 7;
 /** Requisição assinada vale por 5 minutos (evita reenvio de uma requisição capturada). */
 export const ASSINATURA_VALIDADE_MS = 5 * 60_000;
 /** Limite por item num pedido do site (o site também confere). */
-export const MAX_QUANTIDADE_POR_ITEM = 5;
+export const MAX_QUANTIDADE_POR_ITEM = 10;
 export const MAX_ITENS_POR_PEDIDO = 20;
 
 /**

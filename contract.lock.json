@@ -1,8 +1,8 @@
 {
 	"origem": "larissarruda/jokenpo-pdv",
-	"commit": "1cb2b2d2c11b0055de06ae6e2ce4a555441e15e8",
+	"commit": "95e68ee40a4def2745d23830918f59a80073ecd4+alterado",
 	"arquivos": {
-		"src/lib/pdv/sync.ts": "7025a5f28f7ad8c0eeac662f5c78acdb2340142e02d436e1925c2429e5d22651",
+		"src/lib/pdv/sync.ts": "03b411f373722586f95c3e7595544fddb2acf79f66abd11f8deee31d9e70ebb1",
 		"contract-fixtures/README.md": "33604dfda881b42aa512c207bf62a12655a9897ac83eb16d4715c3dade106677",
 		"contract-fixtures/ack.json": "f9ff746600a5d8e421a0f46a598dc93888eb9c3468b51b98ec6a10780bedfb2c",
 		"contract-fixtures/envio-estoque-pdv-antigo.json": "92dcb0f7495dbdb26ae9b6bea060de2ee52e6a28eef90b45ec1b2fa02ea7e82d",
